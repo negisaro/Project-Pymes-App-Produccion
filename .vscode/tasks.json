@@ -1,0 +1,14 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Verificar conexión MySQL desde usuario-service",
+			"type": "shell",
+			"command": "docker exec usuario-service mysql -h db -P 3306 -u msvcuser -pmsvcpass -e \"SHOW DATABASES;\"",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		}
+	]
+}
