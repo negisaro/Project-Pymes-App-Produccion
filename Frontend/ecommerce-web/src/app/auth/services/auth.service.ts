@@ -113,7 +113,7 @@ export class AuthService {
    * Verifica el estado de autenticación usando el token almacenado
    */
   checkAuthStatus(): Observable<boolean> {
-    const url = `${this.baseUrl}/auth/check-token`;
+    const url = `${this.baseUrl}/api/auth/check-token`;
     const token = localStorage.getItem('token');
     console.log('[AuthService] checkAuthStatus()');
     console.log('URL:', url);
@@ -148,7 +148,7 @@ export class AuthService {
    * Envía email para recuperación de contraseña
    */
   sendResetPasswordEmail(username: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/forgot-password`, { username }).pipe(
+    return this.http.post(`${this.baseUrl}/api/auth/forgot-password`, { username }).pipe(
       catchError((err) => throwError(() => new Error(err?.error?.message || 'Error enviando email de recuperación')))
     );
   }
@@ -157,7 +157,7 @@ export class AuthService {
    * Registra un nuevo usuario
    */
   register(data: Partial<User>): Observable<User> {
-    return this.http.post<User>(`${this.baseUrl}/api/usuarios/create`, data).pipe(
+    return this.http.post<User>(`${this.baseUrl}/api/usuarios/register`, data).pipe(
       catchError((err) => throwError(() => new Error(err?.error?.message || 'Error de registro')))
     );
   }
@@ -166,7 +166,7 @@ export class AuthService {
    * Restablece la contraseña usando token
    */
   resetPassword(token: string, password: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/reset-password`, { token, password }).pipe(
+    return this.http.post(`${this.baseUrl}/api/auth/reset-password`, { token, password }).pipe(
       catchError((err) => throwError(() => new Error(err?.error?.message || 'Error al restablecer contraseña')))
     );
   }

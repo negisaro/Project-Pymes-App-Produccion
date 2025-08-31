@@ -59,6 +59,7 @@ public class JwtService {
     /**
      * Refresca el token usando los claims del anterior.
      */
+    @SuppressWarnings("unchecked")
     public String refreshToken(String oldToken, String email) {
         Claims claims = extractAllClaims(oldToken);
         String username = claims.get("username", String.class);
