@@ -1,0 +1,62 @@
+
+body,
+html {
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+}
+
+.app-bg {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  /* El fondo solo se aplica si no hay auth-bg visible */
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+/* .app-bg .auth-bg {
+  background: unset !important;
+} */
+
+.app-bg {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: rgba(255, 255, 255, 0.8);
+  z-index: 10;
+}
+
+.spinner {
+  border: 6px solid #e0e0e0;
+  border-top: 6px solid #1976d2;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 600px) {
+  .app-loading span {
+    font-size: 1.1rem;
+  }
+}

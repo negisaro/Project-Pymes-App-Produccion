@@ -1,0 +1,157 @@
+/* Fondo empresarial y modo oscuro */
+:host {
+  display: block;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #e0e7ff 0%, #fff 60%, #bfdbfe 100%);
+}
+body.dark :host,
+:host-context(.dark) {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 60%, #0f172a 100%);
+}
+
+/* Card principal */
+.card-user {
+  background: #fff;
+  border-radius: 1.5rem;
+  box-shadow: 0 8px 32px rgba(30,64,175,0.10);
+  border: 1px solid #e0e7ff;
+  padding: 2rem;
+  max-width: 32rem;
+  margin: 2rem auto;
+}
+body.dark .card-user,
+:host-context(.dark) .card-user {
+  background: #111827;
+  border-color: #334155;
+  box-shadow: 0 8px 32px rgba(30,64,175,0.18);
+}
+
+/* Títulos */
+.card-user h1 {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #1e3a8a;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.02em;
+}
+body.dark .card-user h1,
+:host-context(.dark) .card-user h1 {
+  color: #dbeafe;
+}
+
+/* Subtítulo */
+.card-user p {
+  color: #64748b;
+  font-size: 1rem;
+}
+body.dark .card-user p,
+:host-context(.dark) .card-user p {
+  color: #94a3b8;
+}
+
+/* Formulario */
+.form-user label {
+  font-weight: 600;
+  color: #1e40af;
+  margin-bottom: 0.25rem;
+  font-size: 0.98rem;
+  display: block;
+}
+body.dark .form-user label,
+:host-context(.dark) .form-user label {
+  color: #bfdbfe;
+}
+
+.input,
+select {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border-radius: 0.75rem;
+  border: 1.5px solid #d1d5db;
+  background: #f9fafb;
+  color: #222;
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  margin-bottom: 0.5rem;
+}
+.input:focus,
+select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px #2563eb33;
+  outline: none;
+}
+body.dark .input,
+body.dark select,
+:host-context(.dark) .input,
+:host-context(.dark) select {
+  background: #1f2937;
+  color: #fff;
+  border-color: #334155;
+}
+.input-bordered {
+  border: 1.5px solid #d1d5db;
+}
+.rounded-xl {
+  border-radius: 0.75rem;
+}
+.border-red-500 {
+  border-color: #ef4444 !important;
+}
+
+/* Botones */
+.btn-user {
+  padding: 0.7rem 1.5rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 1rem;
+  box-shadow: 0 2px 8px rgba(30,64,175,0.08);
+  border: none;
+  transition: transform 0.18s, filter 0.18s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.btn-user-primary {
+  background: linear-gradient(90deg, #2563eb 0%, #1e40af 50%, #1e3a8a 100%);
+  color: #fff;
+}
+.btn-user-primary:hover,
+.btn-user-primary:focus {
+  filter: brightness(1.08);
+  transform: scale(1.04);
+}
+.btn-user-secondary {
+  background: #e5e7eb;
+  color: #1e293b;
+}
+.btn-user-secondary:hover,
+.btn-user-secondary:focus {
+  background: #f3f4f6;
+  filter: brightness(1.04);
+}
+body.dark .btn-user-secondary,
+:host-context(.dark) .btn-user-secondary {
+  background: #334155;
+  color: #fff;
+}
+body.dark .btn-user-secondary:hover,
+:host-context(.dark) .btn-user-secondary:hover {
+  background: #475569;
+}
+
+/* Debug visual */
+.debug-user {
+  background: #f9fafb;
+  border-radius: 0.75rem;
+  font-size: 0.93rem;
+  color: #334155;
+  border: 1px dashed #93c5fd;
+  margin-top: 2rem;
+  padding: 1rem;
+}
+body.dark .debug-user,
+:host-context(.dark) .debug-user {
+  background: #1e293b;
+  color: #dbeafe;
+  border-color: #334155;
+}

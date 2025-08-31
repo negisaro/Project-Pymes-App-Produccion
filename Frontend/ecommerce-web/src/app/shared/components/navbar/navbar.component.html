@@ -1,0 +1,60 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow">
+  <div class="container-fluid">
+    <a class="navbar-brand fw-bold tracking-wide" routerLink="user/add-user">Mi Empresa</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto align-items-center gap-2">
+        <!-- Notificaciones -->
+        <ng-container *ngIf="user$ | async as user">
+          <li class="nav-item me-2">
+            <button class="btn btn-link nav-link position-relative p-0" style="font-size:1.4rem;" aria-label="Notificaciones">
+              <i class="bi bi-bell"></i>
+              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:0.7rem;" *ngIf="notificationsCount > 0">{{ notificationsCount }}</span>
+            </button>
+          </li>
+        <!-- Menú usuario -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarUserDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <div class="navbar-avatar me-2">
+              <img src="assets/images/icons/favicon.ico" alt="Avatar" />
+            </div>
+            <div class="navbar-user-info d-none d-md-block text-end">
+              <div class="navbar-user-name text-white fw-semibold">{{ user?.name }} {{ user?.lastname }}</div>
+              <div class="navbar-user-role text-white-50 small">{{ getRoleLabel(user?.roles?.[0]?.name) }}</div>
+            </div>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end animate__animated animate__fadeIn" aria-labelledby="navbarUserDropdown">
+            <li><a class="dropdown-item" href="#">Perfil</a></li>
+            <li *ngIf="isAdmin(user)"><a class="dropdown-item" href="#">Panel Admin</a></li>
+            <li *ngIf="isSupervisor(user)"><a class="dropdown-item" href="#">Panel Supervisor</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="#" (click)="logout()">Cerrar sesión</a></li>
+          </ul>
+        </li>
+        <!-- Menú principal -->
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" routerLink="/dashboard/home">Inicio</a>
+        </li>
+        <li class="nav-item" *ngIf="isAdmin(user)">
+          <a class="nav-link" routerLink="user/list-user">Usuarios</a>
+        </li>
+        <li class="nav-item" *ngIf="isAdmin(user) || isSupervisor(user)">
+          <a class="nav-link" routerLink="product/list-producto">Productos</a>
+        </li>
+        <li class="nav-item" *ngIf="isAdmin(user) || isSupervisor(user)">
+          <a class="nav-link" routerLink="/dashboard/reports">Reportes</a>
+        </li>
+        <!-- Botón logout moderno -->
+        <li class="nav-item ms-2">
+          <button class="logout-btn" (click)="logout()" aria-label="Cerrar sesión">
+            <i class="bi bi-box-arrow-right logout-icon"></i>
+            <span class="logout-text">Cerrar sesión</span>
+          </button>
+        </li>
+        </ng-container>
+      </ul>
+    </div>
+  </div>
+</nav>

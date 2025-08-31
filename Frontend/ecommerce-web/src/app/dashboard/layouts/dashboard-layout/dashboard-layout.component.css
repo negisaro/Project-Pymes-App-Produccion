@@ -1,0 +1,58 @@
+.dashboard-bg {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
+}
+
+.navbar {
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
+}
+
+.sidebar {
+  min-width: 220px;
+  background: #f8fafc;
+  border-radius: 0 16px 16px 0;
+  box-shadow: 2px 0 8px rgba(25, 118, 210, 0.04);
+}
+
+.sidebar h5 {
+  color: #1976d2;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.sidebar .nav-link {
+  color: #1976d2;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.sidebar .nav-link.active,
+.sidebar .nav-link:hover {
+  background: #e3f2fd;
+  color: #0d47a1;
+}
+
+main {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 16px rgba(25, 118, 210, 0.06);
+  margin: 2rem 1rem 2rem 1rem;
+  min-height: 80vh;
+}
+
+footer {
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  box-shadow: 0 -2px 8px rgba(25, 118, 210, 0.04);
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    min-width: 120px;
+    padding: 0.5rem;
+  }
+  main {
+    margin: 1rem 0.2rem;
+  }
+}

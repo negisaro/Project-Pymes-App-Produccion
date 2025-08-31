@@ -1,0 +1,5 @@
+footer {
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  box-shadow: 0 -2px 8px rgba(25, 118, 210, 0.04);
+}

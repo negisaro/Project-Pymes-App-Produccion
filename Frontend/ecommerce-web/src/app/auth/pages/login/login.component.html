@@ -1,0 +1,43 @@
+<section class="auth-bg">
+  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
+    <h2 class="auth-title">¡Bienvenido!</h2>
+    <p class="auth-subtitle">Accede a tu cuenta para gestionar tu negocio</p>
+    <div class="auth-fields">
+      <div>
+        <label for="username">Usuario</label>
+        <input id="username" formControlName="username" type="text" class="input input-bordered rounded-xl" />
+        <div *ngIf="loginForm.get('username')?.invalid && loginForm.get('username')?.touched" class="error">
+          El usuario es obligatorio.
+        </div>
+      </div>
+      <div>
+        <label for="password">Contraseña</label>
+        <input id="password" formControlName="password" type="password" class="input input-bordered rounded-xl" />
+        <div *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" class="error">
+          La contraseña es obligatoria.
+        </div>
+      </div>
+    </div>
+    <button type="submit" [disabled]="loading" class="btn-auth btn-auth-primary">
+      {{ loading ? 'Ingresando...' : 'Ingresar' }}
+    </button>
+    <div class="auth-actions">
+      <a routerLink="/auth/forgot-password" class="auth-action-link">¿Olvidaste tu contraseña?</a>
+      <a routerLink="/auth/register" class="auth-action-link">Registrarse</a>
+    </div>
+    <div *ngIf="loading" class="text-blue-700 text-center mt-2">
+      <span class="spinner-border spinner-border-sm"></span> Verificando credenciales...
+    </div>
+    <div *ngIf="errorMsg" class="text-danger text-center mt-2">
+      {{ errorMsg }}
+    </div>
+  </form>
+</section>
+<!-- <div *ngIf="authService.isAuthenticated">
+  <ng-container *ngIf="authService.isAuthenticated; else loginRedirect">
+    Contenido para usuarios autenticados
+  </ng-container>
+  <ng-template #loginRedirect>
+     Contenido para usuarios no autenticados
+  </ng-template>
+</div>-->
