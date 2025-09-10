@@ -1,5 +1,5 @@
 # ========================================
-# Gateway configuration for user-service and product-service
+# Gateway configuration for user-service, product-service, and carrito-service
 # ========================================
 
 spring:
@@ -33,27 +33,21 @@ spring:
         # =============================
         # USER SERVICE ROUTES
         # =============================
-        
-        # =============================
-        # AUTH SERVICE ROUTES
-        # =============================
-        # No JWT required
+
         # Auth endpoints (login, register)
-        # These should be public and not require JWT
+        # No JWT required
         - id: usuario
           uri: lb://usuario
           predicates:
             - Path=/api/auth/**
           filters:
-            # Removes '/api' prefix before forwarding to usuario
             - StripPrefix=1
-                   
+
         - id: usuario
           uri: lb://usuario
           predicates:
             - Path=/api/usuarios/**
           filters:
-            # Removes '/api' prefix before forwarding to usuario
             - StripPrefix=1
 
         # Protected access: /api/segura/usuarios/*
@@ -63,7 +57,6 @@ spring:
           predicates:
             - Path=/api/segura/usuarios/**
           filters:
-            # Removes '/api/segura' prefix before forwarding to usuario
             - StripPrefix=2
 
         # =============================
@@ -77,7 +70,6 @@ spring:
           predicates:
             - Path=/api/productos/**
           filters:
-            # Removes '/api' prefix before forwarding to product-service
             - StripPrefix=1
 
         # Protected access: /api/segura/productos/*
@@ -87,9 +79,29 @@ spring:
           predicates:
             - Path=/api/segura/productos/**
           filters:
-            # Removes '/api/segura' prefix before forwarding to product-service
             - StripPrefix=2
 
+        # =============================
+        # CARRITO SERVICE ROUTES
+        # =============================
+
+        # Public access: /api/carrito/*
+        # No JWT required (consultas públicas si aplica)
+        - id: carrito
+          uri: lb://carrito
+          predicates:
+            - Path=/api/carrito/**
+          filters:
+            - StripPrefix=1
+
+        # Protected access: /api/segura/carrito/*
+        # JWT required (agregar/quitar ítems, pagar, etc.)
+        - id: carrito-secure
+          uri: lb://carrito
+          predicates:
+            - Path=/api/segura/carrito/**
+          filters:
+            - StripPrefix=2
 
 gateway:
   filter:

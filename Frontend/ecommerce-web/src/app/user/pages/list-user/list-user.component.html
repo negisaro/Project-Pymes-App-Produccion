@@ -1,0 +1,107 @@
+<section class="user-list-section">
+  <div class="user-list-card">
+    <h1 class="user-list-title">
+      Gestión de Usuarios
+    </h1>
+    <div class="user-list-actions">
+      <button *ngIf="puedeAgregarUsuario()" class="btn-user btn-user-success" (click)="irAgregarUsuario()">
+        <i class="bi bi-person-plus"></i> Agregar usuario
+      </button>
+    </div>
+
+    <!-- Indicador de carga -->
+    <div *ngIf="loading" class="user-list-loading">
+      <span class="loader"></span>
+      <span class="user-list-loading-text">Cargando usuarios...</span>
+    </div>
+
+    <!-- Tabla de usuarios -->
+    <div *ngIf="!loading && users.length > 0" class="user-list-table-container">
+      <table class="user-list-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Usuario</th>
+            <th>Email</th>
+            <th>Rol</th>
+            <th>Estado</th>
+            <th class="text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of users">
+            <td>{{ user.id }}</td>
+            <td>{{ user.name }} {{ user.lastname }}</td>
+            <td>{{ user.username }}</td>
+            <td>{{ user.email }}</td>
+            <td>
+              <ng-container *ngFor="let role of user.roles; let last = last">
+                <span class="user-role">
+                  <i class="bi bi-person-badge"></i>{{ getRoleLabel(role.name) }}<span *ngIf="!last">,</span>
+                </span>
+              </ng-container>
+            </td>
+            <td>
+              <span [ngClass]="user.active ? 'status-active' : 'status-inactive'">
+                {{ user.active ? 'Activo' : 'Inactivo' }}
+              </span>
+            </td>
+            <td class="user-list-actions-cell">
+              <button class="btn-user btn-user-edit" (click)="goToEditUser(user.id)">
+                <i class="bi bi-pencil-square"></i> Editar
+              </button>
+              <button class="btn-user btn-user-delete" (click)="onDeleteUser(user.id)">
+                <i class="bi bi-trash"></i> Eliminar
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Mensaje si no hay usuarios -->
+    <div *ngIf="!loading && users.length === 0" class="user-list-empty">
+      <p>No hay usuarios registrados.</p>
+    </div>
+
+    <!-- Paginador dinámico profesional -->
+    <div *ngIf="paginator.totalPages > 1" class="user-list-paginator">
+      <nav aria-label="Paginación">
+        <button class="btn-paginator" [disabled]="paginator.number === 0" (click)="goToPage(0)" aria-label="Primera página">«</button>
+        <button class="btn-paginator" [disabled]="paginator.number === 0" (click)="goToPage(paginator.number - 1)" aria-label="Página anterior">‹</button>
+        <ng-container *ngIf="dynamicPages[0] > 0">
+          <button class="btn-paginator" disabled>...</button>
+        </ng-container>
+        <ng-container *ngFor="let page of dynamicPages">
+          <button
+            class="btn-paginator"
+            [ngClass]="{ 'btn-paginator-active': paginator.number === page }"
+            (click)="goToPage(page)"
+            [attr.aria-current]="paginator.number === page ? 'page' : null"
+            [disabled]="paginator.number === page">
+            {{ page + 1 }}
+          </button>
+        </ng-container>
+        <ng-container *ngIf="dynamicPages[dynamicPages.length-1] < paginator.totalPages - 1">
+          <button class="btn-paginator" disabled>...</button>
+        </ng-container>
+        <button class="btn-paginator" [disabled]="paginator.number === paginator.totalPages - 1" (click)="goToPage(paginator.number + 1)" aria-label="Página siguiente">›</button>
+        <button class="btn-paginator" [disabled]="paginator.number === paginator.totalPages - 1" (click)="goToPage(paginator.totalPages - 1)" aria-label="Última página">»</button>
+      </nav>
+    </div>
+  </div>
+</section>
+
+<!-- Loader CSS (puedes moverlo a tu archivo global de estilos si lo prefieres) -->
+<style>
+  .loader {
+    border-top-color: #3498db;
+    animation: spinner 1s linear infinite;
+  }
+  @keyframes spinner {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+</style>

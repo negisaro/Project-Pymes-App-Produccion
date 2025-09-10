@@ -39,6 +39,9 @@ public class UsuarioDto implements Serializable {
   private List<RolDto> roles;
   private boolean active;
 
+  // Relación con productos (IDs de productos en el microservicio producto)
+  private List<Long> carritoId;
+
   /**
    * Constructor vacío requerido por frameworks.
    */
@@ -55,6 +58,7 @@ public class UsuarioDto implements Serializable {
     String password,
     String email,
     List<RolDto> roles,
+    List<Long> carritoId,
     boolean active
   ) {
     this.id = id;
@@ -64,6 +68,7 @@ public class UsuarioDto implements Serializable {
     this.password = password;
     this.email = email;
     this.roles = roles;
+    this.carritoId = carritoId;
     this.active = active;
   }
 
@@ -130,5 +135,13 @@ public class UsuarioDto implements Serializable {
 
   public void setRoles(List<RolDto> roles) {
     this.roles = roles;
+  }
+
+  public List<Long> getCarritoId() {
+    return carritoId;
+  }
+
+  public void setCarritoId(List<Long> carritoId) {
+    this.carritoId = carritoId;
   }
 }

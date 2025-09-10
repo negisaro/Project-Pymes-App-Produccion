@@ -1,0 +1,9 @@
+.dashboard-bg {
+	background:
+		radial-gradient(circle at 20% 30%, #23252655 0%, transparent 60%),
+		radial-gradient(circle at 80% 70%, #1a223355 0%, transparent 60%),
+		linear-gradient(135deg, #232526 0%, #1a2233 100%),
+		repeating-linear-gradient(135deg, rgba(255,255,255,0.01) 0px, rgba(255,255,255,0.01) 2px, transparent 2px, transparent 20px);
+	background-repeat: no-repeat;
+	background-attachment: fixed;
+}

@@ -1,9 +1,9 @@
 package com.project.nelson.msvc_user_auth.usuario.service;
 
-import java.util.List;
-import java.util.Optional;
 import com.project.nelson.msvc_user_auth.usuario.model.dtos.UsuarioDto;
 import com.project.nelson.msvc_user_auth.usuario.model.entity.Usuario;
+import java.util.List;
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -12,6 +12,15 @@ import org.springframework.data.domain.Pageable;
  * Define operaciones CRUD y de consulta para entidad y DTO.
  */
 public interface UsuarioService {
+  /**
+   * Restablece la contraseña usando un token y la nueva contraseña.
+   * @param token Token de recuperación
+   * @param newPassword Nueva contraseña
+   * @return true si la contraseña fue cambiada correctamente
+   */
+
+  boolean resetPassword(String token, String newPassword);
+  
   Page<Usuario> findAll(Pageable pageable);
 
   List<Usuario> findAll();

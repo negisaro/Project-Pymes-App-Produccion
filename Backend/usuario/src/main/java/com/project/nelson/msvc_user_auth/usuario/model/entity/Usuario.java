@@ -78,6 +78,10 @@ public class Usuario implements Serializable {
   )
   private List<Rol> roles = new ArrayList<>();
 
+      // Relación con carrito (asumiendo entidad carrito en otro microservicio)
+    @Transient // Solo referencia, no persistente aquí
+    private List<Long> carritoId;
+
   // Campo persistente para compatibilidad con el frontend y el controlador
   @Column(nullable = false)
   private boolean active = true;
@@ -178,6 +182,14 @@ public class Usuario implements Serializable {
 
   public void setRoles(List<Rol> roles) {
     this.roles = roles;
+  }
+
+  public List<Long> getCarritoId() {
+    return carritoId;
+  }
+
+  public void setCarritoId(List<Long> carritoId) {
+    this.carritoId = carritoId;
   }
 
   public LocalDateTime getCreatedAt() {
