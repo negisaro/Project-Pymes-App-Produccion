@@ -14,10 +14,14 @@ const routes: Routes = [
         component: HomePageComponent,
       },
       {
+        path: 'auth',
+        loadChildren: () => import('../auth/auth.module').then(m => m.AuthModule)
+      },
+      {
         path: 'about',
         component: AboutPageComponent,
       },
-     /*  {
+      /*  {
         path: 'product',
         loadChildren: () =>
           import('../producto/producto.module').then((m) => m.ProductoModule),
@@ -28,17 +32,17 @@ const routes: Routes = [
         path: 'user',
         loadChildren: () =>
           import('../user/user.module').then((m) => m.UserModule),
-      },
+      },*/
       {
         path: '**',
         redirectTo: 'home',
-      }, */
+      },
     ],
   },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class DashboardRoutingModule { }
+export class DashboardRoutingModule {}

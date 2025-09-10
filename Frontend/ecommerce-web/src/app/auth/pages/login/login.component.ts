@@ -12,6 +12,7 @@ import { AuthService } from '../../services/auth.service';
 export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
   loading = false;
+  errorMsg: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -19,16 +20,19 @@ export class LoginComponent implements OnInit {
     private router: Router
   ) {}
 
+  // Declarar effect como propiedad de clase
+  public loginEffect = effect(() => {
+    if (this.authService.authStatus() === 'authenticated') {
+      this.router.navigateByUrl('/dashboard');
+    }
+  });
+
   ngOnInit(): void {
     this.loginForm = this.fb.group({
       username: ['admin', Validators.required],
       password: ['admin123', Validators.required],
     });
   }
-
-  errorMsg: string = '';
-
-  private authEffect: any;
 
   onSubmit(): void {
     if (this.loginForm.invalid) return;
@@ -40,13 +44,7 @@ export class LoginComponent implements OnInit {
         this.loginForm.reset();
         this.loading = false;
         this.errorMsg = '';
-        // Esperar a que el AuthStatus sea 'authenticated' antes de navegar
-        this.authEffect = effect(() => {
-          if (this.authService.authStatus() === 'authenticated') {
-            this.authEffect.destroy();
-            this.router.navigateByUrl('/dashboard');
-          }
-        });
+        // La navegación se realiza automáticamente por el effect
       },
       error: (err) => {
         this.loading = false;

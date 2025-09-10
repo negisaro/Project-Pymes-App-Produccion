@@ -12,6 +12,9 @@ public class Carrito {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
+  // Relación moderna: solo guardamos el id, la consulta se hace vía REST a
+  // microservicio Usuario
+  @Column(name = "usuario_id", nullable = false)
   private Long usuarioId;
 
   private LocalDateTime creadoEn;

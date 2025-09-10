@@ -17,7 +17,7 @@
   border-radius: 50%;
   overflow: hidden;
   border: 2px solid #1976d2;
-  background: #fff;
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -52,7 +52,13 @@
 .sidebar-modern {
   min-width: 220px;
   max-width: 240px;
-  background: #f8fafc;
+    background:
+      radial-gradient(circle at 20% 30%, #23252655 0%, transparent 60%),
+      radial-gradient(circle at 80% 70%, #1a223355 0%, transparent 60%),
+      linear-gradient(135deg, #232526 0%, #1a2233 100%),
+      repeating-linear-gradient(135deg, rgba(255,255,255,0.01) 0px, rgba(255,255,255,0.01) 2px, transparent 2px, transparent 20px);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
   border-radius: 0 16px 16px 0;
   box-shadow: 2px 0 8px rgba(25, 118, 210, 0.04);
   transition: min-width 0.3s, max-width 0.3s, width 0.3s;
@@ -67,7 +73,7 @@
   position: absolute;
   top: 18px;
   right: -18px;
-  background: #fff;
+  background: transparent;
   border: 1.5px solid #1976d2;
   border-radius: 50%;
   width: 36px;

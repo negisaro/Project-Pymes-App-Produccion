@@ -1,13 +1,6 @@
 package com.project.nelson.msvc_user_auth.usuario.controller;
 
 import static com.project.nelson.msvc_user_auth.usuario.security.TokenJwtConfig.*;
-
-import com.project.nelson.msvc_user_auth.usuario.model.dtos.LoginDto;
-import com.project.nelson.msvc_user_auth.usuario.model.dtos.LoginResponseDto;
-import com.project.nelson.msvc_user_auth.usuario.model.dtos.RolDto;
-import com.project.nelson.msvc_user_auth.usuario.model.entity.Usuario;
-import com.project.nelson.msvc_user_auth.usuario.security.service.JwtService;
-import com.project.nelson.msvc_user_auth.usuario.service.UsuarioService;
 import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,6 +21,14 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import com.project.nelson.msvc_user_auth.usuario.model.dtos.LoginDto;
+import com.project.nelson.msvc_user_auth.usuario.model.dtos.LoginResponseDto;
+import com.project.nelson.msvc_user_auth.usuario.model.dtos.RolDto;
+import com.project.nelson.msvc_user_auth.usuario.model.entity.Usuario;
+import com.project.nelson.msvc_user_auth.usuario.security.service.JwtService;
+import com.project.nelson.msvc_user_auth.usuario.service.UsuarioService;
+
+@CrossOrigin(origins = "http://localhost:4200", originPatterns = "*")
 @RestController
 @RequestMapping("/auth")
 @Tag(
@@ -39,7 +40,9 @@ public class AuthController {
   @Autowired
   private UsuarioService usuarioService;
 
-  private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
+  private static final Logger logger = LoggerFactory.getLogger(
+    AuthController.class
+  );
 
   @Autowired
   private AuthenticationManager authenticationManager;
@@ -52,26 +55,40 @@ public class AuthController {
    */
   @Operation(summary = "Login de usuario")
   @PostMapping("/login")
-  public ResponseEntity<?> login(@RequestBody @Valid LoginDto loginDto) {
+  public ResponseEntity<Map<String, Object>> login(
+    @RequestBody @Valid LoginDto loginDto
+  ) {
     logger.info("Intento de login para usuario: {}", loginDto.getUsername());
     try {
       UsernamePasswordAuthenticationToken authToken =
-        new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword());
-      Authentication authentication = authenticationManager.authenticate(authToken);
+        new UsernamePasswordAuthenticationToken(
+          loginDto.getUsername(),
+          loginDto.getPassword()
+        );
+      Authentication authentication = authenticationManager.authenticate(
+        authToken
+      );
       UserDetails principal = (UserDetails) authentication.getPrincipal();
       String username = principal.getUsername();
 
       Optional<Usuario> usuarioOpt = usuarioService.findByUsername(username);
       if (usuarioOpt.isEmpty()) {
         logger.warn("Usuario no encontrado: {}", username);
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-          .body(Map.of("error", "Usuario no encontrado"));
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+          Map.of("error", "Usuario no encontrado")
+        );
       }
       Usuario usuario = usuarioOpt.get();
 
-      String token = jwtService.generateToken(principal, authentication.getAuthorities(), usuario.getEmail());
+      String token = jwtService.generateToken(
+        principal,
+        authentication.getAuthorities(),
+        usuario.getEmail()
+      );
 
-      List<RolDto> rolesDto = usuario.getRoles().stream()
+      List<RolDto> rolesDto = usuario
+        .getRoles()
+        .stream()
         .map(role -> new RolDto(role.getId(), role.getName(), role.isActivo()))
         .toList();
 
@@ -85,24 +102,46 @@ public class AuthController {
       responseDto.setRoles(rolesDto);
       responseDto.setToken(token);
 
+      // Construir respuesta con todos los campos que AuthService espera
       Map<String, Object> body = Map.of(
-        "usuario", responseDto,
-        "token", token
+        "id",
+        usuario.getId(),
+        "name",
+        usuario.getName(),
+        "lastname",
+        usuario.getLastname(),
+        "email",
+        usuario.getEmail(),
+        "username",
+        usuario.getUsername(),
+        "active",
+        usuario.isActive(),
+        "roles",
+        rolesDto.stream().map(RolDto::getName).toList(),
+        "token",
+        token
       );
 
+      logger.info("Respuesta enviada al frontend: {}", body);
+
+      logger.info("[AuthController] Respuesta enviada al frontend: {}", body);
       return ResponseEntity.ok()
         .header(HEADER_AUTHORIZATION, PREFIX_TOKEN + token)
         .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
         .body(body);
-
     } catch (BadCredentialsException ex) {
-      logger.warn("Login fallido para usuario: {} - Credenciales inválidas", loginDto.getUsername());
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-        .body(Map.of("error", "Credenciales inválidas", "message", ex.getMessage()));
+      logger.warn(
+        "Login fallido para usuario: {} - Credenciales inválidas",
+        loginDto.getUsername()
+      );
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+        Map.of("error", "Credenciales inválidas", "message", ex.getMessage())
+      );
     } catch (Exception ex) {
       logger.error("Error interno en login: {}", ex.getMessage(), ex);
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .body(Map.of("error", "Error interno", "message", ex.getMessage()));
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+        Map.of("error", "Error interno", "message", ex.getMessage())
+      );
     }
   }
 
@@ -114,7 +153,10 @@ public class AuthController {
   @PostMapping("/logout")
   public ResponseEntity<Map<String, String>> logout() {
     logger.info("Logout solicitado");
-    Map<String, String> body = Map.of("message", "Sesión cerrada correctamente.");
+    Map<String, String> body = Map.of(
+      "message",
+      "Sesión cerrada correctamente."
+    );
     return ResponseEntity.ok(body);
   }
 
@@ -124,7 +166,9 @@ public class AuthController {
   @Operation(summary = "Refresh token")
   @PreAuthorize("isAuthenticated()")
   @PostMapping("/refresh")
-  public ResponseEntity<?> refreshToken(@RequestBody Map<String, String> requestBody) {
+  public ResponseEntity<?> refreshToken(
+    @RequestBody Map<String, String> requestBody
+  ) {
     String oldToken = requestBody.get("token");
     logger.info("Refresh token solicitado");
     try {
@@ -154,41 +198,55 @@ public class AuthController {
   /**
    * Verifica el estado de sesión y devuelve el usuario completo si el token es válido
    */
-  @Operation(summary = "Verifica el estado de sesión y devuelve el usuario completo si el token es válido")
+  @Operation(
+    summary = "Verifica el estado de sesión y devuelve el usuario completo si el token es válido"
+  )
   @GetMapping("/check-token")
-  public ResponseEntity<?> checkToken(@RequestHeader(name = "Authorization") String authHeader) {
+  public ResponseEntity<Map<String, Object>> checkToken(
+    @RequestHeader(name = "Authorization") String authHeader
+  ) {
     logger.info("Verificando token de sesión");
     String token = authHeader.replace("Bearer ", "");
     try {
       String username = jwtService.extractUsername(token);
       Optional<Usuario> usuarioOpt = usuarioService.findByUsername(username);
       if (usuarioOpt.isEmpty()) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-          .body(Map.of("error", "Usuario no encontrado"));
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+          Map.of("error", "Usuario no encontrado")
+        );
       }
       Usuario usuario = usuarioOpt.get();
-      List<RolDto> rolesDto = usuario.getRoles().stream()
+      List<RolDto> rolesDto = usuario
+        .getRoles()
+        .stream()
         .map(role -> new RolDto(role.getId(), role.getName(), role.isActivo()))
         .toList();
 
-      LoginResponseDto responseDto = new LoginResponseDto();
-      responseDto.setId(usuario.getId());
-      responseDto.setName(usuario.getName());
-      responseDto.setLastname(usuario.getLastname());
-      responseDto.setEmail(usuario.getEmail());
-      responseDto.setUsername(usuario.getUsername());
-      responseDto.setActive(usuario.isActive());
-      responseDto.setRoles(rolesDto);
-      responseDto.setToken(token);
-
-      Map<String, Object> body = Map.of(
-        "usuario", responseDto,
-        "token", token
+      // Construir objeto usuario para el frontend
+      Map<String, Object> usuarioMap = Map.of(
+        "id",
+        usuario.getId(),
+        "name",
+        usuario.getName(),
+        "lastname",
+        usuario.getLastname(),
+        "email",
+        usuario.getEmail(),
+        "username",
+        usuario.getUsername(),
+        "active",
+        usuario.isActive(),
+        "roles",
+        rolesDto.stream().map(RolDto::getName).toList()
       );
+
+      Map<String, Object> body = Map.of("usuario", usuarioMap, "token", token);
+      logger.info("Respuesta enviada al frontend: {}", body);
       return ResponseEntity.ok(body);
     } catch (Exception ex) {
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-        .body(Map.of("error", "Token inválido"));
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+        Map.of("error", "Token inválido")
+      );
     }
   }
 
@@ -197,35 +255,47 @@ public class AuthController {
    */
   @Operation(summary = "Envia email para recuperar la contraseña")
   @PostMapping("/forgot-password")
-  public ResponseEntity<?> sendResetPasswordEmail(@RequestBody Map<String, String> body) {
+  public ResponseEntity<Map<String, String>> sendResetPasswordEmail(
+    @RequestBody Map<String, String> body
+  ) {
     String username = body.get("username");
     Optional<Usuario> usuarioOpt = usuarioService.findByUsername(username);
     if (usuarioOpt.isEmpty()) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND)
-        .body(Map.of("error", "Usuario no encontrado"));
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+        Map.of("error", "Usuario no encontrado")
+      );
     }
     Usuario usuario = usuarioOpt.get();
     // Aquí iría la lógica real para generar token y enviar email:
     // usuarioService.sendResetPasswordEmail(usuario);
 
-    return ResponseEntity.ok(Map.of("message", "Email de recuperación enviado"));
+    return ResponseEntity.ok(
+      Map.of("message", "Email de recuperación enviado")
+    );
   }
 
   /**
    * Restablece la contraseña usando el token recibido por email
    */
-  @Operation(summary = "Restablece la contraseña usando el token recibido por email")
+  @Operation(
+    summary = "Restablece la contraseña usando el token recibido por email"
+  )
   @PostMapping("/reset-password")
-  public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> body) {
+  public ResponseEntity<Map<String, String>> resetPassword(
+    @RequestBody Map<String, String> body
+  ) {
     String token = body.get("token");
     String newPassword = body.get("password");
     // Aquí iría la lógica real para validar el token y cambiar la contraseña:
     boolean success = usuarioService.resetPassword(token, newPassword);
     if (success) {
-      return ResponseEntity.ok(Map.of("message", "Contraseña restablecida correctamente"));
+      return ResponseEntity.ok(
+        Map.of("message", "Contraseña restablecida correctamente")
+      );
     } else {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-        .body(Map.of("error", "Token inválido o expirado"));
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+        Map.of("error", "Token inválido o expirado")
+      );
     }
   }
 }

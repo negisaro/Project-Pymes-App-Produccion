@@ -1,4 +1,7 @@
-import { NgModule } from '@angular/core';
+import { NgModule, LOCALE_ID } from '@angular/core';
+import { registerLocaleData } from '@angular/common';
+import localeEsCO from '@angular/common/locales/es-CO';
+registerLocaleData(localeEsCO);
 import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -18,11 +21,12 @@ import { SharedModule } from './shared/shared.module';
     HttpClientModule
   ],
   providers: [
-     {
+    {
       provide: HTTP_INTERCEPTORS,
       useClass: TokenInterceptor,
       multi: true,
     },
+    { provide: LOCALE_ID, useValue: 'es-CO' },
   ],
   bootstrap: [AppComponent]
 })

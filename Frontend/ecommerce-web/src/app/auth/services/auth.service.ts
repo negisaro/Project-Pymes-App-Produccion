@@ -4,7 +4,7 @@ import { Observable, catchError, map, of, throwError } from 'rxjs';
 import { environment } from '../../../environments/environments';
 import { Role, RoleName, User } from '../../user/interfaces/user.interface';
 import { AuthStatus } from '../interfaces';
-import { AuthResponseDTO } from '../interfaces/auth-response.dto';
+
 // Convierte string[] a Role[]
 function toRoleArray(roles: string[]): Role[] {
   return roles
@@ -20,7 +20,6 @@ function toRoleArray(roles: string[]): Role[] {
     .filter((r): r is Role => r !== undefined);
 }
 
-
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly baseUrl = environment.baseUrl;
@@ -29,13 +28,7 @@ export class AuthService {
   private _currentUser = signal<User | null>(null);
   private _authStatus = signal<AuthStatus>(AuthStatus.checking);
 
-  /**
-   * Computed: usuario autenticado actual
-   */
   public currentUser = computed(() => this._currentUser());
-  /**
-   * Computed: estado de autenticación
-   */
   public authStatus = computed(() => this._authStatus());
 
   constructor() {
@@ -43,146 +36,157 @@ export class AuthService {
     this.checkAuthStatus().subscribe();
   }
 
-  /**
-   * Guarda usuario y token en memoria y localStorage
-   */
+  /** Guarda usuario y token en memoria y localStorage */
   private setAuthentication(user: User, token: string): boolean {
-    console.log('[AuthService] setAuthentication()');
-    console.log('Usuario recibido del backend:', user);
-    if (!user || !user.name || !user.lastname || !user.roles) {
-      console.warn('[AuthService] El usuario recibido está incompleto:', user);
-    }
     this._currentUser.set(user);
     this._authStatus.set(AuthStatus.authenticated);
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(user));
-    console.log('Usuario guardado en localStorage:', JSON.parse(localStorage.getItem('user') || 'null'));
-    console.log('AuthStatus actual:', this._authStatus());
     return true;
   }
 
-  /**
-   * Inicia sesión y guarda usuario/token si es exitoso
-   */
+  /** Inicia sesión y guarda usuario/token si es exitoso */
   login(username: string, password: string): Observable<boolean> {
     const url = `${this.baseUrl}/api/auth/login`;
     const body = { username, password };
-    console.log('[AuthService] login()');
-    console.log('URL:', url);
-    console.log('Body:', body);
-    return this.http.post<AuthResponseDTO>(url, body).pipe(
+    return this.http.post<any>(url, body).pipe(
       map((res) => {
-        console.log('[AuthService] Respuesta DTO del backend (login):', res);
-        // El backend envía un objeto AuthResponseDTO
-        let roles: Role[] = [];
-        if (Array.isArray(res.roles) && res.roles.length > 0 && typeof res.roles[0] === 'object') {
-          // El backend envía array de objetos Role
-          roles = res.roles.map((r: any) => ({
-            id: Number(r.id),
-            name: r.name,
-            active: r.active ?? true
-          }));
-        } else if (Array.isArray(res.roles)) {
-          // El backend envía array de strings
-          roles = toRoleArray(res.roles);
+        // LOG: Mostrar la respuesta cruda del backend
+        console.log('[AuthService] Respuesta cruda del backend (login):', res);
+        // Permite ambos formatos: {usuario, token} o DTO plano
+        const usuario = res.usuario || res;
+        const token = res.token || res.token;
+        console.log('[AuthService] usuario extraído:', usuario);
+        console.log('[AuthService] token extraído:', token);
+        if (!usuario || !token) {
+          console.warn('[AuthService] usuario o token vacío:', usuario, token);
+          return false;
         }
-          const user: User = {
-            id: Number(res.id),
-            name: res.name,
-            lastname: res.lastname,
-            email: res.email || '',
-            username: res.username,
-            password: '', // Nunca guardar el password
-            active: res.active ?? true,
-            roles
-          };
-        let token = res.token || '';
-        if (token && token.startsWith('Bearer ')) token = token.replace('Bearer ', '');
-        console.log('Token extraído:', token);
+        // Mapeo seguro del usuario (acepta objetos y strings)
+        const roles: Role[] = Array.isArray(usuario.roles)
+          ? usuario.roles.map((r: any) => {
+              if (typeof r === 'string') {
+                // Si es string, usar función toRoleArray
+                const arr = toRoleArray([r]);
+                return arr.length > 0 ? arr[0] : undefined;
+              } else {
+                // Si es objeto, mapear normalmente
+                return {
+                  id: Number(r.id),
+                  name: r.name,
+                  active: r.active ?? true
+                };
+              }
+            }).filter((r: unknown): r is Role => r !== undefined)
+          : [];
+        const user: User = {
+          id: Number(usuario.id),
+          name: usuario.name,
+          lastname: usuario.lastname,
+          email: usuario.email || '',
+          username: usuario.username,
+          password: '',
+          active: usuario.active ?? true,
+          roles
+        };
+        console.log('[AuthService] user mapeado:', user);
         return this.setAuthentication(user, token);
       }),
       catchError((err) => {
-        console.error('[AuthService] Error en login:', err);
-        const msg = err?.error?.message || 'Error de autenticación';
-        return throwError(() => new Error(msg));
+        this.logout();
+        return throwError(() => new Error(err?.error?.message || 'Error de autenticación'));
       })
     );
   }
 
-  /**
-   * Verifica el estado de autenticación usando el token almacenado
-   */
+  /** Verifica el estado de autenticación usando el token almacenado */
   checkAuthStatus(): Observable<boolean> {
     const url = `${this.baseUrl}/api/auth/check-token`;
     const token = localStorage.getItem('token');
-    console.log('[AuthService] checkAuthStatus()');
-    console.log('URL:', url);
-    console.log('Token en localStorage:', token);
+    console.log('[AuthService] checkAuthStatus: token en localStorage:', token);
     if (!token) {
-      console.log('No hay token, cerrando sesión.');
+      console.warn('[AuthService] No hay token en localStorage, cerrando sesión');
       this.logout();
       return of(false);
     }
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    return this.http.get<any>(url, { headers, observe: 'response' }).pipe(
-      map((response) => {
-        const users = response.body;
-        const user = Array.isArray(users) && users.length > 0 ? users[0] : null;
-        let newToken = response.headers.get('Authorization') || (user && user.token) || token;
-        if (newToken && newToken.startsWith('Bearer ')) newToken = newToken.replace('Bearer ', '');
-        console.log('Respuesta de check-token:', users);
-        console.log('Usuario extraído:', user);
-        console.log('Nuevo token:', newToken);
+    return this.http.get<any>(url, { headers }).pipe(
+      map((res) => {
+        console.log('[AuthService] Respuesta de /auth/check-token:', res);
+        const usuario = res.usuario;
+        const newToken = res.token || token;
+        if (!usuario || !newToken) {
+          console.warn('[AuthService] Usuario o token inválido en respuesta:', usuario, newToken);
+          this.logout();
+          this._authStatus.set(AuthStatus.notAuthenticated);
+          return false;
+        }
+        const roles: Role[] = Array.isArray(usuario.roles)
+          ? usuario.roles.map((r: any) => {
+              if (typeof r === 'string') {
+                const arr = toRoleArray([r]);
+                return arr.length > 0 ? arr[0] : undefined;
+              } else {
+                return {
+                  id: Number(r.id),
+                  name: r.name,
+                  active: r.active ?? true
+                };
+              }
+            }).filter((r: unknown): r is Role => r !== undefined)
+          : [];
+        const user: User = {
+          id: Number(usuario.id),
+          name: usuario.name,
+          lastname: usuario.lastname,
+          email: usuario.email || '',
+          username: usuario.username,
+          password: '',
+          active: usuario.active ?? true,
+          roles
+        };
+        console.log('[AuthService] Usuario restaurado tras recarga:', user);
         return this.setAuthentication(user, newToken);
       }),
       catchError((err) => {
-        console.error('[AuthService] Error en checkAuthStatus:', err);
+        console.error('[AuthService] Error en /auth/check-token:', err);
         this._authStatus.set(AuthStatus.notAuthenticated);
-        localStorage.removeItem('token');
+        this.logout();
         return of(false);
       })
     );
   }
 
-  /**
-   * Envía email para recuperación de contraseña
-   */
+  /** Envía email para recuperación de contraseña */
   sendResetPasswordEmail(username: string): Observable<any> {
     return this.http.post(`${this.baseUrl}/api/auth/forgot-password`, { username }).pipe(
       catchError((err) => throwError(() => new Error(err?.error?.message || 'Error enviando email de recuperación')))
     );
   }
 
-  /**
-   * Registra un nuevo usuario
-   */
+  /** Registra un nuevo usuario */
   register(data: Partial<User>): Observable<User> {
     return this.http.post<User>(`${this.baseUrl}/api/usuarios/register`, data).pipe(
       catchError((err) => throwError(() => new Error(err?.error?.message || 'Error de registro')))
     );
   }
 
-  /**
-   * Restablece la contraseña usando token
-   */
+  /** Restablece la contraseña usando token */
   resetPassword(token: string, password: string): Observable<any> {
     return this.http.post(`${this.baseUrl}/api/auth/reset-password`, { token, password }).pipe(
       catchError((err) => throwError(() => new Error(err?.error?.message || 'Error al restablecer contraseña')))
     );
   }
 
-  /**
-   * Cierra sesión limpiando usuario y token
-   */
+  /** Cierra sesión limpiando usuario y token */
   logout(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     this._currentUser.set(null);
     this._authStatus.set(AuthStatus.notAuthenticated);
   }
-  /**
-   * Devuelve el usuario actual (sin signals)
-   */
+
+  /** Devuelve el usuario actual (sin signals) */
   getCurrentUser(): User | null {
     const user = this._currentUser();
     if (user) return user;
@@ -197,9 +201,7 @@ export class AuthService {
     return null;
   }
 
-  /**
-   * Devuelve true si el usuario tiene al menos uno de los roles indicados
-   */
+  /** Devuelve true si el usuario tiene al menos uno de los roles indicados */
   hasRole(roles: string | string[]): boolean {
     const user = this.getCurrentUser();
     if (!user || !user.roles) return false;
@@ -216,28 +218,20 @@ export class AuthService {
     return rolesArr.some(r => r !== undefined && user.roles.some(roleObj => roleObj.name === r));
   }
 
-  /**
-   * Devuelve si el usuario está autenticado
-   */
+  /** Devuelve si el usuario está autenticado */
   isAuthenticated(): boolean {
     return this._authStatus() === AuthStatus.authenticated && !!this._currentUser();
   }
 
-  /**
-   * Devuelve el token actual
-   */
+  /** Devuelve el token actual */
   getToken(): string | null {
     return localStorage.getItem('token');
   }
 
-  /**
-   * Obtiene los roles disponibles desde el backend
-   */
+  /** Obtiene los roles disponibles desde el backend */
   getRoles(): Observable<string[]> {
     return this.http.get<string[]>(`${this.baseUrl}/api/roles`).pipe(
       catchError(() => of(['USER', 'ADMIN', 'SUPERVISOR', 'EMPLEADO']))
     );
   }
 }
-
-

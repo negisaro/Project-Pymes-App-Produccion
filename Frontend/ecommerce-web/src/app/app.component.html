@@ -1,9 +1,12 @@
-<div class="app-bg">
-  <div class="app-loading" *ngIf="!finishedAuthCheck()">
-    <div class="spinner"></div>
-    <span>Cargando...</span>
-  </div>
-  <div *ngIf="finishedAuthCheck()">
+<div class="app-bg-bg"></div>
+<div class="app-bg" style="min-height: 100vh;">
+  <ng-container *ngIf="!finishedAuthCheck(); else appContent">
+    <div class="app-loading">
+      <div class="spinner"></div>
+      <span>Cargando...</span>
+    </div>
+  </ng-container>
+  <ng-template #appContent>
     <router-outlet></router-outlet>
-  </div>
+  </ng-template>
 </div>

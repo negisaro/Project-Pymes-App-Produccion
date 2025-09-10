@@ -1,4 +1,6 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
+import { CartService } from '../../services/cart.service';
+import { BehaviorSubject } from 'rxjs';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
@@ -9,12 +11,28 @@ import { AuthService } from '../../../auth/services/auth.service';
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.css'],
 })
-export class NavbarComponent {
+export class NavbarComponent implements OnInit {
+  cartCount = 0;
+  private cartService = inject(CartService);
+  favoritesCount = 0;
   private authService = inject(AuthService);
   private router = inject(Router);
-  userSignal = computed(() => this.authService.currentUser());
-  user$ = toObservable(this.userSignal);
-  notificationsCount = 0; // Simulación, puedes conectar a un servicio real
+  user$ = new BehaviorSubject<any>(null);
+  userObservable = toObservable(this.authService.currentUser);
+  notificationsCount = 0;
+  showSearch = false;
+
+  ngOnInit() {
+    // Forzar estado inicial a null por seguridad
+    this.user$.next(null);
+    this.userObservable.subscribe((user: any) => {
+      this.user$.next(user ?? null);
+    });
+    // Suscribirse al contador del carrito
+    this.cartService.cartCount$.subscribe(count => {
+      this.cartCount = count;
+    });
+  }
 
   getRoleLabel(role?: string): string {
     switch (role) {
@@ -27,15 +45,23 @@ export class NavbarComponent {
   }
 
   isAdmin(user?: any): boolean {
-    const u = user ?? this.userSignal();
+    const u = user ?? this.user$.value;
     return !!u?.roles?.some((r: any) => r.name === 'ROLE_ADMIN');
   }
   isSupervisor(user?: any): boolean {
-    const u = user ?? this.userSignal();
+    const u = user ?? this.user$.value;
     return !!u?.roles?.some((r: any) => r.name === 'ROLE_SUPERVISOR');
   }
+
+  onSearch(term: string) {
+    if (term && term.trim().length > 0) {
+      // Redirige a la página de búsqueda con el término
+      this.router.navigate(['/buscar'], { queryParams: { q: term } });
+      this.showSearch = false;
+    }
+  }
   isEmpleado(user?: any): boolean {
-    const u = user ?? this.userSignal();
+    const u = user ?? this.user$.value;
     return !!u?.roles?.some((r: any) => r.name === 'ROLE_EMPLEADO');
   }
 
@@ -52,6 +78,7 @@ export class NavbarComponent {
     });
     if (result.isConfirmed) {
       this.authService.logout();
+      this.user$.next(null);
       this.router.navigate(['/auth/login']);
     }
   }

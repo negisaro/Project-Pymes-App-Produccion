@@ -3,7 +3,6 @@ package com.project.nelson.msvc_user_auth.usuario.security;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,9 +13,11 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.project.nelson.msvc_user_auth.usuario.model.entity.Usuario;
 import com.project.nelson.msvc_user_auth.usuario.repository.UsuarioRepository;
+
+
+
 
 @Service
 public class JpaUserDetailsService implements UserDetailsService {
