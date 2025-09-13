@@ -1,0 +1,79 @@
+
+<div class="card-producto">
+  <div class="card-header">
+    <h2><i class="fas fa-box"></i> Agregar Producto</h2>
+  </div>
+  <form [formGroup]="productoForm" (ngSubmit)="onSubmit()" class="form-grid">
+    <div class="form-row">
+      <div class="form-col">
+        <label for="nombre">Nombre <span class="requerido">*</span></label>
+        <input id="nombre" formControlName="nombre" [class.invalido]="productoForm.get('nombre')?.invalid && productoForm.get('nombre')?.touched" required />
+        <div class="campo-error" *ngIf="productoForm.get('nombre')?.invalid && productoForm.get('nombre')?.touched">El nombre es obligatorio.</div>
+      </div>
+      <div class="form-col">
+        <label for="descripcion">Descripción</label>
+        <textarea id="descripcion" formControlName="descripcion"></textarea>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-col">
+        <label for="precio">Precio <span class="requerido">*</span></label>
+        <input id="precio" type="number" formControlName="precio" min="0" [class.invalido]="productoForm.get('precio')?.invalid && productoForm.get('precio')?.touched" required />
+        <div class="campo-error" *ngIf="productoForm.get('precio')?.invalid && productoForm.get('precio')?.touched">El precio es obligatorio y debe ser mayor o igual a 0.</div>
+      </div>
+      <div class="form-col">
+        <label for="stock">Stock <span class="requerido">*</span></label>
+        <input id="stock" type="number" formControlName="stock" min="0" [class.invalido]="productoForm.get('stock')?.invalid && productoForm.get('stock')?.touched" required />
+        <div class="campo-error" *ngIf="productoForm.get('stock')?.invalid && productoForm.get('stock')?.touched">El stock es obligatorio y debe ser mayor o igual a 0.</div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-col">
+        <label for="categoriaId">Categoría <span class="requerido">*</span></label>
+        <select id="categoriaId" formControlName="categoriaId" [class.invalido]="productoForm.get('categoriaId')?.invalid && productoForm.get('categoriaId')?.touched" required>
+          <option value="" disabled selected>Seleccione una categoría</option>
+          <option *ngFor="let cat of categorias" [value]="cat.id">{{ cat.nombre }}</option>
+        </select>
+        <div class="campo-error" *ngIf="productoForm.get('categoriaId')?.invalid && productoForm.get('categoriaId')?.touched">La categoría es obligatoria.</div>
+      </div>
+      <div class="form-col">
+        <label for="proveedorId">Proveedor <span class="requerido">*</span></label>
+        <select id="proveedorId" formControlName="proveedorId" [class.invalido]="productoForm.get('proveedorId')?.invalid && productoForm.get('proveedorId')?.touched" required>
+          <option value="" disabled selected>Seleccione un proveedor</option>
+          <option *ngFor="let prov of proveedores" [value]="prov.id">{{ prov.nombre }}</option>
+        </select>
+        <div class="campo-error" *ngIf="productoForm.get('proveedorId')?.invalid && productoForm.get('proveedorId')?.touched">El proveedor es obligatorio.</div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-col">
+        <label for="estado">Estado:</label>
+        <select id="estado" formControlName="estado">
+          <option [value]="true">Activo</option>
+          <option [value]="false">Inactivo</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-col">
+        <label>Imágenes:</label>
+        <input type="file" (change)="onFileSelected($event)" accept="image/*" />
+        <button type="button" class="btn-agregar" (click)="subirImagen()" [disabled]="!imagenSeleccionada">Subir imagen</button>
+        <div *ngIf="imagenes.length > 0" class="imagenes-list">
+          <h4>Imágenes agregadas:</h4>
+          <div *ngFor="let url of imagenesFormControls; let i = index" class="imagen-item">
+            <img [src]="url.value" width="100" />
+            <button type="button" class="btn-eliminar" (click)="removeImagen(i)"><i class="fas fa-times"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn-guardar" [disabled]="productoForm.invalid"><i class="fas fa-save"></i> Guardar producto</button>
+    </div>
+    <div *ngIf="mensaje" class="success">{{ mensaje }}</div>
+    <div *ngIf="errores.length" class="errores-list">
+      <div *ngFor="let error of errores" class="error-item"><i class="fas fa-exclamation-circle"></i> {{ error.mensaje }}</div>
+    </div>
+  </form>
+</div>

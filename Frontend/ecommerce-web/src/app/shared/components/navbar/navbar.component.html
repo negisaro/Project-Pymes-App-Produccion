@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow">
   <div class="container-fluid">
-  <a class="navbar-brand fw-bold tracking-wide" routerLink="user/add-user">Glow Dreams</a>
+  <a class="navbar-brand fw-bold tracking-wide" routerLink="dashboard/user/add-user">Glow Dreams</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -64,13 +64,19 @@
             <a class="nav-link active" aria-current="page" routerLink="/dashboard/home">Inicio</a>
           </li>
           <li class="nav-item" *ngIf="isAdmin(user)">
-            <a class="nav-link" routerLink="user/list-user">Usuarios</a>
+            <a class="nav-link" routerLink="/dashboard/user/list-user">Usuarios</a>
           </li>
           <li class="nav-item" *ngIf="isAdmin(user) || isSupervisor(user)">
-            <a class="nav-link" routerLink="product/list-producto">Productos</a>
+            <a class="nav-link" routerLink="/dashboard/product/list-product">Productos</a>
           </li>
           <li class="nav-item" *ngIf="isAdmin(user) || isSupervisor(user)">
-            <a class="nav-link" routerLink="/dashboard/reports">Reportes</a>
+            <a class="nav-link" routerLink="/dashboard/categoria/list">Categorías</a>
+          </li>
+          <li class="nav-item" *ngIf="isAdmin(user) || isSupervisor(user)">
+            <a class="nav-link" routerLink="/dashboard/proveedor/list">Proveedor</a>
+          </li>
+          <li class="nav-item" *ngIf="isAdmin(user) || isSupervisor(user)">
+            <a class="nav-link" routerLink="/dashboard/product/add-product">Agregar Productos</a>
           </li>
           <!-- Botón logout empresarial -->
           <li class="nav-item ms-2">

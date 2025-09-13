@@ -1,4 +1,3 @@
-
 services:
   eureka-server:
     build: ./backend/eureka-server
@@ -91,8 +90,8 @@ services:
       retries: 5
 
   carrito:
-    build: ./backend/carrito
-    container_name: carrito
+    build: ./backend/msvc-carrito
+    container_name: msvc-carrito
     ports:
       - "8082:8082"
     environment:
@@ -110,6 +109,102 @@ services:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-kf", "http://localhost:8082/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  categoria:
+    build: ./backend/msvc-categoria
+    container_name: msvc-categoria
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_PORT: ${MYSQL_PORT}
+      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
+    depends_on:
+      db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-kf", "http://localhost:8083/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  proveedor:
+    build: ./backend/msvc-proveedor
+    container_name: msvc-proveedor
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_PORT: ${MYSQL_PORT}
+      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
+    depends_on:
+      db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-kf", "http://localhost:8084/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  producto:
+    build: ./backend/msvc-producto
+    container_name: msvc-producto
+    ports:
+      - "8085:8085"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_PORT: ${MYSQL_PORT}
+      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
+    depends_on:
+      db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-kf", "http://localhost:8085/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  orden:
+    build: ./backend/msvc-orden
+    container_name: msvc-orden
+    ports:
+      - "8086:8086"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_PORT: ${MYSQL_PORT}
+      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
+    depends_on:
+      db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-kf", "http://localhost:8086/actuator/health"]
       interval: 30s
       timeout: 10s
       retries: 5

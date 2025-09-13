@@ -1,0 +1,63 @@
+
+<div class="card-producto">
+  <div class="card-header">
+    <h2><i class="fas fa-list"></i> Listado de Productos</h2>
+    <button class="btn-agregar" (click)="agregarProducto()">
+      <i class="fas fa-plus"></i> Agregar producto
+    </button>
+  </div>
+  <div *ngIf="loading" class="loading">Cargando productos...</div>
+  <div *ngIf="error" class="error">{{ errorMsg }}</div>
+  <div *ngIf="!loading && productos.length === 0" class="empty">No hay productos disponibles.</div>
+  <div *ngIf="!loading && productos.length > 0" class="productos-grid">
+    <div class="producto-card" *ngFor="let producto of productos">
+      <div class="producto-header">
+        <span class="producto-nombre"><i class="fas fa-box"></i> {{ producto.nombre }}</span>
+        <span class="producto-id">#{{ producto.id }}</span>
+      </div>
+      <div class="producto-info">
+        <span><strong>Descripción:</strong> {{ producto.descripcion }}</span>
+        <span><strong>Precio:</strong> {{ producto.precio | currency }}</span>
+        <span><strong>Stock:</strong> {{ producto.stock }}</span>
+        <span><strong>Categoría:</strong> {{ producto.categoriaId }}</span>
+        <span><strong>Proveedor:</strong> {{ producto.proveedorId }}</span>
+        <span><strong>Imágenes:</strong>
+          <ul>
+            <li *ngFor="let img of producto.imagenes">{{ img }}</li>
+          </ul>
+        </span>
+        <span><strong>Estado:</strong>
+          <span [ngClass]="{'activo': producto.estado, 'inactivo': !producto.estado}">
+            {{ producto.estado ? 'Activo' : 'Inactivo' }}
+          </span>
+        </span>
+        <span><strong>Creación:</strong> {{ producto.fechaCreacion | date:'short' }}</span>
+        <span><strong>Actualización:</strong> {{ producto.fechaActualizacion | date:'short' }}</span>
+      </div>
+      <div class="producto-actions">
+        <button class="btn-accion btn-editar" (click)="editarProducto(producto)"><i class="fas fa-edit"></i> Editar</button>
+  <button class="btn-accion btn-eliminar" (click)="eliminarProducto(producto.id!)"><i class="fas fa-trash"></i> Eliminar</button>
+      </div>
+    </div>
+  </div>
+  <div class="form-actions paginacion" *ngIf="totalPages > 1">
+    <button class="btn-paginacion" (click)="cambiarPagina(page - 1)" [disabled]="page === 0">
+      <i class="fas fa-angle-double-left"></i>
+    </button>
+    <ng-container *ngFor="let p of [].constructor(totalPages); let i = index">
+      <button class="btn-paginacion btn-numero" [class.active-page]="page === i" (click)="cambiarPagina(i)">{{ i + 1 }}</button>
+    </ng-container>
+    <button class="btn-paginacion" (click)="cambiarPagina(page + 1)" [disabled]="page + 1 >= totalPages">
+      <i class="fas fa-angle-double-right"></i>
+    </button>
+    <span class="paginacion-info">
+      Total: <strong>{{ totalElements }}</strong> registros
+    </span>
+  </div>
+  <div *ngIf="categorias.length > 0" class="categorias-list">
+    <h4>Categorías disponibles</h4>
+    <ul>
+      <li *ngFor="let cat of categorias">{{ cat.nombre }}</li>
+    </ul>
+  </div>
+</div>

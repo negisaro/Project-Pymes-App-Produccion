@@ -1,0 +1,51 @@
+<div class="list-categoria-container card sombra">
+  <div class="header-listado">
+    <h2 class="titulo">Listado de Categorías</h2>
+    <button class="btn btn-agregar" (click)="agregarCategoria()">
+      <span class="icono-mas">+</span> Agregar categoría
+    </button>
+  </div>
+  <table class="tabla-categorias">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Descripción</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let categoria of categorias">
+        <td>{{ categoria.nombre }}</td>
+        <td>{{ categoria.descripcion }}</td>
+        <td>
+          <span [ngClass]="{'activo': categoria.estado, 'inactivo': !categoria.estado}">
+            {{ categoria.estado ? 'Activo' : 'Inactivo' }}
+          </span>
+        </td>
+        <td>
+          <button class="btn btn-editar" (click)="editarCategoria(categoria)">Editar</button>
+          <button class="btn btn-eliminar" (click)="eliminarCategoria(categoria.id)">Eliminar</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="paginacion-container">
+    <button class="btn-paginacion" (click)="paginaAnterior()" [disabled]="page === 0">
+      &#8592; Anterior
+    </button>
+    <span class="paginacion-info">
+      Página <strong>{{ page + 1 }}</strong> de <strong>{{ totalPages }}</strong>
+      &nbsp;|&nbsp; Total: <strong>{{ totalElements }}</strong> registros
+    </span>
+    <button class="btn-paginacion" (click)="siguientePagina()" [disabled]="page >= totalPages - 1">
+      Siguiente &#8594;
+    </button>
+  </div>
+
+  <div *ngIf="mensaje" class="success">{{ mensaje }}</div>
+  <div *ngIf="errores.length">
+    <div *ngFor="let error of errores" class="error">{{ error.mensaje }}</div>
+  </div>
+</div>

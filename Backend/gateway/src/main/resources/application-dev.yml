@@ -23,7 +23,7 @@ spring:
         webflux:
           globalcors:
             cors-configurations:
-              '[/**]':
+              "[/**]":
                 allowed-origins: "http://localhost:4200"
                 allowed-methods: "GET,POST,PUT,DELETE,OPTIONS"
                 allowed-headers: "*"
@@ -65,8 +65,8 @@ spring:
 
         # Public access: /api/productos/*
         # No JWT required
-        - id: product-service
-          uri: lb://product-service
+        - id: msvc-producto
+          uri: lb://msvc-producto
           predicates:
             - Path=/api/productos/**
           filters:
@@ -74,8 +74,8 @@ spring:
 
         # Protected access: /api/segura/productos/*
         # JWT required
-        - id: product-service-secure
-          uri: lb://product-service
+        - id: msvc-producto-secure
+          uri: lb://msvc-producto
           predicates:
             - Path=/api/segura/productos/**
           filters:
@@ -87,8 +87,8 @@ spring:
 
         # Public access: /api/carrito/*
         # No JWT required (consultas públicas si aplica)
-        - id: carrito
-          uri: lb://carrito
+        - id: msvc-carrito
+          uri: lb://msvc-carrito
           predicates:
             - Path=/api/carrito/**
           filters:
@@ -96,10 +96,76 @@ spring:
 
         # Protected access: /api/segura/carrito/*
         # JWT required (agregar/quitar ítems, pagar, etc.)
-        - id: carrito-secure
-          uri: lb://carrito
+        - id: msvc-carrito-secure
+          uri: lb://msvc-carrito
           predicates:
             - Path=/api/segura/carrito/**
+          filters:
+            - StripPrefix=2
+
+        # =============================
+        # CATEGORIA SERVICE ROUTES
+        # =============================
+
+        # Public access: /api/categoria/*
+        # No JWT required (consultas públicas si aplica)
+        - id: msvc-categoria
+          uri: lb://msvc-categoria
+          predicates:
+            - Path=/api/categoria/**
+          filters:
+            - StripPrefix=1
+
+        # Protected access: /api/segura/categoria/*
+        # JWT required (agregar/quitar ítems, pagar, etc.)
+        - id: msvc-categoria-secure
+          uri: lb://msvc-categoria
+          predicates:
+            - Path=/api/segura/categoria/**
+          filters:
+            - StripPrefix=2
+
+        # =============================
+        # PROVEEDOR SERVICE ROUTES
+        # =============================
+
+        # Public access: /api/proveedor/*
+        # No JWT required (consultas públicas si aplica)
+        - id: msvc-proveedor
+          uri: lb://msvc-proveedor
+          predicates:
+            - Path=/api/proveedor/**
+          filters:
+            - StripPrefix=1
+
+        # Protected access: /api/segura/proveedor/*
+        # JWT required (agregar/quitar ítems, pagar, etc.)
+        - id: msvc-proveedor-secure
+          uri: lb://msvc-proveedor
+          predicates:
+            - Path=/api/segura/proveedor/**
+          filters:
+            - StripPrefix=2
+
+        # =============================
+        # ORDEN SERVICE ROUTES
+        # =============================
+
+        # Public access: /api/orden/*
+        # No JWT required (consultas públicas si aplica)
+        - id: msvc-orden
+          uri: lb://msvc-orden
+          predicates:
+            - Path=/api/orden/**
+          filters:
+            - StripPrefix=1
+
+        # Protected access: /api/segura/orden/*
+        # JWT required (agregar/quitar ítems, pagar, etc.)
+        - id: msvc-orden-secure
+          uri: lb://msvc-orden
+          predicates:
+            - Path=/api/segura/orden/**
           filters:
             - StripPrefix=2
 

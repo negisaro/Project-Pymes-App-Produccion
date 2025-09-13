@@ -15,24 +15,30 @@ const routes: Routes = [
       },
       {
         path: 'auth',
-        loadChildren: () => import('../auth/auth.module').then(m => m.AuthModule)
+        loadChildren: () =>
+          import('../auth/auth.module').then((m) => m.AuthModule),
       },
       {
         path: 'about',
         component: AboutPageComponent,
       },
-      /*  {
+      {
         path: 'product',
         loadChildren: () =>
           import('../producto/producto.module').then((m) => m.ProductoModule),
-        //canActivate: [RoleGuard],
-        //data: { roles: [RoleName.ADMIN] }, // Mejor uso del enum
+      },
+      {
+        path: 'categoria',
+        loadChildren: () =>
+          import('../categoria/categoria.module').then(
+            (m) => m.CategoriaModule
+          ),
       },
       {
         path: 'user',
         loadChildren: () =>
           import('../user/user.module').then((m) => m.UserModule),
-      },*/
+      },
       {
         path: '**',
         redirectTo: 'home',

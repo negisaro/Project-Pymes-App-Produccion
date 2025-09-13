@@ -1,0 +1,28 @@
+<div class="add-categoria-container">
+  <h2 class="titulo">Agregar Categoría</h2>
+  <form [formGroup]="categoriaForm" (ngSubmit)="onSubmit()" class="form-categoria">
+    <div class="form-group">
+      <label for="nombre">Nombre <span class="requerido">*</span></label>
+      <input id="nombre" formControlName="nombre" required />
+      <div class="campo-error" *ngIf="categoriaForm.get('nombre')?.invalid && categoriaForm.get('nombre')?.touched">
+        El nombre es obligatorio.
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="descripcion">Descripción</label>
+      <textarea id="descripcion" formControlName="descripcion"></textarea>
+    </div>
+    <div class="form-group">
+      <label for="estado">Estado:</label>
+      <select id="estado" formControlName="estado">
+        <option [value]="true">Activo</option>
+        <option [value]="false">Inactivo</option>
+      </select>
+    </div>
+    <button type="submit" [disabled]="categoriaForm.invalid">Guardar categoría</button>
+    <div *ngIf="mensaje" class="success">{{ mensaje }}</div>
+    <div *ngIf="errores.length">
+      <div *ngFor="let error of errores">{{ error.mensaje }}</div>
+    </div>
+  </form>
+</div>

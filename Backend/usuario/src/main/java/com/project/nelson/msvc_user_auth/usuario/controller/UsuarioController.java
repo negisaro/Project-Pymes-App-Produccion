@@ -85,7 +85,7 @@ public class UsuarioController {
   }
 
   @Operation(summary = "Actualizar usuario")
-  @PutMapping("update/{id}")
+  @PutMapping("/update/{id}")
   public ResponseEntity<UsuarioDto> update(
     @PathVariable Long id,
     @RequestBody @Valid UsuarioDto usuarioDto

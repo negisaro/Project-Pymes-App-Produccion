@@ -85,7 +85,7 @@ export class RegisterComponent implements OnInit {
         this.successMsg = 'Usuario registrado correctamente. Redirigiendo al login...';
         this.form.reset();
         this.debugResponse = res;
-        setTimeout(() => this.router.navigate(['/auth/login']), 1500);
+        setTimeout(() => this.router.navigate(['/dashboard/auth/login']), 1500);
       },
       error: err => {
         this.loading = false;

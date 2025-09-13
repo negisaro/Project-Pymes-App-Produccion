@@ -62,8 +62,8 @@
       {{ loading ? 'Registrando...' : 'Registrar' }}
     </button>
     <div class="auth-actions">
-      <a routerLink="/auth/login" class="auth-action-link">¿Ya tienes cuenta? Inicia sesión</a>
-      <a routerLink="/auth/forgot-password" class="auth-action-link">¿Olvidaste tu contraseña?</a>
+      <a routerLink="/dashboard/auth/login" class="auth-action-link">¿Ya tienes cuenta? Inicia sesión</a>
+      <a routerLink="/dashboard/auth/forgot-password" class="auth-action-link">¿Olvidaste tu contraseña?</a>
     </div>
     <div *ngIf="loading" class="text-blue-700 text-center mt-2">
       <span class="spinner-border spinner-border-sm"></span> Registrando usuario...
