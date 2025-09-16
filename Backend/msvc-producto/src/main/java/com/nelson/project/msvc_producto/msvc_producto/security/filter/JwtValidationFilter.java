@@ -1,5 +1,6 @@
 package com.nelson.project.msvc_producto.msvc_producto.security.filter;
 
+import com.nelson.project.msvc_producto.msvc_producto.security.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,7 +14,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
-import com.nelson.project.msvc_producto.msvc_producto.security.service.JwtService;
 
 public class JwtValidationFilter extends OncePerRequestFilter {
 
@@ -54,30 +54,37 @@ public class JwtValidationFilter extends OncePerRequestFilter {
       return;
     }
 
-    jwt = authHeader.substring(7);
-    username = jwtService.extractUsername(jwt);
+    try {
+      jwt = authHeader.substring(7);
+      username = jwtService.extractUsername(jwt);
 
-    if (
-      username != null &&
-      SecurityContextHolder.getContext().getAuthentication() == null
-    ) {
-      List<String> roles = jwtService.extractRoles(jwt);
-      UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
-      UsernamePasswordAuthenticationToken authToken =
-        new UsernamePasswordAuthenticationToken(
-          userDetails,
-          null,
-          roles
-            .stream()
-            .map(SimpleGrantedAuthority::new)
-            .collect(Collectors.toList())
+      if (
+        username != null &&
+        SecurityContextHolder.getContext().getAuthentication() == null
+      ) {
+        List<String> roles = jwtService.extractRoles(jwt);
+        UserDetails userDetails = userDetailsService.loadUserByUsername(
+          username
         );
-      authToken.setDetails(
-        new WebAuthenticationDetailsSource().buildDetails(request)
-      );
-      SecurityContextHolder.getContext().setAuthentication(authToken);
+
+        UsernamePasswordAuthenticationToken authToken =
+          new UsernamePasswordAuthenticationToken(
+            userDetails,
+            null,
+            roles
+              .stream()
+              .map(SimpleGrantedAuthority::new)
+              .collect(Collectors.toList())
+          );
+        authToken.setDetails(
+          new WebAuthenticationDetailsSource().buildDetails(request)
+        );
+        SecurityContextHolder.getContext().setAuthentication(authToken);
+      }
+      filterChain.doFilter(request, response);
+    } catch (io.jsonwebtoken.JwtException ex) {
+      // Lanza la excepción para que la maneje el filtro global
+      throw ex;
     }
-    filterChain.doFilter(request, response);
   }
 }

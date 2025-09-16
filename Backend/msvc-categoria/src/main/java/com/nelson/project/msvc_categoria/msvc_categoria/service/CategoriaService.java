@@ -1,19 +1,44 @@
 package com.nelson.project.msvc_categoria.msvc_categoria.service;
 
-import com.nelson.project.msvc_categoria.msvc_categoria.model.entity.Categoria;
+import com.nelson.project.msvc_categoria.msvc_categoria.model.dto.CategoriaCreateDto;
+import com.nelson.project.msvc_categoria.msvc_categoria.model.dto.CategoriaDTO;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+/**
+ * Interfaz de servicio para gestión de categorías.
+ * Aplica buenas prácticas modernas y principios SOLID.
+ */
 public interface CategoriaService {
-  List<Categoria> findAll();
+  /**
+   * Obtiene todas las categorías.
+   */
+  List<CategoriaDTO> findAll();
 
-  Optional<Categoria> findById(Long id);
+  /**
+   * Busca una categoría por su ID.
+   */
+  Optional<CategoriaDTO> findById(Long id);
 
-  Page<Categoria> findAll(Pageable pageable);
+  /**
+   * Obtiene categorías paginadas.
+   */
+  Page<CategoriaDTO> findAll(Pageable pageable);
 
-  Categoria save(Categoria categoria);
+  /**
+   * Crea una nueva categoría.
+   */
+  CategoriaDTO save(CategoriaCreateDto categoriaCreateDto);
 
+  /**
+   * Actualiza una categoría existente por su ID.
+   */
+  CategoriaDTO update(Long id, CategoriaCreateDto categoriaCreateDto);
+
+  /**
+   * Elimina una categoría por su ID.
+   */
   void deleteById(Long id);
 }

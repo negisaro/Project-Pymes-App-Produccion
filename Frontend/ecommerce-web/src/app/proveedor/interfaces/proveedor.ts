@@ -4,4 +4,6 @@ export interface Proveedor {
   descripcion: string;
   contacto?: string;
   activo: boolean;
+  creadoEn?: string;
+  actualizadoEn?: string;
 }

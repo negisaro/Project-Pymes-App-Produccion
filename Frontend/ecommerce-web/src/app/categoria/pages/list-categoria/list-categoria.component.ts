@@ -1,7 +1,9 @@
+
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Categoria } from '../../interfaces/categoria';
 import { CategoriaService, PaginaCategoria } from '../../service/categoria.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-list-categoria',
@@ -10,8 +12,8 @@ import { CategoriaService, PaginaCategoria } from '../../service/categoria.servi
 })
 export class ListCategoriaComponent implements OnInit {
   categorias: Categoria[] = [];
-  mensaje: string | null = null;
-  errores: any[] = [];
+  mensaje: string | null = null; // No se usará, solo para compatibilidad visual
+  errores: any[] = []; // No se usará, solo para compatibilidad visual
   page = 0;
   size = 8;
   totalPages = 0;
@@ -24,13 +26,17 @@ export class ListCategoriaComponent implements OnInit {
   }
 
   cargarCategorias(): void {
+    this.mensaje = null;
+    this.errores = [];
     this.categoriaService.getCategoriasPaginadas(this.page, this.size).subscribe({
       next: (data: PaginaCategoria) => {
         this.categorias = data.content;
         this.totalPages = data.totalPages;
         this.totalElements = data.totalElements;
       },
-      error: (err) => this.errores = [{ mensaje: 'Error al cargar categorías' }]
+      error: () => {
+        Swal.fire({ icon: 'error', title: 'Error', text: 'Error al cargar categorías' });
+      }
     });
   }
 
@@ -49,17 +55,32 @@ export class ListCategoriaComponent implements OnInit {
   }
 
   editarCategoria(categoria: Categoria): void {
-    // Implementar navegación o modal para editar
+    this.router.navigate(['/dashboard/categoria/edit', categoria.id]);
   }
 
   eliminarCategoria(id: number): void {
-    this.categoriaService.deleteCategoria(id).subscribe({
-      next: () => {
-        this.mensaje = 'Categoría eliminada correctamente';
-        this.cargarCategorias();
-      },
-      error: () => this.errores = [{ mensaje: 'Error al eliminar categoría' }]
+    Swal.fire({
+      title: '¿Seguro que deseas eliminar la categoría?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then(result => {
+      if (result.isConfirmed) {
+        this.categoriaService.deleteCategoria(id).subscribe({
+          next: () => {
+            Swal.fire({ icon: 'success', title: 'Eliminada', text: 'Categoría eliminada correctamente' });
+            this.cargarCategorias();
+          },
+          error: () => {
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Error al eliminar categoría' });
+          }
+        });
+      }
     });
+  }
+  recargar(): void {
+    this.cargarCategorias();
   }
 
   agregarCategoria() {

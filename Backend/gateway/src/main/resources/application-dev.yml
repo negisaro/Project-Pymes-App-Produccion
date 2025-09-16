@@ -112,16 +112,16 @@ spring:
         - id: msvc-categoria
           uri: lb://msvc-categoria
           predicates:
-            - Path=/api/categoria/**
+            - Path=/api/categorias/**
           filters:
             - StripPrefix=1
 
-        # Protected access: /api/segura/categoria/*
+        # Protected access: /api/segura/categorias/*
         # JWT required (agregar/quitar ítems, pagar, etc.)
         - id: msvc-categoria-secure
           uri: lb://msvc-categoria
           predicates:
-            - Path=/api/segura/categoria/**
+            - Path=/api/segura/categorias/**
           filters:
             - StripPrefix=2
 
@@ -129,21 +129,21 @@ spring:
         # PROVEEDOR SERVICE ROUTES
         # =============================
 
-        # Public access: /api/proveedor/*
+        # Public access: /api/proveedores/*
         # No JWT required (consultas públicas si aplica)
         - id: msvc-proveedor
           uri: lb://msvc-proveedor
           predicates:
-            - Path=/api/proveedor/**
+            - Path=/api/proveedores/**
           filters:
             - StripPrefix=1
 
-        # Protected access: /api/segura/proveedor/*
+        # Protected access: /api/segura/proveedores/*
         # JWT required (agregar/quitar ítems, pagar, etc.)
         - id: msvc-proveedor-secure
           uri: lb://msvc-proveedor
           predicates:
-            - Path=/api/segura/proveedor/**
+            - Path=/api/segura/proveedores/**
           filters:
             - StripPrefix=2
 
@@ -178,8 +178,8 @@ gateway:
     # Allowed roles for JWT authentication
     allowed-roles: ROLE_ADMIN,ROLE_USER
     # Custom claim mappings for role and email in the JWT
-    role-claim: rol
-    email-claim: email
+    role-claim: roles
+    username-claim: username
     order: 100
     # Paths that are always public, even if under /api/segura/
     exempt-paths: /auth/login,/usuarios/register

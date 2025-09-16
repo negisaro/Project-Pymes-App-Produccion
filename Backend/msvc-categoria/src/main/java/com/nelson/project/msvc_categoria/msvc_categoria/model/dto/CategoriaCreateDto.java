@@ -3,7 +3,7 @@ package com.nelson.project.msvc_categoria.msvc_categoria.model.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import java.util.List;
+
 
 public class CategoriaCreateDto {
 
@@ -17,9 +17,6 @@ public class CategoriaCreateDto {
 
   @NotNull
   private boolean estado;
-
-  @NotNull
-  private List<Long> productosId;
 
   public Long getId() {
     return id;
@@ -51,13 +48,5 @@ public class CategoriaCreateDto {
 
   public void setEstado(boolean estado) {
     this.estado = estado;
-  }
-
-  public List<Long> getProductosId() {
-    return productosId;
-  }
-
-  public void setProductosId(List<Long> productosId) {
-    this.productosId = productosId;
   }
 }

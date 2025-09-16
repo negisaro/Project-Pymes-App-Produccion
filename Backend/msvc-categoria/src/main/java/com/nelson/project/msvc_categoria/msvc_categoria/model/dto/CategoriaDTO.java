@@ -1,7 +1,7 @@
 package com.nelson.project.msvc_categoria.msvc_categoria.model.dto;
 
 import java.time.LocalDateTime;
-import java.util.List;
+
 
 public class CategoriaDTO {
 
@@ -11,7 +11,6 @@ public class CategoriaDTO {
   private boolean estado;
   private LocalDateTime creadoEn;
   private LocalDateTime actualizadoEn;
-  private List<Long> productosId;
 
   public Long getId() {
     return id;
@@ -60,12 +59,5 @@ public class CategoriaDTO {
   public void setActualizadoEn(LocalDateTime actualizadoEn) {
     this.actualizadoEn = actualizadoEn;
   }
-
-  public List<Long> getProductosId() {
-    return productosId;
-  }
-
-  public void setProductosId(List<Long> productosId) {
-    this.productosId = productosId;
-  }
+  // Eliminado productosId: la relación es inversa, el id de categoría va en producto
 }

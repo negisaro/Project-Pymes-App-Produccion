@@ -5,102 +5,56 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * DTO para creación/actualización de Producto.
- * No incluye campos autogenerados ni de sistema.
+ * No incluye campos autogenerados ni de sistema. Incluye validaciones y es serializable.
  */
-public class ProductoCreateDto {
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class ProductoCreateDto implements Serializable {
 
+  private static final long serialVersionUID = 1L;
+
+  /** Nombre del producto */
   @NotBlank
   private String nombre;
 
+  /** Descripción del producto */
   @Size(max = 1000)
   private String descripcion;
 
+  /** Precio del producto */
   @NotNull
   @DecimalMin("0.00")
   private BigDecimal precio;
 
+  /** Stock disponible */
   @NotNull
   @Min(0)
   private Integer stock;
 
+  /** ID de la categoría asociada */
   @NotNull
   private Long categoriaId;
 
+  /** ID del proveedor asociado */
   @NotNull
   private Long proveedorId;
 
+  /** Lista de URLs de imágenes */
   private List<@NotBlank String> imagenes;
 
+  /** Estado del producto (activo/inactivo) */
   @NotNull
   private Boolean estado;
-
-  // Getters y setters (puedes usar Lombok @Data si lo prefieres)
-  public String getNombre() {
-    return nombre;
-  }
-
-  public void setNombre(String nombre) {
-    this.nombre = nombre;
-  }
-
-  public String getDescripcion() {
-    return descripcion;
-  }
-
-  public void setDescripcion(String descripcion) {
-    this.descripcion = descripcion;
-  }
-
-  public BigDecimal getPrecio() {
-    return precio;
-  }
-
-  public void setPrecio(BigDecimal precio) {
-    this.precio = precio;
-  }
-
-  public Integer getStock() {
-    return stock;
-  }
-
-  public void setStock(Integer stock) {
-    this.stock = stock;
-  }
-
-  public Long getCategoriaId() {
-    return categoriaId;
-  }
-
-  public void setCategoriaId(Long categoriaId) {
-    this.categoriaId = categoriaId;
-  }
-
-  public Long getProveedorId() {
-    return proveedorId;
-  }
-
-  public void setProveedorId(Long proveedorId) {
-    this.proveedorId = proveedorId;
-  }
-
-  public List<String> getImagenes() {
-    return imagenes;
-  }
-
-  public void setImagenes(List<String> imagenes) {
-    this.imagenes = imagenes;
-  }
-
-  public Boolean getEstado() {
-    return estado;
-  }
-
-  public void setEstado(Boolean estado) {
-    this.estado = estado;
-  }
 }

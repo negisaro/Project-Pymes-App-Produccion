@@ -9,6 +9,8 @@ import {
   PaginaProducto,
   ProductoService,
 } from '../../service/producto.service';
+import { ProveedorService } from '../../../proveedor/service/proveedor.service';
+import { Proveedor } from '../../../proveedor/interfaces/proveedor';
 
 @Component({
   selector: 'app-list-producto',
@@ -18,6 +20,7 @@ import {
 export class ListProductoComponent implements OnInit {
   productos: Producto[] = [];
   categorias: Categoria[] = [];
+  proveedor: Proveedor[] = [];
   loading = false;
   error = false;
   errorMsg = '';
@@ -33,6 +36,7 @@ export class ListProductoComponent implements OnInit {
   constructor(
     private productoService: ProductoService,
     private categoriaService: CategoriaService,
+    private proveedorService: ProveedorService,
     private router: Router,
     private authService: AuthService
   ) {}
@@ -115,8 +119,29 @@ export class ListProductoComponent implements OnInit {
     });
   }
 
+  cargarProveedor(): void {
+    this.proveedorService.getProveedores().subscribe({
+      next: (resp: Proveedor[]) => {
+        this.proveedor = resp;
+        // Mensaje de éxito opcional
+        // Swal.fire({ icon: 'success', title: 'Categorías cargadas', timer: 1200, showConfirmButton: false, toast: true, position: 'top-end' });
+      },
+      error: (err) => {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Ocurrió un error al cargar las proveedores.',
+          timer: 2000,
+          showConfirmButton: false,
+          toast: true,
+          position: 'top-end'
+        });
+      },
+    });
+  }
+
   editarProducto(producto: Producto): void {
-  this.router.navigate(['/dashboard/product/edit-producto', producto.id]);
+  this.router.navigate(['/dashboard/product/edit-product', producto.id]);
   }
 
   eliminarProducto(id: number): void {
@@ -143,7 +168,7 @@ export class ListProductoComponent implements OnInit {
               position: 'top-end'
             });
             setTimeout(() => {
-              this.router.navigate(['/dashboard/product/list-producto']);
+              this.router.navigate(['/dashboard/product/list-product']);
             }, 1000);
           },
           error: () => {
@@ -181,6 +206,6 @@ export class ListProductoComponent implements OnInit {
   }
 
   agregarProducto(): void {
-    this.router.navigate(['/dashboard/product/add-producto']);
+    this.router.navigate(['/dashboard/product/add-product']);
   }
 }

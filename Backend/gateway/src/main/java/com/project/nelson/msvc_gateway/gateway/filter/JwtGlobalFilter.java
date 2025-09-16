@@ -25,7 +25,9 @@ import reactor.core.publisher.Mono;
 @Component
 public class JwtGlobalFilter implements GlobalFilter, Ordered {
 
-  private static final Logger logger = LoggerFactory.getLogger(JwtGlobalFilter.class);
+  private static final Logger logger = LoggerFactory.getLogger(
+    JwtGlobalFilter.class
+  );
 
   @Value("${gateway.filter.jwt-secret:SuperClaveSecretaSeguraQueDebesCambiar}")
   private String jwtSecret;
@@ -39,22 +41,35 @@ public class JwtGlobalFilter implements GlobalFilter, Ordered {
   @Value("${gateway.filter.role-claim:rol}")
   private String roleClaim;
 
-  @Value("${gateway.filter.email-claim:email}")
-  private String emailClaim;
+  @Value("${gateway.filter.username-claim:username}")
+  private String usernameClaim;
 
   @Value("${gateway.filter.order:100}")
   private int filterOrder;
 
-  @Value("${gateway.filter.exempt-paths:/login,/register,/public/,/swagger-ui/,/v3/api-docs/,/auth/login,/usuarios/register}")
+  @Value(
+    "${gateway.filter.exempt-paths:/login,/register,/public/,/swagger-ui/,/v3/api-docs/,/auth/login,/usuarios/register}"
+  )
   private String exemptPaths;
 
   @Override
-  public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+  public Mono<Void> filter(
+    ServerWebExchange exchange,
+    GatewayFilterChain chain
+  ) {
     String path = exchange.getRequest().getPath().value();
     String method = exchange.getRequest().getMethod().name();
-    String contentType = exchange.getRequest().getHeaders().getFirst("Content-Type");
+    String contentType = exchange
+      .getRequest()
+      .getHeaders()
+      .getFirst("Content-Type");
 
-    logger.info("Evaluando petición: {} {} | Content-Type: {}", method, path, contentType);
+    logger.info(
+      "Evaluando petición: {} {} | Content-Type: {}",
+      method,
+      path,
+      contentType
+    );
 
     // Ignorar preflight OPTIONS
     if (exchange.getRequest().getMethod() == HttpMethod.OPTIONS) {
@@ -88,15 +103,25 @@ public class JwtGlobalFilter implements GlobalFilter, Ordered {
       return chain.filter(exchange);
     }
 
-    List<String> authHeaders = exchange.getRequest().getHeaders().getOrEmpty("Authorization");
+    List<String> authHeaders = exchange
+      .getRequest()
+      .getHeaders()
+      .getOrEmpty("Authorization");
     if (authHeaders.isEmpty() || !authHeaders.get(0).startsWith("Bearer ")) {
-      logger.warn("No hay token JWT válido en Authorization para ruta protegida: {}", path);
+      logger.warn(
+        "No hay token JWT válido en Authorization para ruta protegida: {}",
+        path
+      );
       exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
       return exchange.getResponse().setComplete();
     }
 
     String jwt = authHeaders.get(0).replace("Bearer ", "");
-    logger.info("JWT recibido: {}... para path: {}", jwt.substring(0, Math.min(jwt.length(), 10)), path);
+    logger.info(
+      "JWT recibido: {}... para path: {}",
+      jwt.substring(0, Math.min(jwt.length(), 10)),
+      path
+    );
 
     try {
       Key key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
@@ -107,18 +132,29 @@ public class JwtGlobalFilter implements GlobalFilter, Ordered {
         .getBody();
 
       String rolClaimValue = claims.get(roleClaim, String.class);
-      String email = claims.get(emailClaim, String.class);
+      String username = claims.get(usernameClaim, String.class);
       String usuario = claims.getSubject() != null ? claims.getSubject() : "";
 
-      logger.info("Claims extraídos: usuario={}, email={}, rol={}", usuario, email, rolClaimValue);
+      logger.info(
+        "Claims extraídos: usuario={}, username={}, rol={}",
+        usuario,
+        username,
+        rolClaimValue
+      );
 
       if (rolClaimValue == null || rolClaimValue.isEmpty()) {
-        logger.warn("No se encontró el claim de roles en el JWT para usuario: {}", usuario);
+        logger.warn(
+          "No se encontró el claim de roles en el JWT para usuario: {}",
+          usuario
+        );
         exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
         return exchange.getResponse().setComplete();
       }
-      if (email == null || email.isEmpty()) {
-        logger.warn("No se encontró el claim de email en el JWT para usuario: {}", usuario);
+      if (username == null || username.isEmpty()) {
+        logger.warn(
+          "No se encontró el claim de username en el JWT para usuario: {}",
+          usuario
+        );
         exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
         return exchange.getResponse().setComplete();
       }
@@ -132,26 +168,49 @@ public class JwtGlobalFilter implements GlobalFilter, Ordered {
         .filter(r -> !r.isEmpty())
         .collect(Collectors.toSet());
 
-      boolean hasAllowedRole = userRoles.stream().anyMatch(allowedRolesSet::contains);
-      logger.info("Roles de usuario: {} | Roles permitidos: {} | ¿Autorizado?: {}", userRoles, allowedRolesSet, hasAllowedRole);
+      boolean hasAllowedRole = userRoles
+        .stream()
+        .anyMatch(allowedRolesSet::contains);
+      logger.info(
+        "Roles de usuario: {} | Roles permitidos: {} | ¿Autorizado?: {}",
+        userRoles,
+        allowedRolesSet,
+        hasAllowedRole
+      );
 
       if (!hasAllowedRole) {
-        logger.warn("Acceso denegado por roles. Usuario: {} | Roles del usuario: {} | Roles requeridos: {}", usuario, userRoles, allowedRolesSet);
+        logger.warn(
+          "Acceso denegado por roles. Usuario: {} | Roles del usuario: {} | Roles requeridos: {}",
+          usuario,
+          userRoles,
+          allowedRolesSet
+        );
         exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
         return exchange.getResponse().setComplete();
       }
 
-      ServerHttpRequest mutatedRequest = exchange.getRequest()
+      ServerHttpRequest mutatedRequest = exchange
+        .getRequest()
         .mutate()
         .header("X-Usuario", usuario)
         .header("X-Roles", String.join(",", userRoles))
-        .header("X-Email", email)
+        .header("X-Username", username)
         .header("X-JWT-Id", claims.getId() != null ? claims.getId() : "")
         .build();
-      ServerWebExchange mutatedExchange = exchange.mutate().request(mutatedRequest).build();
+      ServerWebExchange mutatedExchange = exchange
+        .mutate()
+        .request(mutatedRequest)
+        .build();
 
-      return chain.filter(mutatedExchange)
-        .doOnSuccess(aVoid -> logger.info("Petición autorizada para usuario: {} | Roles: {}", usuario, userRoles));
+      return chain
+        .filter(mutatedExchange)
+        .doOnSuccess(aVoid ->
+          logger.info(
+            "Petición autorizada para usuario: {} | Roles: {}",
+            usuario,
+            userRoles
+          )
+        );
     } catch (ExpiredJwtException ex) {
       logger.warn("JWT expirado para usuario: {}", ex.getClaims().getSubject());
       exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);

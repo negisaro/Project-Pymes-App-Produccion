@@ -1,28 +1,37 @@
 package com.nelson.project.msvc_producto.msvc_producto.model.dto;
 
+import java.io.Serializable;
 import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-public class UsuarioDto {
-    private Long id;
-    private String username;
-    private String email;
-    private List<String> roles;
-    private boolean active;
+/**
+ * DTO para usuario.
+ * Representa los datos transferidos entre servicios y capas de la aplicación.
+ * Implementa Serializable para compatibilidad con frameworks y transferencias.
+ */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class UsuarioDto implements Serializable {
 
-    // Getters y setters
+  private static final long serialVersionUID = 1L;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+  /** Identificador único del usuario */
+  private Long id;
 
-    public String getUsername() { return username; }
-    public void setUsername(String username) { this.username = username; }
+  /** Nombre de usuario */
+  private String username;
 
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+  /** Correo electrónico */
+  private String email;
 
-    public List<String> getRoles() { return roles; }
-    public void setRoles(List<String> roles) { this.roles = roles; }
+  /** Roles asignados al usuario */
+  private List<String> roles;
 
-    public boolean isActive() { return active; }
-    public void setActive(boolean active) { this.active = active; }
+  /** Estado de activación del usuario */
+  private boolean active;
 }

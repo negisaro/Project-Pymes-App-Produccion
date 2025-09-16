@@ -1,9 +1,7 @@
 package com.nelson.project.msvc_categoria.msvc_categoria.controller;
 
-import com.nelson.project.msvc_categoria.msvc_categoria.mapper.CategoriaMapper;
 import com.nelson.project.msvc_categoria.msvc_categoria.model.dto.CategoriaCreateDto;
 import com.nelson.project.msvc_categoria.msvc_categoria.model.dto.CategoriaDTO;
-import com.nelson.project.msvc_categoria.msvc_categoria.model.entity.Categoria;
 import com.nelson.project.msvc_categoria.msvc_categoria.service.CategoriaService;
 import jakarta.validation.Valid;
 import java.util.Optional;
@@ -11,16 +9,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
+/**
+ * Controlador REST para gestión de categorías.
+ * Arquitectura profesional, funcional y alineada con SOLID.
+ */
 @RestController
 @RequestMapping("/categorias")
 public class CategoriaController {
@@ -28,53 +23,66 @@ public class CategoriaController {
   @Autowired
   private CategoriaService categoriaService;
 
+  /**
+   * Obtiene todas las categorías paginadas.
+   */
+
   @GetMapping("/list")
   public ResponseEntity<Page<CategoriaDTO>> getAllPaged(
-    @RequestParam(defaultValue = "0", required = false) Integer page,
-    @RequestParam(defaultValue = "10", required = false) Integer size
+    @RequestParam(defaultValue = "0") Integer page,
+    @RequestParam(defaultValue = "10") Integer size
   ) {
-    Page<Categoria> categorias = categoriaService.findAll(
+    Page<CategoriaDTO> dtoPage = categoriaService.findAll(
       PageRequest.of(page, size)
     );
-    Page<CategoriaDTO> dtoPage = categorias.map(CategoriaMapper::toDto);
     return ResponseEntity.ok(dtoPage);
   }
 
+  /**
+   * Obtiene una categoría por su ID.
+   */
   @GetMapping("/list/{id}")
   public ResponseEntity<CategoriaDTO> getById(@PathVariable Long id) {
-    Optional<Categoria> categoria = categoriaService.findById(id);
+    Optional<CategoriaDTO> categoria = categoriaService.findById(id);
     return categoria
-      .map(c -> ResponseEntity.ok(CategoriaMapper.toDto(c)))
+      .map(ResponseEntity::ok)
       .orElseGet(() -> ResponseEntity.notFound().build());
   }
 
+  /**
+   * Crea una nueva categoría.
+   */
+
+  @PreAuthorize("hasRole('ROLE_ADMIN')")
   @PostMapping("/create")
-  public CategoriaDTO create(
+  public ResponseEntity<CategoriaDTO> create(
     @Valid @RequestBody CategoriaCreateDto categoriaCreateDto
   ) {
-    Categoria categoria = CategoriaMapper.fromCreateDto(categoriaCreateDto);
-    Categoria saved = categoriaService.save(categoria);
-    return CategoriaMapper.toDto(saved);
+    CategoriaDTO created = categoriaService.save(categoriaCreateDto);
+    return ResponseEntity.ok(created);
   }
 
+  /**
+   * Actualiza una categoría existente.
+   */
   @PutMapping("/update/{id}")
   public ResponseEntity<CategoriaDTO> update(
     @PathVariable Long id,
-    @RequestBody CategoriaCreateDto categoriaCreateDto
+    @Valid @RequestBody CategoriaCreateDto categoriaCreateDto
   ) {
-    if (!categoriaService.findById(id).isPresent()) {
+    if (categoriaService.findById(id).isEmpty()) {
       return ResponseEntity.notFound().build();
     }
-    categoriaCreateDto.setId(id);
-    Categoria updated = categoriaService.save(
-      CategoriaMapper.fromCreateDto(categoriaCreateDto)
-    );
-    return ResponseEntity.ok(CategoriaMapper.toDto(updated));
+    CategoriaDTO updated = categoriaService.update(id, categoriaCreateDto);
+    return ResponseEntity.ok(updated);
   }
 
+  /**
+   * Elimina una categoría por su ID.
+   */
   @DeleteMapping("/delete/{id}")
   public ResponseEntity<Void> delete(@PathVariable Long id) {
-    if (!categoriaService.findById(id).isPresent()) {
+    if (categoriaService.findById(id).isEmpty()) {
       return ResponseEntity.notFound().build();
     }
     categoriaService.deleteById(id);

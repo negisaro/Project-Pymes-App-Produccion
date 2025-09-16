@@ -1,32 +1,29 @@
 package com.nelson.project.msvc_producto.msvc_producto.model.dto;
 
-public class ProveedorDTO {
+import java.io.Serializable;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+/**
+ * DTO para proveedor.
+ * Representa los datos transferidos de proveedores.
+ */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class ProveedorDTO implements Serializable {
+
+  private static final long serialVersionUID = 1L;
+
+  /** Identificador único del proveedor */
   private Long id;
+
+  /** Nombre del proveedor */
   private String nombre;
+
+  /** Información de contacto */
   private String contacto;
-
-  public Long getId() {
-    return id;
-  }
-
-  public void setId(Long id) {
-    this.id = id;
-  }
-
-  public String getNombre() {
-    return nombre;
-  }
-
-  public void setNombre(String nombre) {
-    this.nombre = nombre;
-  }
-
-  public String getContacto() {
-    return contacto;
-  }
-
-  public void setContacto(String contacto) {
-    this.contacto = contacto;
-  }
 }

@@ -9,9 +9,10 @@ const routes: Routes = [
     path: '',
     component: CategoriaLayoutComponent,
     children: [
-      { path: '', redirectTo: 'list', pathMatch: 'full' },
-      { path: 'list', component: ListCategoriaComponent },
-      { path: 'add', component: AddCategoriaComponent }
+  { path: '', redirectTo: 'list', pathMatch: 'full' },
+  { path: 'list', component: ListCategoriaComponent },
+  { path: 'add', component: AddCategoriaComponent },
+  { path: 'edit/:id', component: AddCategoriaComponent }
     ]
   }
 ];

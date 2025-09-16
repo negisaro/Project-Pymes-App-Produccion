@@ -25,4 +25,17 @@
       <div *ngFor="let error of errores">{{ error.mensaje }}</div>
     </div>
   </form>
+  <div class="debug-user">
+    <strong>Debug categoriaForm.value:</strong>
+    <pre>{{ categoriaForm.value | json }}</pre>
+    <strong>categoriaForm.valid:</strong> {{ categoriaForm.valid }}
+    <div *ngIf="debugResponse">
+      <strong>Respuesta backend:</strong>
+      <pre>{{ debugResponse | json }}</pre>
+    </div>
+    <div *ngIf="debugError">
+      <strong>Error backend:</strong>
+      <pre>{{ debugError | json }}</pre>
+    </div>
+  </div>
 </div>

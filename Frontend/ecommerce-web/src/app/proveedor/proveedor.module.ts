@@ -3,14 +3,24 @@ import { CommonModule } from '@angular/common';
 
 import { ProveedorRoutingModule } from './proveedor-routing.module';
 import { SharedModule } from '../shared/shared.module';
+import { ListProveedorComponent } from './pages/list-proveedor/list-proveedor.component';
+import { AddProveedorComponent } from './pages/add-proveedor/add-proveedor.component';
+import { ProveedorLayoutComponent } from './proveedor-layout/proveedor-layout.component';
 
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 @NgModule({
-  declarations: [],
+  declarations: [
+    ListProveedorComponent,
+    AddProveedorComponent,
+    ProveedorLayoutComponent,
+  ],
   imports: [
     CommonModule,
     ProveedorRoutingModule,
-    SharedModule
-  ]
+  ReactiveFormsModule,
+  FormsModule,
+    SharedModule,
+  ],
 })
-export class ProveedorModule { }
+export class ProveedorModule {}

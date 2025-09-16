@@ -1,113 +1,56 @@
 package com.nelson.project.msvc_producto.msvc_producto.model.dto;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * DTO para respuestas y consultas de Producto.
- * Incluye todos los campos relevantes.
+ * Incluye todos los campos relevantes y es serializable para transferencias entre servicios.
  */
-public class ProductoDto {
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class ProductoDto implements Serializable {
 
+  private static final long serialVersionUID = 1L;
+
+  /** Identificador único del producto */
   private Long id;
+
+  /** Nombre del producto */
   private String nombre;
+
+  /** Descripción del producto */
   private String descripcion;
+
+  /** Precio del producto */
   private BigDecimal precio;
+
+  /** Stock disponible */
   private Integer stock;
+
+  /** Fecha de creación */
   private LocalDateTime fechaCreacion;
+
+  /** Fecha de última actualización */
   private LocalDateTime fechaActualizacion;
+
+  /** ID de la categoría asociada */
   private Long categoriaId;
+
+  /** ID del proveedor asociado */
   private Long proveedorId;
+
+  /** Lista de URLs de imágenes */
   private List<String> imagenes;
+
+  /** Estado del producto (activo/inactivo) */
   private Boolean estado;
-
-  // Getters y setters (puedes usar Lombok @Data si lo prefieres)
-  public Long getId() {
-    return id;
-  }
-
-  public void setId(Long id) {
-    this.id = id;
-  }
-
-  public String getNombre() {
-    return nombre;
-  }
-
-  public void setNombre(String nombre) {
-    this.nombre = nombre;
-  }
-
-  public String getDescripcion() {
-    return descripcion;
-  }
-
-  public void setDescripcion(String descripcion) {
-    this.descripcion = descripcion;
-  }
-
-  public BigDecimal getPrecio() {
-    return precio;
-  }
-
-  public void setPrecio(BigDecimal precio) {
-    this.precio = precio;
-  }
-
-  public Integer getStock() {
-    return stock;
-  }
-
-  public void setStock(Integer stock) {
-    this.stock = stock;
-  }
-
-  public LocalDateTime getFechaCreacion() {
-    return fechaCreacion;
-  }
-
-  public void setFechaCreacion(LocalDateTime fechaCreacion) {
-    this.fechaCreacion = fechaCreacion;
-  }
-
-  public LocalDateTime getFechaActualizacion() {
-    return fechaActualizacion;
-  }
-
-  public void setFechaActualizacion(LocalDateTime fechaActualizacion) {
-    this.fechaActualizacion = fechaActualizacion;
-  }
-
-  public Long getCategoriaId() {
-    return categoriaId;
-  }
-
-  public void setCategoriaId(Long categoriaId) {
-    this.categoriaId = categoriaId;
-  }
-
-  public Long getProveedorId() {
-    return proveedorId;
-  }
-
-  public void setProveedorId(Long proveedorId) {
-    this.proveedorId = proveedorId;
-  }
-
-  public List<String> getImagenes() {
-    return imagenes;
-  }
-
-  public void setImagenes(List<String> imagenes) {
-    this.imagenes = imagenes;
-  }
-
-  public Boolean getEstado() {
-    return estado;
-  }
-
-  public void setEstado(Boolean estado) {
-    this.estado = estado;
-  }
 }

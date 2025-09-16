@@ -35,7 +35,7 @@ export class CategoriaService {
 
   // Detalle por id (mejor REST)
   getCategoria(id: number): Observable<Categoria> {
-    return this.http.get<Categoria>(`${this.baseUrl}/api/segura/categorias/${id}`);
+    return this.http.get<Categoria>(`${this.baseUrl}/api/segura/categorias/list/${id}`);
   }
 
   // Crear

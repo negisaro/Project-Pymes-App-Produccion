@@ -1,0 +1,61 @@
+
+<div class="list-proveedor-container card sombra">
+	<div class="header-listado">
+		<h2 class="titulo">Listado de Proveedores</h2>
+		<button class="btn btn-agregar" (click)="agregarProveedor()">
+			<span class="icono-mas">+</span> Agregar proveedor
+		</button>
+		<button class="btn btn-recargar" (click)="recargar()" title="Recargar listado">
+			&#x21bb; Recargar
+		</button>
+	</div>
+	<table class="tabla-proveedores">
+		<thead>
+			<tr>
+				<th>Nombre</th>
+				<th>Descripción</th>
+				<th>Contacto</th>
+				<th>Estado</th>
+				<th>Creado en</th>
+				<th>Actualizado en</th>
+				<th>Acciones</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr *ngFor="let proveedor of proveedores">
+				<td>{{ proveedor.nombre }}</td>
+				<td>{{ proveedor.descripcion }}</td>
+				<td>{{ proveedor.contacto }}</td>
+				<td>
+					<span [ngClass]="{'activo': proveedor.activo, 'inactivo': !proveedor.activo}">
+						{{ proveedor.activo ? 'Activo' : 'Inactivo' }}
+					</span>
+				</td>
+				<td>{{ proveedor.creadoEn | date:'short' }}</td>
+				<td>{{ proveedor.actualizadoEn | date:'short' }}</td>
+				<td>
+					<button class="btn btn-editar" (click)="editarProveedor(proveedor)">Editar</button>
+					<button class="btn btn-eliminar" (click)="eliminarProveedor(proveedor.id)">Eliminar</button>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+
+	<div class="paginacion-container">
+		<button class="btn-paginacion" (click)="paginaAnterior()" [disabled]="page === 0 || totalPages === 0">
+			&#8592; Anterior
+		</button>
+		<span class="paginacion-info">
+			Página <strong>{{ page + 1 }}</strong> de <strong>{{ totalPages }}</strong>
+			&nbsp;|&nbsp; Total: <strong>{{ totalElements }}</strong> registros
+		</span>
+		<button class="btn-paginacion" (click)="siguientePagina()" [disabled]="page >= totalPages - 1 || totalPages === 0">
+			Siguiente &#8594;
+		</button>
+	</div>
+
+	<div *ngIf="mensaje" class="success">{{ mensaje }}</div>
+	<div *ngIf="errores.length">
+		<div *ngFor="let error of errores" class="error">{{ error.mensaje }}</div>
+	</div>
+</div>

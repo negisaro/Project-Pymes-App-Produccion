@@ -35,6 +35,13 @@ const routes: Routes = [
           ),
       },
       {
+        path: 'proveedor',
+        loadChildren: () =>
+          import('../proveedor/proveedor.module').then(
+            (m) => m.ProveedorModule
+          ),
+      },
+      {
         path: 'user',
         loadChildren: () =>
           import('../user/user.module').then((m) => m.UserModule),
