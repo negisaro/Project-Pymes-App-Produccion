@@ -1,41 +1,56 @@
-<div class="add-categoria-container">
-  <h2 class="titulo">Agregar Categoría</h2>
-  <form [formGroup]="categoriaForm" (ngSubmit)="onSubmit()" class="form-categoria">
-    <div class="form-group">
-      <label for="nombre">Nombre <span class="requerido">*</span></label>
-      <input id="nombre" formControlName="nombre" required />
-      <div class="campo-error" *ngIf="categoriaForm.get('nombre')?.invalid && categoriaForm.get('nombre')?.touched">
-        El nombre es obligatorio.
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h3 class="mb-0">{{ modoEdicion ? 'Editar Categoría' : 'Registrar Categoría' }}</h3>
+        </div>
+        <div class="card-body">
+          <form [formGroup]="categoriaForm" (ngSubmit)="onSubmit()" autocomplete="off" novalidate>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="nombre" class="form-label">Nombre</label>
+                <input id="nombre" formControlName="nombre" maxlength="100" class="form-control" [ngClass]="{'is-invalid': categoriaForm.get('nombre')?.invalid && categoriaForm.get('nombre')?.touched}">
+                <div *ngIf="categoriaForm.get('nombre')?.invalid && categoriaForm.get('nombre')?.touched" class="invalid-feedback">Nombre es obligatorio.</div>
+              </div>
+              <div class="col-12">
+                <label for="descripcion" class="form-label">Descripción</label>
+                <textarea id="descripcion" formControlName="descripcion" maxlength="255" class="form-control"></textarea>
+              </div>
+              <div class="col-md-6">
+                <label for="estado" class="form-label">Estado</label>
+                <select id="estado" formControlName="estado" class="form-select">
+                  <option [ngValue]="true">Activo</option>
+                  <option [ngValue]="false">Inactivo</option>
+                </select>
+              </div>
+            </div>
+            <div class="d-flex gap-2 justify-content-end mt-4">
+              <button type="submit" class="btn btn-primary" [disabled]="categoriaForm.invalid">
+                <i class="bi bi-person-plus-fill"></i> {{ modoEdicion ? 'Actualizar' : 'Registrar' }}
+              </button>
+              <button type="button" (click)="onClear()" class="btn btn-secondary">
+                <i class="bi bi-eraser"></i> Limpiar
+              </button>
+              <button type="button" (click)="router.navigate(['/dashboard/categoria/list'])" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Volver
+              </button>
+            </div>
+            <div *ngIf="mensaje" class="alert alert-success mt-3">{{ mensaje }}</div>
+            <div *ngIf="errores.length">
+              <div *ngFor="let error of errores" class="alert alert-danger mt-2">{{ error.mensaje }}</div>
+            </div>
+            <div *ngIf="debugResponse">
+              <strong>Respuesta backend:</strong>
+              <pre>{{ debugResponse | json }}</pre>
+            </div>
+            <div *ngIf="debugError">
+              <strong>Error backend:</strong>
+              <pre>{{ debugError | json }}</pre>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
-    <div class="form-group">
-      <label for="descripcion">Descripción</label>
-      <textarea id="descripcion" formControlName="descripcion"></textarea>
-    </div>
-    <div class="form-group">
-      <label for="estado">Estado:</label>
-      <select id="estado" formControlName="estado">
-        <option [value]="true">Activo</option>
-        <option [value]="false">Inactivo</option>
-      </select>
-    </div>
-    <button type="submit" [disabled]="categoriaForm.invalid">Guardar categoría</button>
-    <div *ngIf="mensaje" class="success">{{ mensaje }}</div>
-    <div *ngIf="errores.length">
-      <div *ngFor="let error of errores">{{ error.mensaje }}</div>
-    </div>
-  </form>
-  <div class="debug-user">
-    <strong>Debug categoriaForm.value:</strong>
-    <pre>{{ categoriaForm.value | json }}</pre>
-    <strong>categoriaForm.valid:</strong> {{ categoriaForm.valid }}
-    <div *ngIf="debugResponse">
-      <strong>Respuesta backend:</strong>
-      <pre>{{ debugResponse | json }}</pre>
-    </div>
-    <div *ngIf="debugError">
-      <strong>Error backend:</strong>
-      <pre>{{ debugError | json }}</pre>
     </div>
   </div>
 </div>

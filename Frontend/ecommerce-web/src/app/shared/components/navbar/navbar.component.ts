@@ -22,6 +22,16 @@ export class NavbarComponent implements OnInit {
   notificationsCount = 0;
   showSearch = false;
 
+  get isAdmin(): boolean {
+    const u = this.user$.value;
+    return !!u && Array.isArray(u.roles) && u.roles.some((r: any) => r.name === 'ROLE_ADMIN');
+  }
+
+  get isCliente(): boolean {
+    const u = this.user$.value;
+    return !!u && Array.isArray(u.roles) && u.roles.some((r: any) => r.name === 'ROLE_CLIENT');
+  }
+
   ngOnInit() {
     // Forzar estado inicial a null por seguridad
     this.user$.next(null);
@@ -38,16 +48,11 @@ export class NavbarComponent implements OnInit {
     switch (role) {
       case 'ROLE_ADMIN': return 'Administrador';
       case 'ROLE_USER': return 'Usuario';
-      case 'ROLE_SUPERVISOR': return 'Supervisor';
-      case 'ROLE_EMPLEADO': return 'Empleado';
+      case 'ROLE_CLIENT': return 'Cliente';
       default: return 'Usuario';
     }
   }
 
-  isAdmin(user?: any): boolean {
-    const u = user ?? this.user$.value;
-    return !!u?.roles?.some((r: any) => r.name === 'ROLE_ADMIN');
-  }
   isSupervisor(user?: any): boolean {
     const u = user ?? this.user$.value;
     return !!u?.roles?.some((r: any) => r.name === 'ROLE_SUPERVISOR');
@@ -63,6 +68,10 @@ export class NavbarComponent implements OnInit {
   isEmpleado(user?: any): boolean {
     const u = user ?? this.user$.value;
     return !!u?.roles?.some((r: any) => r.name === 'ROLE_EMPLEADO');
+  }
+
+  isMobile(): boolean {
+    return window.innerWidth < 992;
   }
 
   async logout() {

@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -21,7 +22,8 @@ export class ResetPasswordComponent {
     private fb: FormBuilder,
     private authService: AuthService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private toastr: ToastrService
   ) {
     this.form = this.fb.group({
       password: ['', Validators.required]
@@ -39,10 +41,12 @@ export class ResetPasswordComponent {
         this.loading = false;
         this.form.reset();
         this.successMsg = '¡Contraseña cambiada correctamente! Ya puedes iniciar sesión.';
+        this.toastr.success('Contraseña cambiada correctamente', 'Recuperación de acceso');
       },
       error: err => {
         this.loading = false;
         this.errorMsg = err?.message || 'No se pudo cambiar la contraseña';
+        this.toastr.error(this.errorMsg, 'Error');
       }
     });
   }

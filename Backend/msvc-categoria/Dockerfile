@@ -11,4 +11,4 @@ RUN chmod +x /app/wait-for-it.sh
 EXPOSE 8083
 
 # Espera a que los servicios MySQL y usuario estén listos antes de ejecutar la app
-ENTRYPOINT ["/bin/bash", "-c", "/app/wait-for-it.sh db:3306 --timeout=600 --strict -- /app/wait-for-it.sh usuario:8081 --timeout=600 --strict -- java -jar app.jar"]
+ENTRYPOINT ["/bin/bash", "-c", "/app/wait-for-it.sh db:3306 --timeout=600 --strict -- /app/wait-for-it.sh msvc-usuario:8081 --timeout=600 --strict -- java -jar app.jar"]

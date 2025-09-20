@@ -3,14 +3,18 @@ package com.nelson.project.msvc_producto.msvc_producto.service.impl;
 import com.nelson.project.msvc_producto.msvc_producto.clientfeign.CategoriaClient;
 import com.nelson.project.msvc_producto.msvc_producto.clientfeign.ProveedorClient;
 import com.nelson.project.msvc_producto.msvc_producto.clientfeign.UsuarioFeignClient;
+import com.nelson.project.msvc_producto.msvc_producto.mapper.ProductoMapper;
 import com.nelson.project.msvc_producto.msvc_producto.model.dto.CategoriaDTO;
+import com.nelson.project.msvc_producto.msvc_producto.model.dto.ProductoCreateDto;
+import com.nelson.project.msvc_producto.msvc_producto.model.dto.ProductoDto;
 import com.nelson.project.msvc_producto.msvc_producto.model.dto.ProveedorDTO;
-import com.nelson.project.msvc_producto.msvc_producto.model.dto.UsuarioDto;
 import com.nelson.project.msvc_producto.msvc_producto.model.entity.Producto;
 import com.nelson.project.msvc_producto.msvc_producto.repository.ProductoRepository;
 import com.nelson.project.msvc_producto.msvc_producto.service.ProductoService;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -25,56 +29,88 @@ public class ProductoServiceImpl implements ProductoService {
   );
 
   private final ProductoRepository productoRepository;
+  private final ProductoMapper productoMapper;
   private final CategoriaClient categoriaClient;
   private final ProveedorClient proveedorClient;
-  private final UsuarioFeignClient usuarioFeignClient;
 
   public ProductoServiceImpl(
     ProductoRepository productoRepository,
+    ProductoMapper productoMapper,
     CategoriaClient categoriaClient,
     ProveedorClient proveedorClient,
     UsuarioFeignClient usuarioFeignClient
   ) {
     this.productoRepository = productoRepository;
+    this.productoMapper = productoMapper;
     this.categoriaClient = categoriaClient;
     this.proveedorClient = proveedorClient;
-    this.usuarioFeignClient = usuarioFeignClient;
   }
 
   /**
-   * Obtiene todos los productos.
+   * Obtiene todos los productos (DTO).
    */
   @Override
-  public List<Producto> findAll() {
+  public List<ProductoDto> findAll() {
     logger.info("Obteniendo todos los productos");
-    return productoRepository.findAll();
+    return productoRepository
+      .findAll()
+      .stream()
+      .map(productoMapper::toDto)
+      .collect(Collectors.toList());
   }
 
   /**
-   * Obtiene productos paginados.
+   * Obtiene productos paginados (DTO).
    */
   @Override
-  public Page<Producto> findAll(Pageable pageable) {
+  public Page<ProductoDto> findAll(Pageable pageable) {
     logger.info("Obteniendo productos paginados: {}", pageable);
-    return productoRepository.findAll(pageable);
+    return productoRepository.findAll(pageable).map(productoMapper::toDto);
   }
 
   /**
-   * Busca un producto por su ID.
+   * Busca un producto por su ID (DTO).
    */
   @Override
-  public Optional<Producto> findById(Long id) {
+  public Optional<ProductoDto> findById(Long id) {
     logger.info("Buscando producto por ID: {}", id);
-    return productoRepository.findById(id);
+    return productoRepository.findById(id).map(productoMapper::toDto);
   }
 
   /**
-   * Guarda o actualiza un producto.
+   * Crea un nuevo producto.
    */
   @Override
-  public Producto save(Producto producto) {
-    logger.info("Guardando producto: {}", producto.getNombre());
-    return productoRepository.save(producto);
+  public ProductoDto create(ProductoCreateDto productoCreateDto) {
+    logger.info("Creando producto: {}", productoCreateDto.getNombre());
+    logger.info(
+      "Imagenes recibidas en DTO: {}",
+      productoCreateDto.getImagenes()
+    );
+    Producto producto = productoMapper.fromCreateDto(productoCreateDto);
+    logger.info("Imagenes mapeadas en entidad: {}", producto.getImagenes());
+    Producto saved = productoRepository.save(producto);
+    logger.info(
+      "Producto guardado con ID: {} e imagenes: {}",
+      saved.getId(),
+      saved.getImagenes()
+    );
+    return productoMapper.toDto(saved);
+  }
+
+  /**
+   * Actualiza un producto existente de forma profesional y segura.
+   */
+  @Override
+  public ProductoDto update(Long id, ProductoCreateDto productoCreateDto) {
+    logger.info("Actualizando producto con ID: {}", id);
+    Producto producto = productoRepository
+      .findById(id)
+      .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado")
+      );
+    productoMapper.updateEntityFromDto(productoCreateDto, producto);
+    Producto updated = productoRepository.save(producto);
+    return productoMapper.toDto(updated);
   }
 
   /**
@@ -113,47 +149,39 @@ public class ProductoServiceImpl implements ProductoService {
   }
 
   /**
-   * Busca usuario por username usando el microservicio de usuarios.
+   * Buscar productos por nombre (DTO).
    */
   @Override
-  public Optional<UsuarioDto> findByUsername(String username) {
-    logger.debug("Buscando usuario por username: {}", username);
-    try {
-      UsuarioDto usuario = usuarioFeignClient.findByUsername(username);
-      return Optional.ofNullable(usuario);
-    } catch (Exception e) {
-      logger.error("Error consultando usuario: {}", username, e);
-      return Optional.empty();
-    }
-  }
-
-  /**
-   * Buscar productos por nombre (contiene, ignorando mayúsculas/minúsculas).
-   */
-  @Override
-  public List<Producto> findByNombreContainingIgnoreCase(String nombre) {
+  public List<ProductoDto> findByNombreContainingIgnoreCase(String nombre) {
     logger.info("Buscando productos por nombre: {}", nombre);
-    return productoRepository.findByNombreContainingIgnoreCase(nombre);
+    return productoRepository
+      .findByNombreContainingIgnoreCase(nombre)
+      .stream()
+      .map(productoMapper::toDto)
+      .collect(Collectors.toList());
   }
 
   /**
-   * Buscar productos por estado (activo/inactivo) con paginación.
+   * Buscar productos por estado (DTO, paginado).
    */
   @Override
-  public Page<Producto> findByEstado(Boolean estado, Pageable pageable) {
+  public Page<ProductoDto> findByEstado(Boolean estado, Pageable pageable) {
     logger.info("Buscando productos por estado: {}", estado);
-    return productoRepository.findByEstado(estado, pageable);
+    return productoRepository
+      .findByEstado(estado, pageable)
+      .map(productoMapper::toDto);
   }
 
   /**
-   * Buscar productos por rango de precio.
+   * Buscar productos por rango de precio (DTO).
    */
   @Override
-  public List<Producto> findByPrecioBetween(
-    java.math.BigDecimal min,
-    java.math.BigDecimal max
-  ) {
+  public List<ProductoDto> findByPrecioBetween(BigDecimal min, BigDecimal max) {
     logger.info("Buscando productos por rango de precio: {} - {}", min, max);
-    return productoRepository.findByPrecioBetween(min, max);
+    return productoRepository
+      .findByPrecioBetween(min, max)
+      .stream()
+      .map(productoMapper::toDto)
+      .collect(Collectors.toList());
   }
 }

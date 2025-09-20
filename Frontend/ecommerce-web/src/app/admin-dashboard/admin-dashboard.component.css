@@ -1,0 +1,49 @@
+.d-flex.toggled .sidebar {
+  margin-left: -220px;
+  transition: margin 0.3s;
+}
+.sidebar {
+  width: 220px;
+  min-height: 100vh;
+  background: #212529;
+  color: #fff;
+  transition: margin 0.3s;
+  z-index: 1040;
+}
+.sidebar.collapsed {
+  margin-left: -220px;
+}
+.sidebar-header {
+  font-size: 1.2rem;
+  font-weight: bold;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #444;
+}
+.nav-link.active, .nav-link.active:focus {
+  background: #0d6efd;
+  color: #fff !important;
+}
+.nav-link {
+  color: #fff;
+  transition: background 0.2s;
+}
+.nav-link:hover {
+  background: #343a40;
+  color: #fff;
+}
+.sidebar-footer {
+  margin-top: 2rem;
+  font-size: 0.95rem;
+}
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    z-index: 1050;
+  }
+  .d-flex.toggled .sidebar {
+    margin-left: -220px;
+  }
+}

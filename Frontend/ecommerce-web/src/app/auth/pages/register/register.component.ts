@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -13,27 +14,20 @@ export class RegisterComponent implements OnInit {
   error: string = '';
   loading = false;
   successMsg: string = '';
-  availableRoles: string[] = [];
+  // availableRoles: string[] = [];
   errorJson: any = null;
   debugResponse: any = null;
   debugError: any = null;
 
   ngOnInit() {
-    // Obtener roles dinámicamente del backend
-    this.authService.getRoles().subscribe({
-      next: (roles: string[]) => {
-        this.availableRoles = roles;
-      },
-      error: () => {
-        this.availableRoles = ['USER', 'ADMIN', 'SUPERVISOR', 'EMPLEADO']; // fallback
-      }
-    });
+    // Ya no se requiere cargar roles, el backend asigna uno por defecto
   }
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private toastr: ToastrService
   ) {
     this.form = this.fb.group({
       name: ['', [Validators.required, Validators.maxLength(50)]],
@@ -41,9 +35,7 @@ export class RegisterComponent implements OnInit {
       email: ['', [Validators.required, Validators.email, Validators.maxLength(100)]],
       username: ['', [Validators.required, Validators.minLength(4), Validators.maxLength(12)]],
       password: ['', [Validators.required, Validators.minLength(8), this.passwordValidator]],
-      roles: [[], Validators.required],
-      isActive: [true],
-      admin: [false]
+      isActive: [true]
     });
   }
 
@@ -73,23 +65,22 @@ export class RegisterComponent implements OnInit {
       email: formValue.email,
       username: formValue.username,
       password: formValue.password,
-      roles: Array.isArray(formValue.roles)
-        ? formValue.roles.map((rol: string) => ({ name: rol }))
-        : [{ name: formValue.roles }],
-      isActive: formValue.isActive,
-      admin: formValue.admin
+      active: formValue.isActive
     };
     this.authService.register(payload).subscribe({
       next: (res) => {
         this.loading = false;
         this.successMsg = 'Usuario registrado correctamente. Redirigiendo al login...';
-        this.form.reset();
+        this.toastr.success('Usuario registrado correctamente', 'Registro exitoso');
+        this.form.reset({ isActive: true });
         this.debugResponse = res;
         setTimeout(() => this.router.navigate(['/dashboard/auth/login']), 1500);
       },
       error: err => {
         this.loading = false;
-        this.error = err?.message || 'Error al registrar usuario';
+        const backendMsg = err?.error?.mensaje || err?.message || 'Error al registrar usuario';
+        this.error = backendMsg;
+        this.toastr.error(backendMsg, 'Error');
         this.errorJson = err;
         this.debugError = err;
       }

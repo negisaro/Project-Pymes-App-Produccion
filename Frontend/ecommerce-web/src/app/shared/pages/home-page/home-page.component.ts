@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../../auth/services/auth.service';
 import { ProductoService, PaginaProducto } from '../../../producto/service/producto.service';
 import { Producto } from '../../../producto/interfaces/producto';
+import { environment } from '../../../../environments/environments';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -89,6 +90,12 @@ export class HomePageComponent implements OnInit {
       .catch(() => {
         Swal.fire({ icon: 'error', title: 'Error', text: 'Error al conectar con el servidor de pagos.' });
       });
+  }
+
+  getImageUrl(imagePath: string): string {
+    if (!imagePath) return 'https://via.placeholder.com/400x180?text=Sin+imagen';
+    if (imagePath.startsWith('http')) return imagePath;
+    return `${environment.baseUrl}${imagePath}`;
   }
 
   onImgError(event: Event) {

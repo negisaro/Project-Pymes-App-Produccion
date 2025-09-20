@@ -1,12 +1,17 @@
 # ========================================
-# Gateway configuration for user-service, product-service, and carrito-service
+# GATEWAY CONFIGURATION
+# Development Environment
 # ========================================
 
+# 1. APPLICATION CONFIGURATION
 spring:
   application:
     name: gateway
+
+# 2. CLOUD GATEWAY CONFIGURATION
   cloud:
     gateway:
+      # 2.1 Default Filters
       default-filters:
         # Rate limiter to prevent abuse
         - name: RequestRateLimiter
@@ -19,6 +24,8 @@ spring:
           args:
             name: myCircuitBreaker
             fallbackUri: forward:/fallback
+
+      # 2.2 CORS Configuration
       server:
         webflux:
           globalcors:
@@ -29,51 +36,50 @@ spring:
                 allowed-headers: "*"
                 exposed-headers: "Authorization,X-Usuario,X-Roles,X-Email,X-JWT-Id"
                 allow-credentials: true
+
+      # 2.3 ROUTES CONFIGURATION
       routes:
         # =============================
-        # USER SERVICE ROUTES
+        # 2.3.1 USER SERVICE ROUTES
         # =============================
 
-        # Auth endpoints (login, register)
-        # No JWT required
-        - id: usuario
-          uri: lb://usuario
+        # Auth endpoints (login, register) - No JWT required
+        - id: msvc-usuario-auth
+          uri: lb://msvc-usuario
           predicates:
             - Path=/api/auth/**
           filters:
             - StripPrefix=1
 
-        - id: usuario
-          uri: lb://usuario
+        # User management endpoints - No JWT required
+        - id: msvc-usuario-public
+          uri: lb://msvc-usuario
           predicates:
             - Path=/api/usuarios/**
           filters:
             - StripPrefix=1
 
-        # Protected access: /api/segura/usuarios/*
-        # JWT required
-        - id: usuario-secure
-          uri: lb://usuario
+        # Protected user endpoints - JWT required
+        - id: msvc-usuario-secure
+          uri: lb://msvc-usuario
           predicates:
             - Path=/api/segura/usuarios/**
           filters:
             - StripPrefix=2
 
         # =============================
-        # PRODUCT SERVICE ROUTES
+        # 2.3.2 PRODUCT SERVICE ROUTES
         # =============================
 
-        # Public access: /api/productos/*
-        # No JWT required
-        - id: msvc-producto
+        # Public product access - No JWT required
+        - id: msvc-producto-public
           uri: lb://msvc-producto
           predicates:
             - Path=/api/productos/**
           filters:
             - StripPrefix=1
 
-        # Protected access: /api/segura/productos/*
-        # JWT required
+        # Protected product access - JWT required
         - id: msvc-producto-secure
           uri: lb://msvc-producto
           predicates:
@@ -82,20 +88,26 @@ spring:
             - StripPrefix=2
 
         # =============================
-        # CARRITO SERVICE ROUTES
+        # 2.3.2.1 PRODUCTO UPLOADS (STATIC FILES)
+        # =============================
+        - id: producto-uploads
+          uri: lb://msvc-producto
+          predicates:
+            - Path=/uploads/**
+
+        # =============================
+        # 2.3.3 CARRITO SERVICE ROUTES
         # =============================
 
-        # Public access: /api/carrito/*
-        # No JWT required (consultas públicas si aplica)
-        - id: msvc-carrito
+        # Public cart access - No JWT required
+        - id: msvc-carrito-public
           uri: lb://msvc-carrito
           predicates:
             - Path=/api/carrito/**
           filters:
             - StripPrefix=1
 
-        # Protected access: /api/segura/carrito/*
-        # JWT required (agregar/quitar ítems, pagar, etc.)
+        # Protected cart access - JWT required
         - id: msvc-carrito-secure
           uri: lb://msvc-carrito
           predicates:
@@ -104,20 +116,18 @@ spring:
             - StripPrefix=2
 
         # =============================
-        # CATEGORIA SERVICE ROUTES
+        # 2.3.4 CATEGORIA SERVICE ROUTES
         # =============================
 
-        # Public access: /api/categoria/*
-        # No JWT required (consultas públicas si aplica)
-        - id: msvc-categoria
+        # Public category access - No JWT required
+        - id: msvc-categoria-public
           uri: lb://msvc-categoria
           predicates:
             - Path=/api/categorias/**
           filters:
             - StripPrefix=1
 
-        # Protected access: /api/segura/categorias/*
-        # JWT required (agregar/quitar ítems, pagar, etc.)
+        # Protected category access - JWT required
         - id: msvc-categoria-secure
           uri: lb://msvc-categoria
           predicates:
@@ -126,20 +136,18 @@ spring:
             - StripPrefix=2
 
         # =============================
-        # PROVEEDOR SERVICE ROUTES
+        # 2.3.5 PROVEEDOR SERVICE ROUTES
         # =============================
 
-        # Public access: /api/proveedores/*
-        # No JWT required (consultas públicas si aplica)
-        - id: msvc-proveedor
+        # Public provider access - No JWT required
+        - id: msvc-proveedor-public
           uri: lb://msvc-proveedor
           predicates:
             - Path=/api/proveedores/**
           filters:
             - StripPrefix=1
 
-        # Protected access: /api/segura/proveedores/*
-        # JWT required (agregar/quitar ítems, pagar, etc.)
+        # Protected provider access - JWT required
         - id: msvc-proveedor-secure
           uri: lb://msvc-proveedor
           predicates:
@@ -148,20 +156,18 @@ spring:
             - StripPrefix=2
 
         # =============================
-        # ORDEN SERVICE ROUTES
+        # 2.3.6 ORDEN SERVICE ROUTES
         # =============================
 
-        # Public access: /api/orden/*
-        # No JWT required (consultas públicas si aplica)
-        - id: msvc-orden
+        # Public order access - No JWT required
+        - id: msvc-orden-public
           uri: lb://msvc-orden
           predicates:
             - Path=/api/orden/**
           filters:
             - StripPrefix=1
 
-        # Protected access: /api/segura/orden/*
-        # JWT required (agregar/quitar ítems, pagar, etc.)
+        # Protected order access - JWT required
         - id: msvc-orden-secure
           uri: lb://msvc-orden
           predicates:
@@ -169,7 +175,11 @@ spring:
           filters:
             - StripPrefix=2
 
+# ========================================
+# 3. GATEWAY FILTER CONFIGURATION
+# ========================================
 gateway:
+  # 3.1 JWT Filter Configuration
   filter:
     # JWT secret for signing and verifying tokens
     jwt-secret: ${GATEWAY_JWT_SECRET:dev_secret}
@@ -182,23 +192,33 @@ gateway:
     username-claim: username
     order: 100
     # Paths that are always public, even if under /api/segura/
-    exempt-paths: /auth/login,/usuarios/register
+    # Includes: auth, user registration, product list/upload
+  exempt-paths: /auth/login,/usuarios/register,/productos/list,/uploads/**,/auth/forgot-password,/auth/reset-password
 
+  # 3.2 Security Configuration
   security:
     user:
       name: admin
       password: ${GATEWAY_DASHBOARD_PASSWORD}
 
+  # 3.3 Redis Configuration
   data:
     redis:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
+
+# ========================================
+# 4. SERVER CONFIGURATION
+# ========================================
 
 server:
   port: 8080
   ssl:
     enabled: false
 
+# ========================================
+# 5. EUREKA CLIENT CONFIGURATION
+# ========================================
 eureka:
   client:
     register-with-eureka: true
@@ -208,6 +228,9 @@ eureka:
   instance:
     prefer-ip-address: true
 
+# ========================================
+# 6. MANAGEMENT & MONITORING
+# ========================================
 management:
   endpoints:
     web:

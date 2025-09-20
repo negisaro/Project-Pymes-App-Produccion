@@ -66,8 +66,8 @@ services:
       retries: 40
 
   usuario:
-    build: ./backend/usuario
-    container_name: usuario
+    build: ./backend/msvc-usuario
+    container_name: msvc-usuario
     ports:
       - "8081:8081"
     environment:
@@ -174,6 +174,8 @@ services:
       MYSQL_HOST: ${MYSQL_HOST}
       MYSQL_PORT: ${MYSQL_PORT}
       EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
+    volumes:
+      - ./backend/msvc-producto/uploads:/app/uploads
     depends_on:
       db:
         condition: service_healthy

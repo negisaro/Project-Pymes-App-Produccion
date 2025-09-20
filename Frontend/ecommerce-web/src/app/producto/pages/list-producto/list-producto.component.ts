@@ -4,6 +4,7 @@ import Swal from 'sweetalert2';
 import { AuthService } from '../../../auth/services/auth.service';
 import { Categoria } from '../../../categoria/interfaces/categoria';
 import { CategoriaService } from '../../../categoria/service/categoria.service';
+import { environment } from '../../../../environments/environments';
 import { Producto } from '../../interfaces/producto';
 import {
   PaginaProducto,
@@ -18,6 +19,28 @@ import { Proveedor } from '../../../proveedor/interfaces/proveedor';
   styleUrls: ['./list-producto.component.css'],
 })
 export class ListProductoComponent implements OnInit {
+  // Helpers SweetAlert2 para feedback uniforme
+  private showSwalToast(message: string, icon: 'success' | 'error' | 'info' | 'warning') {
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon,
+      title: message,
+      showConfirmButton: false,
+      timer: 2000,
+      timerProgressBar: true
+    });
+  }
+
+  private showSwalError(message: string) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: message,
+      confirmButtonColor: '#d33',
+      timer: 2500
+    });
+  }
   productos: Producto[] = [];
   categorias: Categoria[] = [];
   proveedor: Proveedor[] = [];
@@ -30,7 +53,7 @@ export class ListProductoComponent implements OnInit {
   totalElements = 0;
 
   public puedeAgregarProducto(): boolean {
-    return this.authService.hasRole(['ROLE_ADMIN', 'ROLE_SUPERVISOR']);
+    return this.authService.hasRole(['ROLE_ADMIN']);
   }
 
   constructor(
@@ -50,7 +73,7 @@ export class ListProductoComponent implements OnInit {
     this.loading = true;
     this.error = false;
     this.errorMsg = '';
-    this.productoService.getProductosPaginados(this.page, this.size).subscribe({
+    this.productoService.getProductosPaginadosAdmin(this.page, this.size).subscribe({
       next: (resp: PaginaProducto) => {
         this.productos = resp.content;
         this.totalPages = resp.totalPages;
@@ -63,36 +86,12 @@ export class ListProductoComponent implements OnInit {
         this.error = true;
         this.loading = false;
         if (err.status === 401) {
-          Swal.fire({
-            icon: 'warning',
-            title: 'Sesión expirada',
-            text: 'Redirigiendo al login...',
-            timer: 2000,
-            showConfirmButton: false,
-            toast: true,
-            position: 'top-end'
-          });
+          this.showSwalToast('Sesión expirada. Redirigiendo al login...', 'warning');
           setTimeout(() => this.router.navigate(['/auth/login']), 2000);
         } else if (err.status === 403) {
-          Swal.fire({
-            icon: 'error',
-            title: 'Sin permisos',
-            text: 'No tienes permisos para ver los productos.',
-            timer: 2000,
-            showConfirmButton: false,
-            toast: true,
-            position: 'top-end'
-          });
+          this.showSwalError('No tienes permisos para ver los productos.');
         } else {
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Ocurrió un error al cargar los productos.',
-            timer: 2000,
-            showConfirmButton: false,
-            toast: true,
-            position: 'top-end'
-          });
+          this.showSwalError('Ocurrió un error al cargar los productos.');
         }
       },
     });
@@ -106,15 +105,7 @@ export class ListProductoComponent implements OnInit {
         // Swal.fire({ icon: 'success', title: 'Categorías cargadas', timer: 1200, showConfirmButton: false, toast: true, position: 'top-end' });
       },
       error: (err) => {
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Ocurrió un error al cargar las categorías.',
-          timer: 2000,
-          showConfirmButton: false,
-          toast: true,
-          position: 'top-end'
-        });
+        this.showSwalError('Ocurrió un error al cargar las categorías.');
       },
     });
   }
@@ -127,60 +118,31 @@ export class ListProductoComponent implements OnInit {
         // Swal.fire({ icon: 'success', title: 'Categorías cargadas', timer: 1200, showConfirmButton: false, toast: true, position: 'top-end' });
       },
       error: (err) => {
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Ocurrió un error al cargar las proveedores.',
-          timer: 2000,
-          showConfirmButton: false,
-          toast: true,
-          position: 'top-end'
-        });
+        this.showSwalError('Ocurrió un error al cargar los proveedores.');
       },
     });
   }
 
   editarProducto(producto: Producto): void {
-  this.router.navigate(['/dashboard/product/edit-product', producto.id]);
+    this.router.navigate(['/dashboard/product/edit', producto.id]);
   }
 
   eliminarProducto(id: number): void {
     Swal.fire({
-      title: '¿Eliminar producto?',
-      text: 'Esta acción no se puede deshacer.',
+      title: '¿Seguro que deseas eliminar el producto?',
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#e74c3c',
-      cancelButtonColor: '#2980b9',
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar'
-    }).then((result) => {
+    }).then(result => {
       if (result.isConfirmed) {
         this.productoService.deleteProducto(id).subscribe({
           next: () => {
-            Swal.fire({
-              icon: 'success',
-              title: 'Producto eliminado',
-              text: 'El producto ha sido eliminado correctamente.',
-              timer: 1800,
-              showConfirmButton: false,
-              toast: true,
-              position: 'top-end'
-            });
-            setTimeout(() => {
-              this.router.navigate(['/dashboard/product/list-product']);
-            }, 1000);
+            this.showSwalToast('Producto eliminado correctamente', 'success');
+            this.cargarProductos();
           },
           error: () => {
-            Swal.fire({
-              icon: 'error',
-              title: 'Error',
-              text: 'No se pudo eliminar el producto.',
-              timer: 2000,
-              showConfirmButton: false,
-              toast: true,
-              position: 'top-end'
-            });
+            this.showSwalError('Error al eliminar producto');
           }
         });
       }
@@ -188,14 +150,7 @@ export class ListProductoComponent implements OnInit {
   }
 
   volverInicio(): void {
-    Swal.fire({
-      icon: 'info',
-      title: 'Volviendo al inicio',
-      timer: 1200,
-      showConfirmButton: false,
-      toast: true,
-      position: 'top-end'
-    });
+    this.showSwalToast('Volviendo al inicio', 'info');
     this.router.navigate(['/']);
   }
 
@@ -205,7 +160,13 @@ export class ListProductoComponent implements OnInit {
     this.cargarProductos();
   }
 
+  getImageUrl(imagePath: string): string {
+    if (!imagePath) return 'https://via.placeholder.com/120x120?text=Sin+imagen';
+    if (imagePath.startsWith('http')) return imagePath;
+    return `${environment.baseUrl}${imagePath}`;
+  }
+
   agregarProducto(): void {
-    this.router.navigate(['/dashboard/product/add-product']);
+    this.router.navigate(['/dashboard/product/add']);
   }
 }

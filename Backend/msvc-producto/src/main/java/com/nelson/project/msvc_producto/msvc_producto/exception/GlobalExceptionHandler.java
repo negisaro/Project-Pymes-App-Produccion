@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 @ControllerAdvice
 @RestController
@@ -26,6 +27,14 @@ public class GlobalExceptionHandler {
       .forEach(error -> errors.put(error.getField(), error.getDefaultMessage())
       );
     return errors;
+  }
+
+  @ExceptionHandler(MaxUploadSizeExceededException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public Map<String, String> handleMaxUploadSizeExceeded(MaxUploadSizeExceededException ex) {
+    Map<String, String> error = new HashMap<>();
+    error.put("error", "El archivo excede el tamaño máximo permitido (5MB)");
+    return error;
   }
 
   @ExceptionHandler(Exception.class)

@@ -13,12 +13,21 @@ export class SidebarComponent {
   private router = inject(Router);
   user = computed(() => this.authService.currentUser());
 
+  get isAdmin(): boolean {
+    const u = this.user();
+    return !!u && Array.isArray(u.roles) && u.roles.some(r => r.name === 'ROLE_ADMIN');
+  }
+
+  get isCliente(): boolean {
+    const u = this.user();
+    return !!u && Array.isArray(u.roles) && !u.roles.some(r => r.name === 'ROLE_ADMIN');
+  }
+
   getRoleLabel(role?: string): string {
     switch (role) {
       case 'ROLE_ADMIN': return 'Administrador';
       case 'ROLE_USER': return 'Usuario';
-      case 'ROLE_SUPERVISOR': return 'Supervisor';
-      case 'ROLE_EMPLEADO': return 'Empleado';
+      case 'ROLE_CLIENT': return 'Cliente';
       default: return 'Usuario';
     }
   }

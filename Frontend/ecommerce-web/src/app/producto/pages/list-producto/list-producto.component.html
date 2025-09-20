@@ -1,63 +1,94 @@
 
-<div class="card-producto">
-  <div class="card-header">
-    <h2><i class="fas fa-list"></i> Listado de Productos</h2>
-    <button class="btn-agregar" (click)="agregarProducto()">
-      <i class="fas fa-plus"></i> Agregar producto
-    </button>
-  </div>
-  <div *ngIf="loading" class="loading">Cargando productos...</div>
-  <div *ngIf="error" class="error">{{ errorMsg }}</div>
-  <div *ngIf="!loading && productos.length === 0" class="empty">No hay productos disponibles.</div>
-  <div *ngIf="!loading && productos.length > 0" class="productos-grid">
-    <div class="producto-card" *ngFor="let producto of productos">
-      <div class="producto-header">
-        <span class="producto-nombre"><i class="fas fa-box"></i> {{ producto.nombre }}</span>
-        <span class="producto-id">#{{ producto.id }}</span>
+
+<div class="container my-4">
+  <div class="card shadow">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+      <h2 class="mb-0"><i class="fas fa-list"></i> Listado de Productos</h2>
+      <button class="btn btn-success" (click)="agregarProducto()">
+        <i class="fas fa-plus"></i> Agregar producto
+      </button>
+    </div>
+    <div class="card-body">
+      <div *ngIf="loading" class="alert alert-info">Cargando productos...</div>
+      <div *ngIf="error" class="alert alert-danger">{{ errorMsg }}</div>
+      <div *ngIf="!loading && productos.length === 0" class="alert alert-warning">No hay productos disponibles.</div>
+
+      <!-- Filtro por categoría (opcional, si se desea mostrar) -->
+      <div *ngIf="categorias.length > 0" class="mb-3">
+        <label for="filtroCategoria" class="form-label">Filtrar por categoría:</label>
+        <select id="filtroCategoria" class="form-select w-auto d-inline-block ms-2" style="min-width:200px;">
+          <option value="">Todas</option>
+          <option *ngFor="let cat of categorias" [value]="cat.id">{{ cat.nombre }}</option>
+        </select>
       </div>
-      <div class="producto-info">
-        <span><strong>Descripción:</strong> {{ producto.descripcion }}</span>
-        <span><strong>Precio:</strong> {{ producto.precio | currency }}</span>
-        <span><strong>Stock:</strong> {{ producto.stock }}</span>
-        <span><strong>Categoría:</strong> {{ producto.categoriaId }}</span>
-        <span><strong>Proveedor:</strong> {{ producto.proveedorId }}</span>
-        <span><strong>Imágenes:</strong>
-          <ul>
-            <li *ngFor="let img of producto.imagenes">{{ img }}</li>
-          </ul>
-        </span>
-        <span><strong>Estado:</strong>
-          <span [ngClass]="{'activo': producto.estado, 'inactivo': !producto.estado}">
-            {{ producto.estado ? 'Activo' : 'Inactivo' }}
-          </span>
-        </span>
-        <span><strong>Creación:</strong> {{ producto.fechaCreacion | date:'short' }}</span>
-        <span><strong>Actualización:</strong> {{ producto.fechaActualizacion | date:'short' }}</span>
+
+      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" *ngIf="!loading && productos.length > 0">
+        <div class="col" *ngFor="let producto of productos">
+          <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <span><i class="fas fa-box"></i> {{ producto.nombre }}</span>
+              <span class="badge bg-secondary">#{{ producto.id }}</span>
+            </div>
+            <div class="card-body">
+              <p class="mb-1"><strong>Descripción:</strong> {{ producto.descripcion }}</p>
+              <p class="mb-1"><strong>Precio:</strong> {{ producto.precio | currency }}</p>
+              <p class="mb-1"><strong>Stock:</strong> {{ producto.stock }}</p>
+              <p class="mb-1"><strong>Categoría:</strong> {{ producto.categoriaId }}</p>
+              <p class="mb-1"><strong>Proveedor:</strong> {{ producto.proveedorId }}</p>
+              <div class="mb-2">
+                <strong>Imágenes:</strong>
+                <div class="d-flex flex-wrap gap-2 mt-1">
+                  <img *ngFor="let img of producto.imagenes || []" [src]="getImageUrl(img)" width="90" height="90" class="rounded border" alt="Imagen producto" [hidden]="!img">
+                </div>
+              </div>
+              <p class="mb-1">
+                <strong>Estado:</strong>
+                <span class="badge" [ngClass]="producto.estado ? 'bg-success' : 'bg-danger'">
+                  {{ producto.estado ? 'Activo' : 'Inactivo' }}
+                </span>
+              </p>
+              <p class="mb-1"><strong>Creación:</strong> {{ producto.fechaCreacion | date:'short' }}</p>
+              <p class="mb-1"><strong>Actualización:</strong> {{ producto.fechaActualizacion | date:'short' }}</p>
+            </div>
+            <div class="card-footer d-flex justify-content-end gap-2">
+              <button class="btn btn-outline-primary btn-sm" (click)="editarProducto(producto)"><i class="fas fa-edit"></i> Editar</button>
+              <button class="btn btn-outline-danger btn-sm" (click)="eliminarProducto(producto.id!)"><i class="fas fa-trash"></i> Eliminar</button>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="producto-actions">
-        <button class="btn-accion btn-editar" (click)="editarProducto(producto)"><i class="fas fa-edit"></i> Editar</button>
-  <button class="btn-accion btn-eliminar" (click)="eliminarProducto(producto.id!)"><i class="fas fa-trash"></i> Eliminar</button>
+
+      <!-- Paginación -->
+      <nav *ngIf="totalPages > 1" class="mt-4">
+        <ul class="pagination justify-content-center">
+          <li class="page-item" [class.disabled]="page === 0">
+            <button class="page-link" (click)="cambiarPagina(page - 1)" [disabled]="page === 0">
+              <i class="fas fa-angle-double-left"></i>
+            </button>
+          </li>
+          <li class="page-item" *ngFor="let p of [].constructor(totalPages); let i = index" [class.active]="page === i">
+            <button class="page-link" (click)="cambiarPagina(i)">{{ i + 1 }}</button>
+          </li>
+          <li class="page-item" [class.disabled]="page + 1 >= totalPages">
+            <button class="page-link" (click)="cambiarPagina(page + 1)" [disabled]="page + 1 >= totalPages">
+              <i class="fas fa-angle-double-right"></i>
+            </button>
+          </li>
+        </ul>
+        <div class="text-center mt-2">
+          Total: <strong>{{ totalElements }}</strong> registros
+        </div>
+      </nav>
+
+      <!-- Debug: productos, paginación y filtro -->
+      <div style="background:#222;color:#fff;padding:8px 12px;margin-top:18px;font-size:13px;   border-radius:6px">
+        <strong>🔍 DEBUG LISTA PRODUCTOS:</strong><br>
+        <strong>🗂️ productos:</strong>
+        <pre>{{ productos | json }}</pre>
+        <strong>📄 Página actual:</strong> {{ page + 1 }} / {{ totalPages }}<br>
+        <strong>🔢 totalElements:</strong> {{ totalElements }}<br>
+        <strong>🔎 Filtro categoría (no implementado):</strong> <span id="debugFiltroCategoria">(ver select arriba)</span>
       </div>
     </div>
-  </div>
-  <div class="form-actions paginacion" *ngIf="totalPages > 1">
-    <button class="btn-paginacion" (click)="cambiarPagina(page - 1)" [disabled]="page === 0">
-      <i class="fas fa-angle-double-left"></i>
-    </button>
-    <ng-container *ngFor="let p of [].constructor(totalPages); let i = index">
-      <button class="btn-paginacion btn-numero" [class.active-page]="page === i" (click)="cambiarPagina(i)">{{ i + 1 }}</button>
-    </ng-container>
-    <button class="btn-paginacion" (click)="cambiarPagina(page + 1)" [disabled]="page + 1 >= totalPages">
-      <i class="fas fa-angle-double-right"></i>
-    </button>
-    <span class="paginacion-info">
-      Total: <strong>{{ totalElements }}</strong> registros
-    </span>
-  </div>
-  <div *ngIf="categorias.length > 0" class="categorias-list">
-    <h4>Categorías disponibles</h4>
-    <ul>
-      <li *ngFor="let cat of categorias">{{ cat.nombre }}</li>
-    </ul>
   </div>
 </div>

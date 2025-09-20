@@ -1,4 +1,5 @@
 package com.nelson.project.msvc_proveedor.msvc_proveedor.model.dto;
+
 import java.io.Serializable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

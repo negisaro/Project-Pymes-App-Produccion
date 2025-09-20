@@ -48,7 +48,7 @@ public class JwtGlobalFilter implements GlobalFilter, Ordered {
   private int filterOrder;
 
   @Value(
-    "${gateway.filter.exempt-paths:/login,/register,/public/,/swagger-ui/,/v3/api-docs/,/auth/login,/usuarios/register}"
+    "${gateway.filter.exempt-paths:/login,/register,/public/,/swagger-ui/,/v3/api-docs/,/auth/login,/usuarios/register,/productos/list,/uploads/**,/auth/forgot-password,/auth/reset-password}"
   )
   private String exemptPaths;
 

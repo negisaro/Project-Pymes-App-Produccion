@@ -37,10 +37,10 @@ public class ProductoDto implements Serializable {
   private Integer stock;
 
   /** Fecha de creación */
-  private LocalDateTime fechaCreacion;
+  private LocalDateTime creadoEn;
 
   /** Fecha de última actualización */
-  private LocalDateTime fechaActualizacion;
+  private LocalDateTime actualizadoEn;
 
   /** ID de la categoría asociada */
   private Long categoriaId;

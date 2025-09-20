@@ -2,29 +2,52 @@ import { HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest
 import { Injectable } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+
 @Injectable()
 export class TokenInterceptor implements HttpInterceptor {
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     const token = localStorage.getItem('token');
     let authReq = req;
-    if (token) {
-      authReq = req.clone({
-        setHeaders: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': req.headers.get('Content-Type') || 'application/json',
-          Accept: 'application/json',
-          'X-Requested-With': 'XMLHttpRequest'
-        }
-      });
+
+    // Detectar si es FormData (upload de archivo)
+    if (req.body instanceof FormData) {
+      if (token) {
+        authReq = req.clone({
+          setHeaders: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        });
+      } else {
+        authReq = req.clone({
+          setHeaders: {
+            Accept: 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        });
+      }
     } else {
-      authReq = req.clone({
-        setHeaders: {
-          'Content-Type': req.headers.get('Content-Type') || 'application/json',
-          Accept: 'application/json',
-          'X-Requested-With': 'XMLHttpRequest'
-        }
-      });
+      if (token) {
+        authReq = req.clone({
+          setHeaders: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': req.headers.get('Content-Type') || 'application/json',
+            Accept: 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        });
+      } else {
+        authReq = req.clone({
+          setHeaders: {
+            'Content-Type': req.headers.get('Content-Type') || 'application/json',
+            Accept: 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        });
+      }
     }
+
     // Logger para depuración: muestra la request enviada al backend
     console.log('Interceptor - Request:', {
       url: authReq.url,
@@ -36,12 +59,10 @@ export class TokenInterceptor implements HttpInterceptor {
     return next.handle(authReq).pipe(
       catchError((error: HttpErrorResponse) => {
         if (error.status === 401) {
-          // Aquí podrías redirigir o limpiar localStorage si lo deseas
-          // Por ejemplo: localStorage.removeItem('token');
+          // Manejo de 401 si es necesario
         }
         return throwError(() => error);
       })
     );
   }
 }
-

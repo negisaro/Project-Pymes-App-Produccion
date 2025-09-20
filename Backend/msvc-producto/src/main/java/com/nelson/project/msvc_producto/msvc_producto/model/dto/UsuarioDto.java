@@ -30,7 +30,7 @@ public class UsuarioDto implements Serializable {
   private String email;
 
   /** Roles asignados al usuario */
-  private List<String> roles;
+  private List<RolDto> roles;
 
   /** Estado de activación del usuario */
   private boolean active;

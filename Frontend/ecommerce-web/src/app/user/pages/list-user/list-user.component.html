@@ -1,107 +1,110 @@
-<section class="user-list-section">
-  <div class="user-list-card">
-    <h1 class="user-list-title">
-      Gestión de Usuarios
-    </h1>
-    <div class="user-list-actions">
-      <button *ngIf="puedeAgregarUsuario()" class="btn-user btn-user-success" (click)="irAgregarUsuario()">
-        <i class="bi bi-person-plus"></i> Agregar usuario
-      </button>
-    </div>
 
-    <!-- Indicador de carga -->
-    <div *ngIf="loading" class="user-list-loading">
-      <span class="loader"></span>
-      <span class="user-list-loading-text">Cargando usuarios...</span>
-    </div>
-
-    <!-- Tabla de usuarios -->
-    <div *ngIf="!loading && users.length > 0" class="user-list-table-container">
-      <table class="user-list-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Usuario</th>
-            <th>Email</th>
-            <th>Rol</th>
-            <th>Estado</th>
-            <th class="text-center">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let user of users">
-            <td>{{ user.id }}</td>
-            <td>{{ user.name }} {{ user.lastname }}</td>
-            <td>{{ user.username }}</td>
-            <td>{{ user.email }}</td>
-            <td>
-              <ng-container *ngFor="let role of user.roles; let last = last">
-                <span class="user-role">
-                  <i class="bi bi-person-badge"></i>{{ getRoleLabel(role.name) }}<span *ngIf="!last">,</span>
-                </span>
-              </ng-container>
-            </td>
-            <td>
-              <span [ngClass]="user.active ? 'status-active' : 'status-inactive'">
-                {{ user.active ? 'Activo' : 'Inactivo' }}
-              </span>
-            </td>
-            <td class="user-list-actions-cell">
-              <button class="btn-user btn-user-edit" (click)="goToEditUser(user.id)">
-                <i class="bi bi-pencil-square"></i> Editar
-              </button>
-              <button class="btn-user btn-user-delete" (click)="onDeleteUser(user.id)">
-                <i class="bi bi-trash"></i> Eliminar
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Mensaje si no hay usuarios -->
-    <div *ngIf="!loading && users.length === 0" class="user-list-empty">
-      <p>No hay usuarios registrados.</p>
-    </div>
-
-    <!-- Paginador dinámico profesional -->
-    <div *ngIf="paginator.totalPages > 1" class="user-list-paginator">
-      <nav aria-label="Paginación">
-        <button class="btn-paginator" [disabled]="paginator.number === 0" (click)="goToPage(0)" aria-label="Primera página">«</button>
-        <button class="btn-paginator" [disabled]="paginator.number === 0" (click)="goToPage(paginator.number - 1)" aria-label="Página anterior">‹</button>
-        <ng-container *ngIf="dynamicPages[0] > 0">
-          <button class="btn-paginator" disabled>...</button>
-        </ng-container>
-        <ng-container *ngFor="let page of dynamicPages">
-          <button
-            class="btn-paginator"
-            [ngClass]="{ 'btn-paginator-active': paginator.number === page }"
-            (click)="goToPage(page)"
-            [attr.aria-current]="paginator.number === page ? 'page' : null"
-            [disabled]="paginator.number === page">
-            {{ page + 1 }}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <div class="card shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center bg-primary text-white">
+          <h3 class="mb-0">Gestión de Usuarios</h3>
+          <button *ngIf="puedeAgregarUsuario()" class="btn btn-success btn-sm" (click)="irAgregarUsuario()">
+            <i class="bi bi-person-plus"></i> Agregar usuario
           </button>
-        </ng-container>
-        <ng-container *ngIf="dynamicPages[dynamicPages.length-1] < paginator.totalPages - 1">
-          <button class="btn-paginator" disabled>...</button>
-        </ng-container>
-        <button class="btn-paginator" [disabled]="paginator.number === paginator.totalPages - 1" (click)="goToPage(paginator.number + 1)" aria-label="Página siguiente">›</button>
-        <button class="btn-paginator" [disabled]="paginator.number === paginator.totalPages - 1" (click)="goToPage(paginator.totalPages - 1)" aria-label="Última página">»</button>
-      </nav>
+        </div>
+        <div class="card-body">
+          <div *ngIf="loading" class="text-center my-4">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+            <div>Cargando usuarios...</div>
+          </div>
+
+
+          <ng-container *ngIf="!loading">
+            <ng-container *ngIf="(users$ | async) as users">
+              <div *ngIf="users.length > 0" class="table-responsive">
+                <table class="table table-hover align-middle">
+                  <thead class="table-light">
+                    <tr>
+                      <th>ID</th>
+                      <th>Nombre</th>
+                      <th>Usuario</th>
+                      <th>Email</th>
+                      <th>Rol</th>
+                      <th>Estado</th>
+                      <th class="text-center">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let user of users">
+                      <td>{{ user.id }}</td>
+                      <td>{{ user.name }} {{ user.lastname }}</td>
+                      <td>{{ user.username }}</td>
+                      <td>{{ user.email }}</td>
+                      <td>
+                        <ng-container *ngFor="let role of user.roles; let last = last">
+                          <span class="badge bg-info text-dark me-1">
+                            <i class="bi bi-person-badge"></i> {{ getRoleLabel(role.name) }}<span *ngIf="!last">,</span>
+                          </span>
+                        </ng-container>
+                      </td>
+                      <td>
+                        <span [ngClass]="user.active ? 'badge bg-success' : 'badge bg-secondary'">
+                          {{ user.active ? 'Activo' : 'Inactivo' }}
+                        </span>
+                      </td>
+                      <td class="text-center">
+                        <button class="btn btn-outline-primary btn-sm me-1" (click)="goToEditUser(user.id)">
+                          <i class="bi bi-pencil-square"></i>
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm" (click)="onDeleteUser(user.id)">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div *ngIf="users.length === 0" class="alert alert-info text-center">
+                No hay usuarios registrados.
+              </div>
+            </ng-container>
+          </ng-container>
+
+          <!-- Paginador Bootstrap -->
+          <ng-container *ngIf="(paginator$ | async) as paginator">
+            <nav *ngIf="paginator.totalPages > 1" aria-label="Paginación de usuarios" class="mt-3">
+              <ul class="pagination justify-content-center mb-0">
+                <li class="page-item" [class.disabled]="paginator.number === 0">
+                  <button class="page-link" (click)="goToPage(0)" [disabled]="paginator.number === 0">«</button>
+                </li>
+                <li class="page-item" [class.disabled]="paginator.number === 0">
+                  <button class="page-link" (click)="goToPage(paginator.number - 1)" [disabled]="paginator.number === 0">‹</button>
+                </li>
+                <ng-container *ngIf="dynamicPages[0] > 0">
+                  <li class="page-item disabled"><span class="page-link">...</span></li>
+                </ng-container>
+                <ng-container *ngFor="let page of dynamicPages">
+                  <li class="page-item" [class.active]="paginator.number === page">
+                    <button class="page-link" (click)="goToPage(page)">{{ page + 1 }}</button>
+                  </li>
+                </ng-container>
+                <ng-container *ngIf="dynamicPages[dynamicPages.length-1] < paginator.totalPages - 1">
+                  <li class="page-item disabled"><span class="page-link">...</span></li>
+                </ng-container>
+                <li class="page-item" [class.disabled]="paginator.number === paginator.totalPages - 1">
+                  <button class="page-link" (click)="goToPage(paginator.number + 1)" [disabled]="paginator.number === paginator.totalPages - 1">›</button>
+                </li>
+                <li class="page-item" [class.disabled]="paginator.number === paginator.totalPages - 1">
+                  <button class="page-link" (click)="goToPage(paginator.totalPages - 1)" [disabled]="paginator.number === paginator.totalPages - 1">»</button>
+                </li>
+              </ul>
+            </nav>
+          </ng-container>
+
+          <div *ngIf="errorMsg" class="alert alert-danger text-center mt-3">
+            {{ errorMsg }}
+          </div>
+        </div>
+      </div>
     </div>
   </div>
-</section>
-
-<!-- Loader CSS (puedes moverlo a tu archivo global de estilos si lo prefieres) -->
-<style>
-  .loader {
-    border-top-color: #3498db;
-    animation: spinner 1s linear infinite;
-  }
-  @keyframes spinner {
-    to {
-      transform: rotate(360deg);
-    }
-  }
-</style>
+</div>

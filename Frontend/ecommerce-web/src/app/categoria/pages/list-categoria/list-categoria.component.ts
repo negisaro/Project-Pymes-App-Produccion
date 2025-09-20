@@ -63,20 +63,34 @@ export class ListCategoriaComponent implements OnInit {
       title: '¿Seguro que deseas eliminar la categoría?',
       icon: 'warning',
       showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar'
     }).then(result => {
       if (result.isConfirmed) {
         this.categoriaService.deleteCategoria(id).subscribe({
           next: () => {
-            Swal.fire({ icon: 'success', title: 'Eliminada', text: 'Categoría eliminada correctamente' });
+            this.showSwalToast('Categoría eliminada correctamente', 'success');
             this.cargarCategorias();
           },
           error: () => {
-            Swal.fire({ icon: 'error', title: 'Error', text: 'Error al eliminar categoría' });
+            this.showSwalToast('Error al eliminar categoría', 'error');
           }
         });
       }
+    });
+  }
+
+  private showSwalToast(message: string, icon: 'success' | 'error' | 'info' | 'warning') {
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon,
+      title: message,
+      showConfirmButton: false,
+      timer: 2000,
+      timerProgressBar: true
     });
   }
   recargar(): void {

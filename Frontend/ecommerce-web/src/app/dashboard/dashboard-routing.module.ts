@@ -1,27 +1,14 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { DashboardLayoutComponent } from './layouts/dashboard-layout/dashboard-layout.component';
-import { HomePageComponent } from '../shared/pages/home-page/home-page.component';
-import { AboutPageComponent } from '../shared/pages/about-page/about-page.component';
+import { AdminDashboardComponent } from '../admin-dashboard/admin-dashboard.component';
+
 
 const routes: Routes = [
   {
     path: '',
-    component: DashboardLayoutComponent, // Solo personal autorizado (admin)
+    component: AdminDashboardComponent, // Nuevo layout profesional
     children: [
-      {
-        path: 'home',
-        component: HomePageComponent,
-      },
-      {
-        path: 'auth',
-        loadChildren: () =>
-          import('../auth/auth.module').then((m) => m.AuthModule),
-      },
-      {
-        path: 'about',
-        component: AboutPageComponent,
-      },
+      // Aquí van solo rutas administrativas protegidas
       {
         path: 'product',
         loadChildren: () =>
@@ -48,7 +35,7 @@ const routes: Routes = [
       },
       {
         path: '**',
-        redirectTo: 'home',
+        redirectTo: 'product',
       },
     ],
   },

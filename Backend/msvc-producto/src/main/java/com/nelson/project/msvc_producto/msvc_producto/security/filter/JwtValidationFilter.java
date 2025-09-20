@@ -43,7 +43,10 @@ public class JwtValidationFilter extends OncePerRequestFilter {
     if (
       path.startsWith("/public") ||
       path.startsWith("/swagger-ui") ||
-      path.startsWith("/v3/api-docs")
+      path.startsWith("/v3/api-docs") ||      
+      path.equals("/productos/list") ||
+      path.equals("/uploads/**") ||
+      path.startsWith("/productos/list/")
     ) {
       filterChain.doFilter(request, response);
       return;

@@ -2,28 +2,28 @@ package com.nelson.project.msvc_producto.msvc_producto.model.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 /**
  * Entidad Producto.
  * Representa los productos en el sistema, con validaciones y estructura profesional.
  */
 @Entity
-@Table(name = "productos")
-@Data
-@Builder
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Producto implements Serializable {
-
-  private static final long serialVersionUID = 1L;
+@Builder
+@Table(name = "productos")
+@EntityListeners(AuditingEntityListener.class)
+public class Producto extends AuditableEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,12 +45,6 @@ public class Producto implements Serializable {
   @NotNull(message = "El stock es obligatorio")
   @Min(value = 0, message = "El stock no puede ser negativo")
   private Integer stock;
-
-  @Column(name = "fecha_creacion", updatable = false)
-  private LocalDateTime fechaCreacion;
-
-  @Column(name = "fecha_actualizacion")
-  private LocalDateTime fechaActualizacion;
 
   // Relación moderna: solo guardamos el id, la consulta se hace vía REST a microservicio Categoria
   @Column(name = "categoria_id", nullable = false)
@@ -74,15 +68,4 @@ public class Producto implements Serializable {
   @Column(nullable = false)
   @NotNull(message = "El estado es obligatorio")
   private Boolean estado;
-
-  @PrePersist
-  protected void onCreate() {
-    fechaCreacion = LocalDateTime.now();
-    fechaActualizacion = fechaCreacion;
-  }
-
-  @PreUpdate
-  protected void onUpdate() {
-    fechaActualizacion = LocalDateTime.now();
-  }
 }

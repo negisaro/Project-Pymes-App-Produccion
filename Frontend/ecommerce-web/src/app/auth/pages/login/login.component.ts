@@ -1,7 +1,7 @@
 import { Component, effect, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import Swal from 'sweetalert2';
+import { ToastrService } from 'ngx-toastr';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -17,20 +17,22 @@ export class LoginComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     public authService: AuthService,
-    private router: Router
+    private router: Router,
+    private toastr: ToastrService
   ) {}
 
   // Declarar effect como propiedad de clase
   public loginEffect = effect(() => {
     if (this.authService.authStatus() === 'authenticated') {
+      this.toastr.success('Bienvenido, acceso exitoso', 'Login');
       this.router.navigateByUrl('/dashboard');
     }
   });
 
   ngOnInit(): void {
     this.loginForm = this.fb.group({
-      username: ['admin', Validators.required],
-      password: ['admin123', Validators.required],
+      username: ['', Validators.required],
+      password: ['', Validators.required],
     });
   }
 
@@ -44,12 +46,12 @@ export class LoginComponent implements OnInit {
         this.loginForm.reset();
         this.loading = false;
         this.errorMsg = '';
-        // La navegación se realiza automáticamente por el effect
+        // La navegación y feedback de éxito se realiza automáticamente por el effect
       },
       error: (err) => {
         this.loading = false;
         this.errorMsg = err?.message || err || 'Error de autenticación';
-        Swal.fire('Error', this.errorMsg, 'error');
+        this.toastr.error(this.errorMsg, 'Error de autenticación');
       },
     });
   }

@@ -3,6 +3,16 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import Swal from 'sweetalert2';
 import { RoleName, User } from '../../interfaces/user.interface';
+
+// DTO para crear/actualizar usuario
+interface UserCreateDto {
+  name: string;
+  lastname: string;
+  username: string;
+  password?: string;
+  email: string;
+  rolesIds: number[];
+}
 import { UserService } from '../../services/user.service';
 
 @Component({
@@ -15,146 +25,164 @@ export class AddUserComponent implements OnInit {
   rolesList = [
     { value: RoleName.ADMIN, label: 'Administrador' },
     { value: RoleName.USER, label: 'Usuario' },
-    { value: RoleName.SUPERVISOR, label: 'Supervisor' },
-    { value: RoleName.EMPLEADO, label: 'Empleado' },
+    { value: RoleName.CLIENTE, label: 'Cliente' },
   ];
   isEditMode = false;
   userId?: number;
   loading = false;
 
   // Debug visual
-  debugResponse: any = null;
-  debugError: any = null;
 
   constructor(
     private fb: FormBuilder,
     private userService: UserService,
     private route: ActivatedRoute,
     private router: Router
-  ) {}
+  ) // toastr eliminado, solo Swal
+  {}
 
   ngOnInit(): void {
     this.userForm = this.fb.group({
       name: ['', [Validators.required, Validators.maxLength(100)]],
       lastname: ['', [Validators.required, Validators.maxLength(100)]],
-      username: ['', [Validators.required, Validators.minLength(4), Validators.maxLength(12)]],
-      email: ['', [Validators.required, Validators.email, Validators.maxLength(100)]], // Cambia aquí
+      username: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(4),
+          Validators.maxLength(12),
+        ],
+      ],
+      email: [
+        '',
+        [Validators.required, Validators.email, Validators.maxLength(100)],
+      ],
       password: [''],
       roles: [[], [Validators.required]],
-      active: [true]
+      active: [true],
     });
 
-    this.route.paramMap.subscribe(params => {
+    this.route.paramMap.subscribe((params) => {
       const id = params.get('id');
       if (id) {
         this.isEditMode = true;
         this.userId = +id;
-        this.loadUser(+id);
-  // En edición, el password no es obligatorio ni visible
-  this.userForm.get('password')?.clearValidators();
-  this.userForm.get('password')?.setValue('');
-  this.userForm.get('password')?.updateValueAndValidity();
+        this.loadUserById(+id);
+        // En edición, el password no es obligatorio ni visible
+        this.userForm.get('password')?.clearValidators();
+        this.userForm.get('password')?.setValue('');
+        this.userForm.get('password')?.updateValueAndValidity();
       }
     });
   }
 
-  private loadUser(id: number) {
+  private loadUserById(id: number) {
     this.loading = true;
-    this.userService.getUser().subscribe({
-      next: (users) => {
-        const user = users.find(u => u.id === id);
-        if (user) {
-          this.userForm.patchValue({
-            name: user.name,
-            lastname: user.lastname,
-            username: user.username,
-            email: user.email, // ← Corrección aquí
-            roles: user.roles,
-            active: user.active
-          });
-        }
+    this.userService.getUserById(id).subscribe({
+      next: (user) => {
+        this.userForm.patchValue({
+          name: user.name,
+          lastname: user.lastname,
+          username: user.username,
+          email: user.email,
+          roles: user.roles,
+          active: user.active,
+        });
         this.loading = false;
+        this.showSwalToast('Usuario cargado para edición', 'info');
       },
       error: () => {
         this.loading = false;
-        Swal.fire('Error', 'No se pudo cargar el usuario.', 'error');
-      }
+        this.showSwalError('No se pudo cargar el usuario.');
+        this.router.navigate(['/dashboard/user/list-user']);
+      },
     });
   }
 
   onSubmit(): void {
     if (this.userForm.invalid) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Formulario incompleto',
-        text: 'Por favor, completa todos los campos obligatorios y verifica los datos.',
-        confirmButtonText: 'Entendido',
-      });
+      this.showSwalError(
+        'Por favor, completa todos los campos obligatorios y verifica los datos.'
+      );
       this.userForm.markAllAsTouched();
       return;
     }
+    this.loading = true;
+    const formValue = this.userForm.value;
+    const userDto: UserCreateDto = {
+      name: formValue.name,
+      lastname: formValue.lastname,
+      username: formValue.username,
+      password: formValue.password || undefined,
+      email: formValue.email,
+      rolesIds: Array.isArray(formValue.roles)
+        ? formValue.roles.map((r: any) => r.id)
+        : [],
+    };
+
     if (this.isEditMode && this.userId) {
-      const user: User = {
-        ...this.userForm.value,
-        id: this.userId,
-        password: '' // No se actualiza la contraseña aquí
-      };
-      this.userService.updateUser(user).subscribe({
-        next: (resp) => {
-          this.debugResponse = resp;
-          this.debugError = null;
-          Swal.fire({
-            icon: 'success',
-            title: 'Usuario actualizado',
-            text: 'El usuario ha sido actualizado exitosamente.',
-            timer: 1500,
-            showConfirmButton: false,
-          });
+      this.userService.updateUser(this.userId, userDto).subscribe({
+        next: () => {
+          this.loading = false;
+          this.showSwalToast('Usuario actualizado exitosamente', 'success');
           this.router.navigate(['/dashboard/user/list-user']);
         },
         error: (err) => {
-          this.debugError = err;
-          this.debugResponse = null;
-          Swal.fire('Error', 'No se pudo actualizar el usuario.', 'error');
-        }
+          this.loading = false;
+          const backendMsg =
+            err?.error?.mensaje || 'No se pudo actualizar el usuario.';
+          this.showSwalError(backendMsg);
+        },
       });
     } else {
-      const user: User = this.userForm.value;
-      this.userService.addUser(user).subscribe({
-        next: (resp) => {
-          this.debugResponse = resp;
-          this.debugError = null;
-          Swal.fire({
-            icon: 'success',
-            title: 'Usuario creado',
-            text: 'El usuario ha sido registrado exitosamente.',
-            timer: 1500,
-            showConfirmButton: false,
-          });
+      this.userService.addUser(userDto).subscribe({
+        next: () => {
+          this.loading = false;
+          this.showSwalToast('Usuario registrado exitosamente', 'success');
           this.userForm.reset({ active: true, roles: [] });
           this.router.navigate(['/dashboard/user/list-user']);
         },
         error: (err) => {
-          this.debugError = err;
-          this.debugResponse = null;
-          Swal.fire('Error', 'No se pudo registrar el usuario.', 'error');
-        }
+          this.loading = false;
+          const backendMsg =
+            err?.error?.mensaje || 'No se pudo registrar el usuario.';
+          this.showSwalError(backendMsg);
+        },
       });
     }
   }
 
   onClear(): void {
     if (this.isEditMode) {
-      this.loadUser(this.userId!);
+      this.loadUserById(this.userId!);
     } else {
       this.userForm.reset({ active: true, roles: [] });
     }
+    this.showSwalToast('El formulario ha sido limpiado.', 'info');
+  }
+
+  private showSwalToast(
+    message: string,
+    icon: 'success' | 'error' | 'info' | 'warning'
+  ) {
     Swal.fire({
-      icon: 'info',
-      title: 'Formulario limpio',
-      text: 'El formulario ha sido limpiado.',
-      timer: 1500,
+      toast: true,
+      position: 'top-end',
+      icon,
+      title: message,
       showConfirmButton: false,
+      timer: 2000,
+      timerProgressBar: true,
+    });
+  }
+
+  private showSwalError(message: string) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: message,
+      confirmButtonColor: '#d33',
+      timer: 2500,
     });
   }
 }

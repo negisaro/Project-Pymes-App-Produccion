@@ -1,94 +1,82 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow">
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow py-2">
   <div class="container-fluid">
-  <a class="navbar-brand fw-bold tracking-wide" routerLink="dashboard/user/add-user">Glow Dreams</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" routerLink="/dashboard/home">
+      <img src="assets/images/icons/favicon.ico" alt="Logo" width="36" height="36" class="d-inline-block align-text-top rounded-circle shadow-sm">
+      Glow Dreams
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav ms-auto align-items-center gap-2">
-        <!-- Links informativos y búsqueda -->
+    <div class="collapse navbar-collapse" id="navbarMain">
+      <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2 w-100">
+        <li class="nav-item d-none d-lg-block w-25">
+          <form class="d-flex align-items-center w-100" (submit)="onSearch(searchTerm.value)">
+            <input #searchTerm type="text" class="form-control form-control-sm me-2" placeholder="Buscar productos...">
+            <button class="btn btn-light btn-sm" type="submit"><i class="bi bi-search"></i></button>
+          </form>
+        </li>
+        <li class="nav-item d-lg-none">
+          <button class="btn btn-link nav-link p-0" aria-label="Buscar" (click)="showSearch = !showSearch">
+            <i class="bi bi-search fs-4"></i>
+          </button>
+        </li>
+        <li class="nav-item w-100" *ngIf="showSearch && isMobile()">
+          <form class="d-flex align-items-center w-100" (submit)="onSearch(searchTermMobile.value)">
+            <input #searchTermMobile type="text" class="form-control form-control-sm me-2" placeholder="Buscar productos...">
+            <button class="btn btn-primary btn-sm" type="submit"><i class="bi bi-arrow-right"></i></button>
+          </form>
+        </li>
+        <li class="nav-item ms-lg-3">
+          <a class="nav-link position-relative d-flex align-items-center" routerLink="/dashboard/home" aria-label="Carrito">
+            <i class="bi bi-cart3" style="font-size:1.8rem;"></i>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:0.8rem; min-width:1.5em;">{{ cartCount }}</span>
+          </a>
+        </li>
         <li class="nav-item">
           <a class="nav-link" routerLink="/dashboard/about">Acerca de</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" routerLink="/contact">Contáctenos</a>
         </li>
-        <li class="nav-item">
-          <button class="btn btn-link nav-link p-0" aria-label="Buscar" (click)="showSearch = !showSearch">
-            <i class="bi bi-search fs-4"></i>
-          </button>
-        </li>
-        <li class="nav-item w-100" *ngIf="showSearch">
-          <form class="d-flex align-items-center w-100" (submit)="onSearch(searchTerm.value)">
-            <input #searchTerm type="text" class="form-control form-control-sm me-2" placeholder="Buscar productos..." style="max-width:220px;">
-            <button class="btn btn-primary btn-sm" type="submit"><i class="bi bi-arrow-right"></i></button>
-          </form>
-        <!-- cierre correcto del li -->
-        </li>
-        <!-- Icono de carrito con contador, siempre visible y alineado a la derecha -->
-        <li class="nav-item ms-3">
-          <a class="nav-link position-relative d-flex align-items-center" routerLink="/dashboard/home" aria-label="Carrito">
-            <i class="bi bi-cart3" style="font-size:1.8rem;"></i>
-            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:0.8rem; min-width:1.5em;">{{ cartCount }}</span>
-          </a>
-        </li>
-        <!-- Si el usuario está autenticado -->
         <ng-container *ngIf="user$ | async as user; else loginButton">
-          <li class="nav-item me-2">
+          <!-- Menú usuario/cliente -->
+          <li class="nav-item dropdown ms-lg-2">
+            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarUserDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <div class="navbar-avatar me-2">
+                <img src="assets/images/icons/favicon.ico" alt="Avatar" width="32" height="32" class="rounded-circle">
+              </div>
+              <span class="navbar-user-name text-white fw-semibold d-none d-md-inline">{{ user?.name }} {{ user?.lastname }}</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end animate__animated animate__fadeIn" aria-labelledby="navbarUserDropdown">
+              <li><a class="dropdown-item" href="#">Perfil</a></li>
+              <li *ngIf="isAdmin"><a class="dropdown-item" routerLink="/dashboard">Tablero Admin</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger" href="#" (click)="logout()">Cerrar sesión</a></li>
+            </ul>
+          </li>
+          <li class="nav-item ms-lg-2">
             <button class="btn btn-link nav-link position-relative p-0" style="font-size:1.4rem;" aria-label="Notificaciones">
               <i class="bi bi-bell"></i>
               <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:0.7rem;" *ngIf="notificationsCount > 0">{{ notificationsCount }}</span>
             </button>
           </li>
-          <!-- Menú usuario -->
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarUserDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              <div class="navbar-avatar me-2">
-                <img src="assets/images/icons/favicon.ico" alt="Avatar" />
-              </div>
-              <div class="navbar-user-info d-none d-md-block text-end">
-                <div class="navbar-user-name text-white fw-semibold">{{ user?.name }} {{ user?.lastname }}</div>
-                <div class="navbar-user-role text-white-50 small">{{ getRoleLabel(user?.roles?.[0]?.name) }}</div>
-              </div>
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end animate__animated animate__fadeIn" aria-labelledby="navbarUserDropdown">
-              <li><a class="dropdown-item" href="#">Perfil</a></li>
-              <li *ngIf="isAdmin(user)"><a class="dropdown-item" href="#">Panel Admin</a></li>
-              <li *ngIf="isSupervisor(user)"><a class="dropdown-item" href="#">Panel Supervisor</a></li>
-              <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item text-danger" href="#" (click)="logout()">Cerrar sesión</a></li>
-            </ul>
+          <!-- Menú admin: acceso a dashboard -->
+          <li class="nav-item ms-lg-2" *ngIf="isAdmin">
+            <a class="nav-link" routerLink="/dashboard">Dashboard</a>
           </li>
-          <!-- Menú principal -->
-          <li class="nav-item">
-            <a class="nav-link active" aria-current="page" routerLink="/dashboard/home">Inicio</a>
+          <!-- Menú cliente: solo acceso a productos, carrito, perfil, contacto, etc. -->
+          <li class="nav-item ms-lg-2" *ngIf="isCliente">
+            <a class="nav-link" routerLink="/home">Inicio</a>
           </li>
-          <li class="nav-item" *ngIf="isAdmin(user)">
-            <a class="nav-link" routerLink="/dashboard/user/list-user">Usuarios</a>
-          </li>
-          <li class="nav-item" *ngIf="isAdmin(user) || isSupervisor(user)">
-            <a class="nav-link" routerLink="/dashboard/product/list-product">Productos</a>
-          </li>
-          <li class="nav-item" *ngIf="isAdmin(user) || isSupervisor(user)">
-            <a class="nav-link" routerLink="/dashboard/categoria/list">Categorías</a>
-          </li>
-          <li class="nav-item" *ngIf="isAdmin(user) || isSupervisor(user)">
-            <a class="nav-link" routerLink="/dashboard/proveedor/list">Proveedor</a>
-          </li>
-          <li class="nav-item" *ngIf="isAdmin(user) || isSupervisor(user)">
-            <a class="nav-link" routerLink="/dashboard/product/add-product">Agregar Productos</a>
-          </li>
-          <!-- Botón logout empresarial -->
-          <li class="nav-item ms-2">
+          <li class="nav-item ms-lg-2">
             <a class="logout-btn-modern" (click)="logout()" aria-label="Cerrar sesión">
               <i class="bi bi-door-open-fill logout-icon"></i>
               <span>Salir</span>
             </a>
           </li>
         </ng-container>
-        <!-- Si el usuario NO está autenticado -->
         <ng-template #loginButton>
-          <li class="nav-item">
+          <li class="nav-item ms-lg-2">
             <a class="btn btn-outline-light fw-semibold px-3" routerLink="auth/login">
               <i class="bi bi-box-arrow-in-right"></i> Login
             </a>

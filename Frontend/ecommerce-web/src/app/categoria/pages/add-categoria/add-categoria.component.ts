@@ -21,16 +21,44 @@ export class AddCategoriaComponent implements OnInit {
   modoEdicion: boolean = false;
   categoriaId: number | null = null;
 
+
   constructor(
     private fb: FormBuilder,
     private categoriaService: CategoriaService,
-    private router: Router,
+    public router: Router,
     private route: ActivatedRoute
   ) {
     this.categoriaForm = this.fb.group({
       nombre: ['', Validators.required],
       descripcion: [''],
       estado: [true, Validators.required]
+    });
+  }
+
+  onClear(): void {
+    this.categoriaForm.reset({ estado: true });
+    this.showSwalToast('El formulario ha sido limpiado.', 'info');
+  }
+
+  private showSwalToast(message: string, icon: 'success' | 'error' | 'info' | 'warning') {
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon,
+      title: message,
+      showConfirmButton: false,
+      timer: 2000,
+      timerProgressBar: true
+    });
+  }
+
+  private showSwalError(message: string) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: message,
+      confirmButtonColor: '#d33',
+      timer: 2500
     });
   }
 
@@ -48,17 +76,10 @@ export class AddCategoriaComponent implements OnInit {
               descripcion: categoria.descripcion,
               estado: categoria.estado
             });
+            this.showSwalToast('Categoría cargada para edición', 'info');
           },
           error: () => {
-            Swal.fire({
-              icon: 'error',
-              title: 'Error',
-              text: 'No se pudo cargar la categoría para editar.',
-              timer: 2000,
-              showConfirmButton: false,
-              toast: true,
-              position: 'top-end'
-            });
+            this.showSwalError('No se pudo cargar la categoría para editar.');
             this.router.navigate(['/dashboard/categoria/list']);
           }
         });
@@ -67,7 +88,11 @@ export class AddCategoriaComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.categoriaForm.invalid) return;
+    if (this.categoriaForm.invalid) {
+      this.showSwalError('Por favor, completa todos los campos obligatorios y verifica los datos.');
+      this.categoriaForm.markAllAsTouched();
+      return;
+    }
     const categoria: Categoria = this.categoriaForm.value;
     this.debugResponse = null;
     this.debugError = null;
@@ -76,30 +101,14 @@ export class AddCategoriaComponent implements OnInit {
       this.categoriaService.updateCategoria(this.categoriaId, categoria).subscribe({
         next: (response) => {
           this.debugResponse = response;
-          Swal.fire({
-            icon: 'success',
-            title: '¡Categoría actualizada!',
-            text: 'La categoría se actualizó correctamente.',
-            timer: 1800,
-            showConfirmButton: false,
-            toast: true,
-            position: 'top-end'
-          });
+          this.showSwalToast('¡Categoría actualizada!', 'success');
           setTimeout(() => {
             this.router.navigate(['/dashboard/categoria/list']);
           }, 1800);
         },
         error: (error) => {
           this.debugError = error;
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'No se pudo actualizar la categoría.',
-            timer: 2000,
-            showConfirmButton: false,
-            toast: true,
-            position: 'top-end'
-          });
+          this.showSwalError('No se pudo actualizar la categoría.');
           this.errores = [{ mensaje: 'Error al actualizar categoría' }];
         }
       });
@@ -108,30 +117,14 @@ export class AddCategoriaComponent implements OnInit {
       this.categoriaService.addCategoria(categoria).subscribe({
         next: (response) => {
           this.debugResponse = response;
-          Swal.fire({
-            icon: 'success',
-            title: '¡Categoría agregada!',
-            text: 'La categoría se agregó correctamente.',
-            timer: 1800,
-            showConfirmButton: false,
-            toast: true,
-            position: 'top-end'
-          });
+          this.showSwalToast('¡Categoría agregada!', 'success');
           setTimeout(() => {
             this.router.navigate(['/dashboard/categoria/list']);
           }, 1800);
         },
         error: (error) => {
           this.debugError = error;
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'No se pudo agregar la categoría.',
-            timer: 2000,
-            showConfirmButton: false,
-            toast: true,
-            position: 'top-end'
-          });
+          this.showSwalError('No se pudo agregar la categoría.');
           this.errores = [{ mensaje: 'Error al agregar categoría' }];
         }
       });

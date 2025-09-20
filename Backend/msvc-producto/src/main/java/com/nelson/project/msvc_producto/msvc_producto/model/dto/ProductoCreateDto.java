@@ -52,7 +52,7 @@ public class ProductoCreateDto implements Serializable {
   private Long proveedorId;
 
   /** Lista de URLs de imágenes */
-  private List<@NotBlank String> imagenes;
+  private List<String> imagenes;
 
   /** Estado del producto (activo/inactivo) */
   @NotNull

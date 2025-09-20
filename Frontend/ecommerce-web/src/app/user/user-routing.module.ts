@@ -18,14 +18,12 @@ const routes: Routes = [
   {
     path: 'add-user',
     component: AddUserComponent,
-    canActivate: [RoleGuard],
-    data: { roles: [RoleName.ADMIN] }
+    
   },
   {
     path: 'edit-user/:id',
     component: AddUserComponent,
-    canActivate: [RoleGuard],
-    data: { roles: [RoleName.ADMIN] }
+    
   },
   {
     path: 'page-user/:page',

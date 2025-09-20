@@ -12,8 +12,8 @@ function toRoleArray(roles: string[]): Role[] {
       switch (role) {
         case 'ROLE_ADMIN': return { name: RoleName.ADMIN };
         case 'ROLE_USER': return { name: RoleName.USER };
-        case 'ROLE_SUPERVISOR': return { name: RoleName.SUPERVISOR };
-        case 'ROLE_EMPLEADO': return { name: RoleName.EMPLEADO };
+        case 'ROLE_CLIENT': return { name: RoleName.CLIENTE };
+        
         default: return undefined;
       }
     })
@@ -158,9 +158,9 @@ export class AuthService {
   }
 
   /** Envía email para recuperación de contraseña */
-  sendResetPasswordEmail(username: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/api/auth/forgot-password`, { username }).pipe(
-      catchError((err) => throwError(() => new Error(err?.error?.message || 'Error enviando email de recuperación')))
+  sendResetPasswordEmail(email: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/api/auth/forgot-password`, { email }).pipe(
+      catchError((err) => throwError(() => new Error(err?.error?.mensaje || err?.error?.message || 'Error enviando email de recuperación')))
     );
   }
 
@@ -172,9 +172,9 @@ export class AuthService {
   }
 
   /** Restablece la contraseña usando token */
-  resetPassword(token: string, password: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/api/auth/reset-password`, { token, password }).pipe(
-      catchError((err) => throwError(() => new Error(err?.error?.message || 'Error al restablecer contraseña')))
+  resetPassword(token: string, newPassword: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/api/auth/reset-password`, { token, newPassword }).pipe(
+      catchError((err) => throwError(() => new Error(err?.error?.mensaje || err?.error?.message || 'Error al restablecer contraseña')))
     );
   }
 
@@ -209,8 +209,7 @@ export class AuthService {
       switch (role) {
         case 'ROLE_ADMIN': return RoleName.ADMIN;
         case 'ROLE_USER': return RoleName.USER;
-        case 'ROLE_SUPERVISOR': return RoleName.SUPERVISOR;
-        case 'ROLE_EMPLEADO': return RoleName.EMPLEADO;
+        case 'ROLE_CLIENT': return RoleName.CLIENTE;
         default: return undefined;
       }
     };
@@ -231,7 +230,7 @@ export class AuthService {
   /** Obtiene los roles disponibles desde el backend */
   getRoles(): Observable<string[]> {
     return this.http.get<string[]>(`${this.baseUrl}/api/roles`).pipe(
-      catchError(() => of(['USER', 'ADMIN', 'SUPERVISOR', 'EMPLEADO']))
+      catchError(() => of(['USER', 'ADMIN', 'CLIENTE']))
     );
   }
 }

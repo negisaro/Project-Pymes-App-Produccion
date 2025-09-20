@@ -2,6 +2,9 @@ package com.nelson.project.msvc_categoria.msvc_categoria.model.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+
 import java.time.LocalDateTime;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -25,5 +28,15 @@ public abstract class AuditableEntity {
 
   public LocalDateTime getActualizadoEn() {
     return actualizadoEn;
+  }
+
+  @PrePersist
+  public void prePersist() {
+    this.creadoEn = LocalDateTime.now();
+  }
+
+  @PreUpdate
+  public void preUpdate() {
+    this.actualizadoEn = LocalDateTime.now();
   }
 }

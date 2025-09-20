@@ -64,20 +64,34 @@ export class ListProveedorComponent implements OnInit {
       title: '¿Seguro que deseas eliminar el proveedor?',
       icon: 'warning',
       showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar'
     }).then(result => {
       if (result.isConfirmed) {
         this.proveedorService.eliminarProveedor(id).subscribe({
           next: () => {
-            Swal.fire({ icon: 'success', title: 'Eliminado', text: 'Proveedor eliminado correctamente' });
+            this.showSwalToast('Proveedor eliminado correctamente', 'success');
             this.cargarProveedores();
           },
           error: () => {
-            Swal.fire({ icon: 'error', title: 'Error', text: 'Error al eliminar proveedor' });
+            this.showSwalToast('Error al eliminar proveedor', 'error');
           }
         });
       }
+    });
+  }
+
+  private showSwalToast(message: string, icon: 'success' | 'error' | 'info' | 'warning') {
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon,
+      title: message,
+      showConfirmButton: false,
+      timer: 2000,
+      timerProgressBar: true
     });
   }
 

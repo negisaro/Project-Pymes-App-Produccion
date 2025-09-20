@@ -1,0 +1,149 @@
+/* Card principal */
+.list-proveedor-container {
+	max-width: 1100px;
+	margin: 40px auto;
+	background: #fff;
+	border-radius: 12px;
+	box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+	padding: 32px 40px;
+	font-family: 'Segoe UI', Arial, sans-serif;
+}
+.header-listado {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 1.5rem;
+}
+.titulo {
+	text-align: center;
+	font-size: 2rem;
+	color: #2d3748;
+	margin: 0;
+}
+.btn-agregar {
+	background: #1976d2;
+	color: #fff;
+	border: none;
+	border-radius: 6px;
+	padding: 0.7rem 1.5rem;
+	font-size: 1rem;
+	cursor: pointer;
+	font-weight: 500;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	transition: background 0.2s;
+}
+.btn-agregar:hover {
+	background: #1565c0;
+}
+.icono-mas {
+	font-size: 1.3rem;
+	font-weight: bold;
+}
+.btn-recargar {
+	background: #e3eafc;
+	color: #1976d2;
+	border: none;
+	border-radius: 6px;
+	padding: 0.7rem 1.2rem;
+	font-size: 1rem;
+	cursor: pointer;
+	margin-left: 0.7rem;
+	transition: background 0.2s;
+}
+.btn-recargar:hover {
+	background: #b3c6f7;
+}
+.tabla-proveedores {
+	width: 100%;
+	border-collapse: collapse;
+	margin-bottom: 1.5rem;
+}
+.tabla-proveedores th, .tabla-proveedores td {
+	padding: 0.8rem;
+	border-bottom: 1px solid #ecf0f1;
+	text-align: left;
+}
+.tabla-proveedores th {
+	background: #f8f9fa;
+	color: #34495e;
+}
+.activo {
+	color: #27ae60;
+	font-weight: bold;
+}
+.inactivo {
+	color: #e74c3c;
+	font-weight: bold;
+}
+.btn-editar {
+	background: #f1c40f;
+	color: #fff;
+	border: none;
+	border-radius: 6px;
+	padding: 0.5rem 1rem;
+	font-size: 0.95rem;
+	cursor: pointer;
+	margin-right: 0.5rem;
+	transition: background 0.2s;
+}
+.btn-editar:hover {
+	background: #f39c12;
+}
+.btn-eliminar {
+	background: #e74c3c;
+	color: #fff;
+	border: none;
+	border-radius: 6px;
+	padding: 0.5rem 1rem;
+	font-size: 0.95rem;
+	cursor: pointer;
+	transition: background 0.2s;
+}
+.btn-eliminar:hover {
+	background: #c0392b;
+}
+.paginacion-container {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 1.5rem;
+	margin-bottom: 1rem;
+}
+.btn-paginacion {
+	background: #2980b9;
+	color: #fff;
+	border: none;
+	border-radius: 6px;
+	padding: 0.5rem 1rem;
+	font-size: 1rem;
+	cursor: pointer;
+	transition: background 0.2s;
+}
+.btn-paginacion:disabled {
+	background: #bdc3c7;
+	cursor: not-allowed;
+}
+.paginacion-info {
+	color: #34495e;
+	font-size: 1rem;
+}
+.success {
+	color: #38a169;
+	text-align: center;
+	margin-top: 1rem;
+}
+.error {
+	color: #e53e3e;
+	text-align: center;
+	margin-top: 0.5rem;
+}
+@media (max-width: 900px) {
+	.list-proveedor-container {
+		padding: 18px 8px;
+	}
+	.tabla-proveedores th, .tabla-proveedores td {
+		padding: 0.5rem;
+	}
+}

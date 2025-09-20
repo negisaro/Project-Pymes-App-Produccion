@@ -17,9 +17,14 @@ import org.springframework.stereotype.Service;
 public class CategoriaServiceImpl implements CategoriaService {
 
   private final CategoriaRepository categoriaRepository;
+  private final CategoriaMapper categoriaMapper;
 
-  public CategoriaServiceImpl(CategoriaRepository categoriaRepository) {
+  public CategoriaServiceImpl(
+    CategoriaRepository categoriaRepository,
+    CategoriaMapper categoriaMapper
+  ) {
     this.categoriaRepository = categoriaRepository;
+    this.categoriaMapper = categoriaMapper;
   }
 
   @Override
@@ -29,9 +34,9 @@ public class CategoriaServiceImpl implements CategoriaService {
       .orElseThrow(() ->
         new IllegalArgumentException("Categoría no encontrada con id: " + id)
       );
-    CategoriaMapper.updateEntityFromDto(categoria, categoriaCreateDto);
+    categoriaMapper.updateEntityFromDto(categoriaCreateDto, categoria);
     Categoria updated = categoriaRepository.save(categoria);
-    return CategoriaMapper.toDto(updated);
+    return categoriaMapper.toDto(updated);
   }
 
   @Override
@@ -39,25 +44,25 @@ public class CategoriaServiceImpl implements CategoriaService {
     return categoriaRepository
       .findAll()
       .stream()
-      .map(CategoriaMapper::toDto)
+      .map(categoriaMapper::toDto)
       .collect(Collectors.toList());
   }
 
   @Override
   public Optional<CategoriaDTO> findById(Long id) {
-    return categoriaRepository.findById(id).map(CategoriaMapper::toDto);
+    return categoriaRepository.findById(id).map(categoriaMapper::toDto);
   }
 
   @Override
   public Page<CategoriaDTO> findAll(Pageable pageable) {
-    return categoriaRepository.findAll(pageable).map(CategoriaMapper::toDto);
+    return categoriaRepository.findAll(pageable).map(categoriaMapper::toDto);
   }
 
   @Override
   public CategoriaDTO save(CategoriaCreateDto categoriaCreateDto) {
-    Categoria categoria = CategoriaMapper.fromCreateDto(categoriaCreateDto);
+    Categoria categoria = categoriaMapper.fromCreateDto(categoriaCreateDto);
     Categoria saved = categoriaRepository.save(categoria);
-    return CategoriaMapper.toDto(saved);
+    return categoriaMapper.toDto(saved);
   }
 
   @Override
