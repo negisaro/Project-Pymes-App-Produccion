@@ -1,7 +1,9 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
 import { AuthService } from '../../../auth/services/auth.service';
+import { Observable } from 'rxjs';
+
 @Component({
   selector: 'shared-sidebar',
   templateUrl: './sidebar.component.html',
@@ -11,17 +13,7 @@ export class SidebarComponent {
   collapsed = false;
   private authService = inject(AuthService);
   private router = inject(Router);
-  user = computed(() => this.authService.currentUser());
-
-  get isAdmin(): boolean {
-    const u = this.user();
-    return !!u && Array.isArray(u.roles) && u.roles.some(r => r.name === 'ROLE_ADMIN');
-  }
-
-  get isCliente(): boolean {
-    const u = this.user();
-    return !!u && Array.isArray(u.roles) && !u.roles.some(r => r.name === 'ROLE_ADMIN');
-  }
+  user$: Observable<any> = this.authService.currentUser$;
 
   getRoleLabel(role?: string): string {
     switch (role) {
@@ -30,6 +22,14 @@ export class SidebarComponent {
       case 'ROLE_CLIENT': return 'Cliente';
       default: return 'Usuario';
     }
+  }
+
+  isAdmin(u: any): boolean {
+    return !!u && Array.isArray(u.roles) && u.roles.some((r: { name: string }) => r.name === 'ROLE_ADMIN');
+  }
+
+  isCliente(u: any): boolean {
+    return !!u && Array.isArray(u.roles) && !u.roles.some((r: { name: string }) => r.name === 'ROLE_ADMIN');
   }
 
   async logout() {

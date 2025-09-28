@@ -61,8 +61,9 @@ export class ListUserComponent implements OnInit {
     }
   }
 
+
   irAgregarUsuario(): void {
-    this.router.navigate(['/dashboard/user/add-user']);
+    this.router.navigate(['add-user'], { relativeTo: this.route });
   }
 
   onDeleteUser(id: number): void {
@@ -106,15 +107,17 @@ export class ListUserComponent implements OnInit {
     });
   }
 
+
   goToEditUser(id: number): void {
-    this.router.navigate(['/dashboard/user/edit-user', id]);
+    this.router.navigate(['edit-user', id], { relativeTo: this.route });
   }
+
 
   goToPage(page: number): void {
     const paginator = this.paginator$.value;
     if (!paginator) return;
     if (page >= 0 && page < paginator.totalPages && page !== paginator.number) {
-      this.router.navigate(['/dashboard/user/list-user', { page }]);
+      this.router.navigate(['list-user', { page }], { relativeTo: this.route });
     }
   }
 

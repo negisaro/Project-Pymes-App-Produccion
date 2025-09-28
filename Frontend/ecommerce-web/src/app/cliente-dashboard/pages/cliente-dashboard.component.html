@@ -1,0 +1,123 @@
+<div class="cliente-dashboard-bg">
+  <section class="dashboard-hero-glass d-flex flex-column flex-md-row align-items-center justify-content-between mb-4 animate-fade-in">
+    <div class="p-4 flex-grow-1">
+      <div class="d-flex align-items-center gap-3 mb-2">
+        <img [src]="user.avatar" alt="Avatar" class="dashboard-avatar shadow-glass">
+        <div>
+          <h2 class="fw-bold gradient-text mb-0">¡Hola, {{ user.nombre }}!</h2>
+          <span class="badge bg-gradient bg-primary px-3 py-2 shadow-sm dashboard-badge">Nivel {{ user.nivel }}</span>
+        </div>
+      </div>
+      <div class="d-flex gap-3 mt-2">
+        <div class="dashboard-info-card">
+          <i class="bi bi-star-fill text-warning fs-4"></i>
+          <span class="fw-semibold">{{ user.puntos }} pts</span>
+        </div>
+        <div class="dashboard-info-card">
+          <i class="bi bi-ticket-detailed text-info fs-4"></i>
+          <span class="fw-semibold">{{ user.cupones }} cupones</span>
+        </div>
+      </div>
+    </div>
+    <div class="d-none d-md-block flex-shrink-0 pe-4">
+      <img src="assets/images/cliente-hero.jpg" alt="Bienvenida" class="dashboard-hero-img-glass">
+    </div>
+  </section>
+
+  <section class="dashboard-section-cards row g-4 mb-4">
+    <div class="col-12 col-md-4">
+      <div class="card glass-card dashboard-card shadow-lg border-0 animate-pop">
+        <div class="card-body">
+          <h5 class="fw-bold gradient-text mb-2">Pedidos recientes</h5>
+          <ul class="list-unstyled mb-0">
+            <li *ngFor="let pedido of pedidosRecientes" class="mb-2">
+              <span class="fw-semibold">#{{ pedido.id }}</span> - {{ pedido.fecha }}
+              <span class="badge ms-2" [ngClass]="{
+                'bg-success': pedido.estado === 'Entregado',
+                'bg-warning text-dark': pedido.estado === 'Enviado',
+                'bg-danger': pedido.estado === 'Cancelado'
+              }">{{ pedido.estado }}</span>
+              <span class="float-end fw-bold">{{ pedido.total | currency:'COP':'symbol':'1.0-0':'es-CO' }}</span>
+            </li>
+          </ul>
+          <a class="btn btn-gradient-navbar btn-sm mt-3 w-100" href="#">Ver historial completo</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="card glass-card dashboard-card shadow-lg border-0 animate-pop">
+        <div class="card-body">
+          <h5 class="fw-bold gradient-text mb-2">Carrito actual</h5>
+          <ul class="list-unstyled mb-0">
+            <li *ngFor="let item of carrito" class="mb-2">
+              <span class="fw-semibold">{{ item.nombre }}</span> x{{ item.cantidad }}
+              <span class="float-end fw-bold">{{ item.precio | currency:'COP':'symbol':'1.0-0':'es-CO' }}</span>
+            </li>
+          </ul>
+          <a class="btn btn-gradient-navbar btn-sm mt-3 w-100" href="#">Ir al carrito</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="card glass-card dashboard-card shadow-lg border-0 animate-pop">
+        <div class="card-body">
+          <h5 class="fw-bold gradient-text mb-2">Favoritos</h5>
+          <ul class="list-unstyled mb-0">
+            <li *ngFor="let fav of favoritos" class="mb-2">
+              <span class="fw-semibold">{{ fav.nombre }}</span>
+              <span class="float-end fw-bold">{{ fav.precio | currency:'COP':'symbol':'1.0-0':'es-CO' }}</span>
+            </li>
+          </ul>
+          <a class="btn btn-gradient-navbar btn-sm mt-3 w-100" href="#">Ver todos</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="dashboard-section-recomendaciones mb-4">
+    <h4 class="fw-bold gradient-text mb-3">Recomendados para ti</h4>
+    <div class="d-flex gap-3 flex-nowrap overflow-auto pb-2">
+      <div class="card glass-card dashboard-reco-card shadow border-0 animate-pop" *ngFor="let reco of recomendaciones">
+        <img [src]="reco.img" alt="{{ reco.nombre }}" class="dashboard-reco-img">
+        <div class="card-body p-2">
+          <h6 class="fw-bold mb-1">{{ reco.nombre }}</h6>
+          <span class="fw-semibold gradient-text">{{ reco.precio | currency:'COP':'symbol':'1.0-0':'es-CO' }}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="dashboard-section-promos mb-4">
+    <h4 class="fw-bold gradient-text mb-3">Promociones y beneficios</h4>
+    <div class="row g-3">
+      <div class="col-12 col-md-6" *ngFor="let promo of promociones">
+        <div class="dashboard-promo-card glass-card p-3 shadow animate-fade-in">
+          <h6 class="fw-bold mb-1 text-light">{{ promo.titulo }}</h6>
+          <span class="text-light-50">{{ promo.descripcion }}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="dashboard-section-accesos mb-4">
+    <h4 class="fw-bold gradient-text mb-3">Accesos rápidos</h4>
+    <div class="d-flex flex-wrap gap-3">
+      <a class="dashboard-access-btn btn-glass d-flex flex-column align-items-center justify-content-center" href="#">
+        <i class="bi bi-person-lines-fill fs-2 mb-1"></i>
+        <span>Editar perfil</span>
+      </a>
+      <a class="dashboard-access-btn btn-glass d-flex flex-column align-items-center justify-content-center" href="#">
+        <i class="bi bi-geo-alt fs-2 mb-1"></i>
+        <span>Direcciones</span>
+      </a>
+      <a class="dashboard-access-btn btn-glass d-flex flex-column align-items-center justify-content-center" href="#">
+        <i class="bi bi-credit-card-2-front fs-2 mb-1"></i>
+        <span>Métodos de pago</span>
+      </a>
+      <a class="dashboard-access-btn btn-glass d-flex flex-column align-items-center justify-content-center" href="#">
+        <i class="bi bi-question-circle fs-2 mb-1"></i>
+        <span>Soporte</span>
+      </a>
+    </div>
+  </section>
+</div>

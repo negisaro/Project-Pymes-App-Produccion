@@ -8,19 +8,8 @@ import { AddUserComponent } from './pages/add-user/add-user.component';
 import { ListUserComponent } from './pages/list-user/list-user.component';
 import { UserRoutingModule } from './user-routing.module';
 
-
-
 @NgModule({
-  declarations: [
-    AddUserComponent,
-    LayoutUserComponent,
-    ListUserComponent
-  ],
-  imports: [
-    CommonModule,
-    SharedModule,
-    UserRoutingModule,
-    ReactiveFormsModule  
-  ]
+  declarations: [AddUserComponent, LayoutUserComponent, ListUserComponent],
+  imports: [CommonModule, SharedModule, UserRoutingModule, ReactiveFormsModule],
 })
-export class UserModule { }
+export class UserModule {}

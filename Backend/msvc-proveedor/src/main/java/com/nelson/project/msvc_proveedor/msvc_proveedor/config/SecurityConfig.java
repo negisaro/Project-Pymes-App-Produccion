@@ -1,5 +1,6 @@
 package com.nelson.project.msvc_proveedor.msvc_proveedor.config;
 
+import com.nelson.project.msvc_proveedor.msvc_proveedor.security.SecurityPaths;
 import com.nelson.project.msvc_proveedor.msvc_proveedor.security.UserDetailsServiceImpl;
 import com.nelson.project.msvc_proveedor.msvc_proveedor.security.filter.JwtValidationFilter;
 import com.nelson.project.msvc_proveedor.msvc_proveedor.security.service.JwtService;
@@ -16,15 +17,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 public class SecurityConfig {
 
-  private static final String[] PUBLIC_ENDPOINTS = {
-    "/public/**",
-    "/swagger-ui/**",
-    "/v3/api-docs/**",
-  };
-
-  /**
-   * Bean para el filtro de validación JWT.
-   */
   @Bean
   public JwtValidationFilter jwtValidationFilter(
     JwtService jwtService,
@@ -33,9 +25,6 @@ public class SecurityConfig {
     return new JwtValidationFilter(jwtService, userDetailsService);
   }
 
-  /**
-   * Configuración principal de la cadena de filtros de seguridad.
-   */
   @Bean
   public SecurityFilterChain securityFilterChain(
     HttpSecurity http,
@@ -48,7 +37,9 @@ public class SecurityConfig {
       )
       .authorizeHttpRequests(authz ->
         authz
-          .requestMatchers(PUBLIC_ENDPOINTS)
+          .requestMatchers(SecurityPaths.PUBLIC_GET)
+          .permitAll()
+          .requestMatchers(SecurityPaths.PUBLIC_POST)
           .permitAll()
           .anyRequest()
           .authenticated()
@@ -57,8 +48,6 @@ public class SecurityConfig {
         jwtValidationFilter,
         UsernamePasswordAuthenticationFilter.class
       );
-
-    // Puedes agregar configuración de CORS, manejo de excepciones, etc. aquí
 
     return http.build();
   }

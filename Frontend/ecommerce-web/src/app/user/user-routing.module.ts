@@ -7,31 +7,16 @@ import { ListUserComponent } from './pages/list-user/list-user.component';
 import { RoleGuard } from '../auth/guards/role.guard';
 
 const routes: Routes = [
-   {
+  {
     path: '',
     component: LayoutUserComponent,
-  },
-  {
-    path: 'list-user',
-    component: ListUserComponent
-  },
-  {
-    path: 'add-user',
-    component: AddUserComponent,
-    
-  },
-  {
-    path: 'edit-user/:id',
-    component: AddUserComponent,
-    
-  },
-  {
-    path: 'page-user/:page',
-    component: ListUserComponent
-  },
-  {
-    path: '**',
-    redirectTo: 'home',
+    children: [
+      { path: '', component: ListUserComponent },
+      { path: 'add-user', component: AddUserComponent },
+      { path: 'edit-user/:id', component: AddUserComponent },
+      { path: 'page-user/:page', component: ListUserComponent },
+      { path: '**', redirectTo: '' }
+    ]
   }
 ];
 

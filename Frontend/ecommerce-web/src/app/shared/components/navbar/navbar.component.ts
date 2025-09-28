@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, HostListener, ElementRef } from '@angular/core';
 import { CartService } from '../../services/cart.service';
 import { BehaviorSubject } from 'rxjs';
 import { toObservable } from '@angular/core/rxjs-interop';
@@ -12,13 +12,14 @@ import { AuthService } from '../../../auth/services/auth.service';
   styleUrls: ['./navbar.component.css'],
 })
 export class NavbarComponent implements OnInit {
+  showProfileMenu = false;
   cartCount = 0;
   private cartService = inject(CartService);
   favoritesCount = 0;
   private authService = inject(AuthService);
   private router = inject(Router);
   user$ = new BehaviorSubject<any>(null);
-  userObservable = toObservable(this.authService.currentUser);
+  userObservable = this.authService.currentUser$;
   notificationsCount = 0;
   showSearch = false;
 
@@ -32,6 +33,8 @@ export class NavbarComponent implements OnInit {
     return !!u && Array.isArray(u.roles) && u.roles.some((r: any) => r.name === 'ROLE_CLIENT');
   }
 
+  constructor(private eRef: ElementRef) {}
+
   ngOnInit() {
     // Forzar estado inicial a null por seguridad
     this.user$.next(null);
@@ -42,6 +45,22 @@ export class NavbarComponent implements OnInit {
     this.cartService.cartCount$.subscribe(count => {
       this.cartCount = count;
     });
+  }
+
+  toggleProfileMenu(event: Event) {
+    event.preventDefault();
+    this.showProfileMenu = !this.showProfileMenu;
+  }
+
+  closeProfileMenu() {
+    this.showProfileMenu = false;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    if (this.showProfileMenu && !this.eRef.nativeElement.contains(event.target)) {
+      this.closeProfileMenu();
+    }
   }
 
   getRoleLabel(role?: string): string {
@@ -65,6 +84,7 @@ export class NavbarComponent implements OnInit {
       this.showSearch = false;
     }
   }
+
   isEmpleado(user?: any): boolean {
     const u = user ?? this.user$.value;
     return !!u?.roles?.some((r: any) => r.name === 'ROLE_EMPLEADO');
@@ -86,9 +106,9 @@ export class NavbarComponent implements OnInit {
       cancelButtonText: 'Cancelar',
     });
     if (result.isConfirmed) {
-  this.authService.logout();
-  this.user$.next(null);
-  this.router.navigate(['/']);
+      this.authService.logout();
+      this.user$.next(null);
+      this.router.navigate(['/']);
     }
   }
 }

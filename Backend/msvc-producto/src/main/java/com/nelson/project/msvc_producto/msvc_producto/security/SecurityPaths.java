@@ -10,6 +10,7 @@ public final class SecurityPaths {
     "/swagger-ui/**",
     "/v3/api-docs/**",
     "/public/**",
+    "/uploads/**",
   };
 
   private SecurityPaths() {}

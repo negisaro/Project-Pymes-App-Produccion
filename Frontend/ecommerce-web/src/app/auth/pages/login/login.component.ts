@@ -22,27 +22,24 @@ export class LoginComponent implements OnInit {
     private toastr: ToastrService
   ) {}
 
-  // Declarar effect como propiedad de clase
-  public loginEffect = effect(() => {
-    if (this.authService.authStatus() === 'authenticated') {
-      this.toastr.success('Bienvenido, acceso exitoso', 'Login');
-      // Obtener roles del usuario autenticado
-      const user = this.authService.getCurrentUser();
-      const roles = user?.roles?.map(r => r.name) || [];
-      if (roles.includes(RoleName.ADMIN)) {
-        this.router.navigateByUrl('/dashboard-admin');
-      } else if (roles.includes(RoleName.USER) || roles.includes(RoleName.CLIENTE)) {
-        this.router.navigateByUrl('/dashboard-cliente');
-      } else {
-        this.router.navigateByUrl('/dashboard'); // fallback
-      }
-    }
-  });
-
   ngOnInit(): void {
     this.loginForm = this.fb.group({
-      username: ['', Validators.required],
-      password: ['', Validators.required],
+      username: ['admin', Validators.required],
+      password: ['admin123', Validators.required],
+    });
+    this.authService.authStatus$.subscribe(status => {
+      if (status === 'authenticated') {
+        this.toastr.success('Bienvenido, acceso exitoso', 'Login');
+        const user = this.authService.getCurrentUser();
+        const roles = user?.roles?.map((r: { name: string }) => r.name) || [];
+        if (roles.includes(RoleName.ADMIN)) {
+          this.router.navigateByUrl('/dashboard-admin');
+        } else if (roles.includes(RoleName.USER) || roles.includes(RoleName.CLIENTE)) {
+          this.router.navigateByUrl('/dashboard-cliente');
+        } else {
+          this.router.navigateByUrl('/dashboard');
+        }
+      }
     });
   }
 

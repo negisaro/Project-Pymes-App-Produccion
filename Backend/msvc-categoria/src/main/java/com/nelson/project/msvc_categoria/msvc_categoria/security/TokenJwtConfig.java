@@ -2,51 +2,58 @@ package com.nelson.project.msvc_categoria.msvc_categoria.security;
 
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import javax.annotation.PostConstruct;
 import javax.crypto.SecretKey;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
-/**
- * Configuración centralizada para el manejo de JWT en la aplicación.
- * Proporciona claves, prefijos y cabeceras estándar para seguridad empresarial.
- * Clase de utilidades, no instanciable.
- */
-public final class TokenJwtConfig {
+@Component
+public class TokenJwtConfig {
 
-  /**
-   * Clave secreta para la firma y validación de JWT (HS256).
-   * En producción, debe gestionarse de forma segura (por variables de entorno o
-   * vault).
-   * Debe tener al menos 32 caracteres.
-   */
-  public static final String JWT_SECRET_BASE64 = System.getenv(
-      "GATEWAY_JWT_SECRET"
-    ) !=
-    null
-    ? System.getenv("GATEWAY_JWT_SECRET")
-    : "pJ9KkV7b6bDPqKhtWZfLzN6rQ3wXy5VtU2hXyqGz4A8E=";
-
-  public static final SecretKey SECRET_KEY = Keys.hmacShaKeyFor(
-    Decoders.BASE64.decode(JWT_SECRET_BASE64)
+  private static final Logger logger = LoggerFactory.getLogger(
+    TokenJwtConfig.class
   );
 
-  /**
-   * Prefijo estándar para el token JWT en la cabecera Authorization.
-   */
-  public static final String PREFIX_TOKEN = "Bearer ";
+  @Value("${jwt.secret.jwt-secret}")
+  private String jwtSecretBase64;
 
-  /**
-   * Nombre de la cabecera HTTP donde se envía el JWT.
-   */
-  public static final String HEADER_AUTHORIZATION = "Authorization";
+  private SecretKey secretKey;
 
-  /**
-   * Tipo de contenido para respuestas JSON.
-   */
-  public static final String CONTENT_TYPE = "application/json";
-
-  /**
-   * Constructor privado para evitar instanciación.
-   */
-  private TokenJwtConfig() {
-    // Clase de utilidades, no instanciable
+  @PostConstruct
+  public void init() {
+    if (
+      jwtSecretBase64 == null ||
+      jwtSecretBase64.isEmpty() ||
+      "GATEWAY_JWT_SECRET".equals(jwtSecretBase64)
+    ) {
+      logger.error(
+        "GATEWAY_JWT_SECRET no está definida o es inválida. Aborta el arranque."
+      );
+      throw new IllegalStateException(
+        "Falta la variable de entorno GATEWAY_JWT_SECRET o valor no válido"
+      );
+    }
+    try {
+      byte[] decoded = Decoders.BASE64.decode(jwtSecretBase64);
+      this.secretKey = Keys.hmacShaKeyFor(decoded);
+      logger.info(
+        "JWT SecretKey inicializada correctamente (sin mostrar valor)."
+      );
+    } catch (Exception e) {
+      logger.error(
+        "Clave JWT inválida. Revisa la variable GATEWAY_JWT_SECRET."
+      );
+      throw new IllegalArgumentException("Clave JWT inválida", e);
+    }
   }
+
+  public SecretKey getSecretKey() {
+    return secretKey;
+  }
+
+  public static final String PREFIX_TOKEN = "Bearer ";
+  public static final String HEADER_AUTHORIZATION = "Authorization";
+  public static final String CONTENT_TYPE = "application/json";
 }

@@ -1,37 +1,43 @@
-<section class="auth-bg">
-  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
-    <h2 class="fw-bold text-primary text-center mb-1">¡Bienvenido!</h2>
-    <p class="auth-subtitle">Accede a tu cuenta para gestionar tu negocio</p>
-    <div class="auth-fields">
-      <div>
-        <label for="username">Usuario</label>
-        <input id="username" formControlName="username" type="text" class="form-control form-control-lg" [ngClass]="{'is-invalid': loginForm.get('username')?.invalid && loginForm.get('username')?.touched}" />
-        <div *ngIf="loginForm.get('username')?.invalid && loginForm.get('username')?.touched" class="error">
-          El usuario es obligatorio.
+<section class="auth-bg-animated">
+  <div class="auth-card-glass shadow-lg">
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" autocomplete="off">
+      <div class="auth-logo mb-3 text-center">
+        <img src="assets/logo.svg" alt="Logo" style="height: 48px;" />
+      </div>
+      <h2 class="auth-title">¡Bienvenido!</h2>
+      <p class="auth-subtitle">Accede a tu cuenta para gestionar tu negocio</p>
+      <div class="auth-fields">
+        <div class="input-group position-relative mb-3">
+          <span class="input-icon"><i class="bi bi-person"></i></span>
+          <input id="username" formControlName="username" type="text" class="form-control form-control-lg ps-5" placeholder="Usuario" [ngClass]="{'is-invalid': loginForm.get('username')?.invalid && loginForm.get('username')?.touched}" />
+          <div *ngIf="loginForm.get('username')?.invalid && loginForm.get('username')?.touched" class="invalid-feedback d-block ms-5 mt-1">
+            <i class="bi bi-exclamation-triangle"></i> El usuario es obligatorio.
+          </div>
+        </div>
+        <div class="input-group position-relative mb-3">
+          <span class="input-icon"><i class="bi bi-lock"></i></span>
+          <input id="password" formControlName="password" type="password" class="form-control form-control-lg ps-5" placeholder="Contraseña" [ngClass]="{'is-invalid': loginForm.get('password')?.invalid && loginForm.get('password')?.touched}" />
+          <div *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" class="invalid-feedback d-block ms-5 mt-1">
+            <i class="bi bi-exclamation-triangle"></i> La contraseña es obligatoria.
+          </div>
         </div>
       </div>
-      <div>
-        <label for="password">Contraseña</label>
-        <input id="password" formControlName="password" type="password" class="form-control form-control-lg" [ngClass]="{'is-invalid': loginForm.get('password')?.invalid && loginForm.get('password')?.touched}" />
-        <div *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" class="error">
-          La contraseña es obligatoria.
-        </div>
+      <button type="submit" [disabled]="loading" class="btn-auth btn-auth-primary mt-2">
+        <span *ngIf="loading" class="spinner-border spinner-border-sm"></span>
+        <span *ngIf="!loading">Ingresar</span>
+      </button>
+      <div class="auth-links d-flex justify-content-between mt-3 mb-2">
+        <a routerLink="/auth/forgot-password">¿Olvidaste tu contraseña?</a>
+        <a routerLink="/auth/register">Registrarse</a>
       </div>
-    </div>
-    <button type="submit" [disabled]="loading" class="btn-auth btn-auth-primary">
-      {{ loading ? 'Ingresando...' : 'Ingresar' }}
-    </button>
-    <div class="auth-actions">
-  <a routerLink="/auth/forgot-password" class="auth-action-link">¿Olvidaste tu contraseña?</a>
-  <a routerLink="/auth/register" class="auth-action-link">Registrarse</a>
-    </div>
-    <div *ngIf="loading" class="text-blue-700 text-center mt-2">
-      <span class="spinner-border spinner-border-sm"></span> Verificando credenciales...
-    </div>
-    <div *ngIf="errorMsg" class="text-danger text-center mt-2">
-      {{ errorMsg }}
-    </div>
-  </form>
+      <div *ngIf="loading" class="text-primary text-center mt-2">
+        <span class="spinner-border spinner-border-sm"></span> Verificando credenciales...
+      </div>
+      <div *ngIf="errorMsg" class="auth-error mt-2">
+        <i class="bi bi-exclamation-triangle"></i> {{ errorMsg }}
+      </div>
+    </form>
+  </div>
 </section>
 <!-- <div *ngIf="authService.isAuthenticated">
   <ng-container *ngIf="authService.isAuthenticated; else loginRedirect">

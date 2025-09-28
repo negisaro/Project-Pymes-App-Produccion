@@ -1,0 +1,10 @@
+<nav class="cliente-sidebar shadow-glass">
+  <ul class="sidebar-menu list-unstyled">
+    <li *ngFor="let item of menu">
+      <a [routerLink]="item.route" routerLinkActive="active" class="sidebar-link d-flex align-items-center gap-2">
+        <i class="bi" [ngClass]="item.icon"></i>
+        <span>{{ item.label }}</span>
+      </a>
+    </li>
+  </ul>
+</nav>

@@ -1,9 +1,80 @@
+/* Overlay premium para spinner de inicio */
+.app-loading-overlay-premium {
+	position: fixed;
+	inset: 0;
+	width: 100vw;
+	height: 100vh;
+	z-index: 3000;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	background: linear-gradient(120deg, #18181b 0%, #232526 60%, #1a2980 100%);
+	background-size: 200% 200%;
+	animation: bg-move 4s ease-in-out infinite alternate;
+	overflow: hidden;
+}
+@keyframes bg-move {
+	0% { background-position: 0% 50%; }
+	100% { background-position: 100% 50%; }
+}
+
+/* Spinner Aurora Moderno */
+.spinner-aurora {
+	position: relative;
+	width: 84px;
+	height: 84px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin-bottom: 2.2rem;
+	filter: drop-shadow(0 4px 32px #26d0ce44);
+}
+.aurora-dot {
+	position: absolute;
+	width: 22px;
+	height: 22px;
+	border-radius: 50%;
+	background: linear-gradient(135deg, #26d0ce 0%, #818cf8 100%);
+	box-shadow: 0 0 24px #26d0ce55, 0 2px 8px #818cf855;
+	opacity: 0.92;
+	animation: aurora-orbit 1.6s cubic-bezier(.39,.575,.56,1) infinite;
+}
+.dot1 { animation-delay: 0s; left: 50%; top: 0; transform: translateX(-50%); }
+.dot2 { animation-delay: 0.4s; right: 0; top: 50%; transform: translateY(-50%); }
+.dot3 { animation-delay: 0.8s; left: 50%; bottom: 0; transform: translateX(-50%); }
+.dot4 { animation-delay: 1.2s; left: 0; top: 50%; transform: translateY(-50%); }
+@keyframes aurora-orbit {
+	0% { box-shadow: 0 0 24px #26d0ce55, 0 2px 8px #818cf855; opacity: 0.92; }
+	50% { box-shadow: 0 0 48px #818cf8cc, 0 4px 24px #26d0ce99; opacity: 1; }
+	100% { box-shadow: 0 0 24px #26d0ce55, 0 2px 8px #818cf855; opacity: 0.92; }
+}
+
+.spinner-title {
+	color: #e0e7ef;
+	font-size: 1.25rem;
+	font-weight: 600;
+	letter-spacing: 1.2px;
+	text-shadow: 0 2px 12px #232526cc;
+	background: rgba(34,37,38,0.62);
+	border-radius: 1.5em;
+	padding: 0.7em 2.2em;
+	box-shadow: 0 2px 16px #26d0ce22;
+	backdrop-filter: blur(4px) saturate(1.1);
+}
+@media (max-width: 600px) {
+	.spinner-aurora { width: 56px; height: 56px; }
+	.aurora-dot { width: 14px; height: 14px; }
+	.spinner-title { font-size: 1.05rem; padding: 0.5em 1.2em; }
+}
 /* Fondo gradiente moderno */
 .app-bg-gradient {
 	min-height: 100vh;
-	width: 100vw;
+	width: 100%;
+	max-width: 100vw;
 	background: linear-gradient(135deg, #0f0f12 0%, #18181b 60%, #1e1b4b 100%);
 	position: relative;
+	overflow-x: hidden;
 }
 
 /* Spinner cool y uniforme */

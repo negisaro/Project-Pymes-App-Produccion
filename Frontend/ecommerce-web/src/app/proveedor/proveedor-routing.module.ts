@@ -9,10 +9,9 @@ const routes: Routes = [
     path: '',
     component: ProveedorLayoutComponent,
     children: [
-      { path: '', redirectTo: 'list', pathMatch: 'full' },
-      { path: 'list', component: ListProveedorComponent },
-      { path: 'add', component: AddProveedorComponent },
-      { path: 'edit/:id', component: AddProveedorComponent },
+  { path: '', component: ListProveedorComponent },
+  { path: 'add', component: AddProveedorComponent },
+  { path: 'edit/:id', component: AddProveedorComponent },
     ],
   },
 ];

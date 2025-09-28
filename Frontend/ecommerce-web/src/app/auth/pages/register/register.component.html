@@ -1,77 +1,67 @@
 
-<section class="container-fluid min-vh-100 d-flex align-items-center justify-content-center bg-light">
-  <form [formGroup]="form" (ngSubmit)="submit()" class="card shadow-lg p-4 p-md-5 rounded-4" style="max-width: 420px; width: 100%;">
-    <h2 class="fw-bold text-primary text-center mb-1">Crear cuenta</h2>
-    <p class="text-secondary text-center mb-4">Regístrate para gestionar tu negocio y acceder a todas las funcionalidades.</p>
-    <div class="row g-3 mb-2">
-      <div class="col-12">
-        <label for="name" class="form-label">Nombre</label>
-        <input id="name" type="text" formControlName="name" class="form-control form-control-lg" [ngClass]="{'is-invalid': form.get('name')?.invalid && form.get('name')?.touched}" />
-        <div *ngIf="form.get('name')?.invalid && form.get('name')?.touched" class="invalid-feedback">
-          El nombre es obligatorio.
+<section class="auth-bg-animated">
+  <div class="auth-card-glass shadow-lg">
+    <form [formGroup]="form" (ngSubmit)="submit()" autocomplete="off">
+      <div class="auth-logo mb-3 text-center">
+        <img src="assets/logo.svg" alt="Logo" style="height: 48px;" />
+      </div>
+      <h2 class="auth-title">Crear cuenta</h2>
+      <p class="auth-subtitle">Regístrate para gestionar tu negocio y acceder a todas las funcionalidades.</p>
+      <div class="auth-fields">
+        <div class="input-group position-relative mb-3">
+          <span class="input-icon"><i class="bi bi-person"></i></span>
+          <input id="name" type="text" formControlName="name" class="form-control form-control-lg ps-5" placeholder="Nombre" [ngClass]="{'is-invalid': form.get('name')?.invalid && form.get('name')?.touched}" />
+          <div *ngIf="form.get('name')?.invalid && form.get('name')?.touched" class="invalid-feedback d-block ms-5 mt-1">
+            <i class="bi bi-exclamation-triangle"></i> El nombre es obligatorio.
+          </div>
+        </div>
+        <div class="input-group position-relative mb-3">
+          <span class="input-icon"><i class="bi bi-person"></i></span>
+          <input id="lastname" type="text" formControlName="lastname" class="form-control form-control-lg ps-5" placeholder="Apellido" [ngClass]="{'is-invalid': form.get('lastname')?.invalid && form.get('lastname')?.touched}" />
+          <div *ngIf="form.get('lastname')?.invalid && form.get('lastname')?.touched" class="invalid-feedback d-block ms-5 mt-1">
+            <i class="bi bi-exclamation-triangle"></i> El apellido es obligatorio.
+          </div>
+        </div>
+        <div class="input-group position-relative mb-3">
+          <span class="input-icon"><i class="bi bi-envelope"></i></span>
+          <input id="email" type="email" formControlName="email" autocomplete="username" class="form-control form-control-lg ps-5" placeholder="Email" [ngClass]="{'is-invalid': form.get('email')?.invalid && form.get('email')?.touched}" />
+          <div *ngIf="form.get('email')?.invalid && form.get('email')?.touched" class="invalid-feedback d-block ms-5 mt-1">
+            <i class="bi bi-exclamation-triangle"></i> El email es obligatorio y debe ser válido.
+          </div>
+        </div>
+        <div class="input-group position-relative mb-3">
+          <span class="input-icon"><i class="bi bi-person-badge"></i></span>
+          <input id="username" type="text" formControlName="username" autocomplete="username" class="form-control form-control-lg ps-5" placeholder="Usuario" [ngClass]="{'is-invalid': form.get('username')?.invalid && form.get('username')?.touched}" />
+          <div *ngIf="form.get('username')?.invalid && form.get('username')?.touched" class="invalid-feedback d-block ms-5 mt-1">
+            <i class="bi bi-exclamation-triangle"></i> El usuario es obligatorio.
+          </div>
+        </div>
+        <div class="input-group position-relative mb-3">
+          <span class="input-icon"><i class="bi bi-lock"></i></span>
+          <input id="password" type="password" formControlName="password" autocomplete="new-password" class="form-control form-control-lg ps-5" placeholder="Contraseña" [ngClass]="{'is-invalid': form.get('password')?.invalid && form.get('password')?.touched}" />
+          <div *ngIf="form.get('password')?.invalid && form.get('password')?.touched" class="invalid-feedback d-block ms-5 mt-1">
+            <i class="bi bi-exclamation-triangle"></i> La contraseña es obligatoria y debe tener al menos 8 caracteres, una mayúscula y un número.
+          </div>
+        </div>
+        <div class="d-flex align-items-center gap-2 mt-2 mb-3">
+          <input id="isActive" type="checkbox" formControlName="isActive" class="form-check-input" />
+          <label for="isActive" class="form-check-label mb-0">Activo</label>
         </div>
       </div>
-      <div class="col-12">
-        <label for="lastname" class="form-label">Apellido</label>
-        <input id="lastname" type="text" formControlName="lastname" class="form-control form-control-lg" [ngClass]="{'is-invalid': form.get('lastname')?.invalid && form.get('lastname')?.touched}" />
-        <div *ngIf="form.get('lastname')?.invalid && form.get('lastname')?.touched" class="invalid-feedback">
-          El apellido es obligatorio.
-        </div>
+      <button type="submit" [disabled]="form.invalid || loading" class="btn-auth btn-auth-primary mt-2">
+        <i class="bi bi-person-plus-fill"></i>
+        <span *ngIf="loading" class="spinner-border spinner-border-sm"></span>
+        <span *ngIf="!loading">Registrar</span>
+      </button>
+      <div class="auth-links d-flex justify-content-between mt-3 mb-2">
+        <a routerLink="/auth/login">¿Ya tienes cuenta? Inicia sesión</a>
+        <a routerLink="/auth/forgot-password">¿Olvidaste tu contraseña?</a>
       </div>
-      <div class="col-12">
-        <label for="email" class="form-label">Email</label>
-        <input id="email" type="email" formControlName="email" autocomplete="username" class="form-control form-control-lg" [ngClass]="{'is-invalid': form.get('email')?.invalid && form.get('email')?.touched}" />
-        <div *ngIf="form.get('email')?.invalid && form.get('email')?.touched" class="invalid-feedback">
-          El email es obligatorio y debe ser válido.
-        </div>
+      <div *ngIf="loading" class="text-primary text-center mt-2">
+        <span class="spinner-border spinner-border-sm"></span> Registrando usuario...
       </div>
-      <div class="col-12">
-        <label for="username" class="form-label">Usuario</label>
-        <input id="username" type="text" formControlName="username" autocomplete="username" class="form-control form-control-lg" [ngClass]="{'is-invalid': form.get('username')?.invalid && form.get('username')?.touched}" />
-        <div *ngIf="form.get('username')?.invalid && form.get('username')?.touched" class="invalid-feedback">
-          El usuario es obligatorio.
-        </div>
-      </div>
-      <div class="col-12">
-        <label for="password" class="form-label">Contraseña</label>
-        <input id="password" type="password" formControlName="password" autocomplete="new-password" class="form-control form-control-lg" [ngClass]="{'is-invalid': form.get('password')?.invalid && form.get('password')?.touched}" />
-        <div *ngIf="form.get('password')?.invalid && form.get('password')?.touched" class="invalid-feedback">
-          La contraseña es obligatoria y debe tener al menos 8 caracteres, una mayúscula y un número.
-        </div>
-      </div>
-      <div class="col-12 d-flex align-items-center gap-2 mt-2">
-        <input id="isActive" type="checkbox" formControlName="isActive" class="form-check-input" />
-        <label for="isActive" class="form-check-label mb-0">Activo</label>
-      </div>
-    </div>
-    <button type="submit" [disabled]="form.invalid || loading" class="btn btn-primary btn-lg w-100 mt-3 mb-2">
-      <i class="bi bi-person-plus-fill"></i>
-      {{ loading ? 'Registrando...' : 'Registrar' }}
-    </button>
-    <div class="d-flex flex-column align-items-center gap-1 mb-3">
-  <a routerLink="/auth/login" class="link-primary">¿Ya tienes cuenta? Inicia sesión</a>
-  <a routerLink="/auth/forgot-password" class="link-secondary">¿Olvidaste tu contraseña?</a>
-    </div>
-    <div *ngIf="loading" class="text-primary text-center mt-2">
-      <span class="spinner-border spinner-border-sm"></span> Registrando usuario...
-    </div>
-    <div *ngIf="error" class="alert alert-danger text-center py-2">{{ error }}</div>
-    <div *ngIf="successMsg" class="alert alert-success text-center py-2">{{ successMsg }}</div>
-    <!-- Debug visual: solo visible en desarrollo -->
-    <!--
-    <div class="bg-light border rounded-3 p-2 mt-3 small d-none d-md-block">
-      <strong>Debug form.value:</strong>
-      <pre>{{ form.value | json }}</pre>
-      <strong>form.valid:</strong> {{ form.valid }}
-      <div *ngIf="debugResponse">
-        <strong>Respuesta backend:</strong>
-        <pre>{{ debugResponse | json }}</pre>
-      </div>
-      <div *ngIf="debugError">
-        <strong>Error backend:</strong>
-        <pre>{{ debugError | json }}</pre>
-      </div>
-    </div>
-    -->
-  </form>
+      <div *ngIf="error" class="auth-error mt-2"><i class="bi bi-exclamation-triangle"></i> {{ error }}</div>
+      <div *ngIf="successMsg" class="auth-success mt-2"><i class="bi bi-check-circle"></i> {{ successMsg }}</div>
+    </form>
+  </div>
 </section>

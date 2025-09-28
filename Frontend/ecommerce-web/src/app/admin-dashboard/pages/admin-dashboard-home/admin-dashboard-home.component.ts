@@ -34,6 +34,7 @@ export class AdminDashboardHomeComponent implements OnInit {
   totalPedidos = 0;
   pedidosRecientes: any[] = [];
   loading = true;
+  errorMsg: string | null = null;
 
   // Datos de ejemplo escalables para pedidos recientes
   private mockPedidos(count: number = 5): any[] {
@@ -59,21 +60,28 @@ export class AdminDashboardHomeComponent implements OnInit {
       productos: this.productoService.getProductos(),
       categorias: this.categoriaService.getCategorias(),
       usuarios: this.userService.getPageable(0, 1000),
-    }).subscribe(({ productos, categorias, usuarios }) => {
-      this.totalProductos = productos.length;
-      this.totalCategorias = categorias.length;
-      this.totalUsuarios = usuarios.totalElements || 0;
-      // Actualizar KPIs con datos reales
-      this.kpiData = [
-        { label: 'Productos', value: this.totalProductos, icon: 'fas fa-box', bgClass: 'bg-primary text-white' },
-        { label: 'Categorías', value: this.totalCategorias, icon: 'fas fa-tags', bgClass: 'bg-success text-white' },
-        { label: 'Usuarios', value: this.totalUsuarios, icon: 'fas fa-users', bgClass: 'bg-info text-white' },
-        { label: 'Pedidos', value: this.totalPedidos, icon: 'fas fa-shopping-cart', bgClass: 'bg-warning text-white' },
-      ];
-      // Datos mock para pedidos recientes y totalPedidos
-      this.pedidosRecientes = this.mockPedidos(5);
-      this.totalPedidos = this.pedidosRecientes.length;
-      this.loading = false;
+    }).subscribe({
+      next: ({ productos, categorias, usuarios }) => {
+        this.totalProductos = productos.length;
+        this.totalCategorias = categorias.length;
+        this.totalUsuarios = usuarios.totalElements || 0;
+        // Actualizar KPIs con datos reales
+        this.kpiData = [
+          { label: 'Productos', value: this.totalProductos, icon: 'fas fa-box', bgClass: 'bg-primary text-white' },
+          { label: 'Categorías', value: this.totalCategorias, icon: 'fas fa-tags', bgClass: 'bg-success text-white' },
+          { label: 'Usuarios', value: this.totalUsuarios, icon: 'fas fa-users', bgClass: 'bg-info text-white' },
+          { label: 'Pedidos', value: this.totalPedidos, icon: 'fas fa-shopping-cart', bgClass: 'bg-warning text-white' },
+        ];
+        // Datos mock para pedidos recientes y totalPedidos
+        this.pedidosRecientes = this.mockPedidos(5);
+        this.totalPedidos = this.pedidosRecientes.length;
+        this.loading = false;
+        this.errorMsg = null;
+      },
+      error: (err) => {
+        this.loading = false;
+        this.errorMsg = 'Error al cargar los datos del dashboard. Intenta recargar la página o contacta soporte.';
+      }
     });
   }
 }

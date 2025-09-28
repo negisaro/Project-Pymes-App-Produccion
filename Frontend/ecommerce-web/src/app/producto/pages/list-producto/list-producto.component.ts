@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import Swal from 'sweetalert2';
 import { AuthService } from '../../../auth/services/auth.service';
 import { Categoria } from '../../../categoria/interfaces/categoria';
@@ -59,6 +59,7 @@ export class ListProductoComponent implements OnInit {
     private categoriaService: CategoriaService,
     private proveedorService: ProveedorService,
     private router: Router,
+    private route: ActivatedRoute,
     private authService: AuthService
   ) {}
 
@@ -122,7 +123,7 @@ export class ListProductoComponent implements OnInit {
   }
 
   editarProducto(producto: Producto): void {
-    this.router.navigate(['/dashboard/product/edit', producto.id]);
+    this.router.navigate(['edit', producto.id], { relativeTo: this.route });
   }
 
   eliminarProducto(id: number): void {
@@ -165,6 +166,6 @@ export class ListProductoComponent implements OnInit {
   }
 
   agregarProducto(): void {
-    this.router.navigate(['/dashboard/product/add']);
+    this.router.navigate(['add'], { relativeTo: this.route });
   }
 }

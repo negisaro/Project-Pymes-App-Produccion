@@ -1,5 +1,5 @@
 <nav class="sidebar-modern" [ngClass]="{collapsed: collapsed}">
-		<ng-container *ngIf="user() as currentUser">
+	<ng-container *ngIf="user$ | async as currentUser">
 			<div class="sidebar-brand d-flex align-items-center mb-4">
 				<span class="sidebar-icon"><img src="assets/images/icons/favicon.ico" width="32" height="32" alt="Logo"></span>
 				<span *ngIf="!collapsed">Glow Dreams</span>
@@ -16,11 +16,11 @@
 			</div>
 			<ul class="nav flex-column sidebar-content">
 				<ng-container *ngIf="isAdmin">
-					<li class="nav-item"><a class="nav-link" routerLink="/dashboard" routerLinkActive="active"><span class="sidebar-icon"><i class="bi bi-speedometer2"></i></span><span>Tablero</span></a></li>
-					<li class="nav-item"><a class="nav-link" routerLink="/dashboard/user" routerLinkActive="active"><span class="sidebar-icon"><i class="bi bi-people"></i></span><span>Usuarios</span></a></li>
-					<li class="nav-item"><a class="nav-link" routerLink="/dashboard/product" routerLinkActive="active"><span class="sidebar-icon"><i class="bi bi-box"></i></span><span>Productos</span></a></li>
-					<li class="nav-item"><a class="nav-link" routerLink="/dashboard/categoria" routerLinkActive="active"><span class="sidebar-icon"><i class="bi bi-tags"></i></span><span>Categorías</span></a></li>
-					<li class="nav-item"><a class="nav-link" routerLink="/dashboard/proveedor" routerLinkActive="active"><span class="sidebar-icon"><i class="bi bi-truck"></i></span><span>Proveedores</span></a></li>
+					<li class="nav-item"><a class="nav-link" routerLink="/dashboard-admin" routerLinkActive="active"><span class="sidebar-icon"><i class="bi bi-speedometer2"></i></span><span>Tablero</span></a></li>
+					<li class="nav-item"><a class="nav-link" routerLink="/dashboard-admin/user" routerLinkActive="active"><span class="sidebar-icon"><i class="bi bi-people"></i></span><span>Usuarios</span></a></li>
+					<li class="nav-item"><a class="nav-link" routerLink="/dashboard-admin/product" routerLinkActive="active"><span class="sidebar-icon"><i class="bi bi-box"></i></span><span>Productos</span></a></li>
+					<li class="nav-item"><a class="nav-link" routerLink="/dashboard-admin/categoria" routerLinkActive="active"><span class="sidebar-icon"><i class="bi bi-tags"></i></span><span>Categorías</span></a></li>
+					<li class="nav-item"><a class="nav-link" routerLink="/dashboard-admin/proveedor" routerLinkActive="active"><span class="sidebar-icon"><i class="bi bi-truck"></i></span><span>Proveedores</span></a></li>
 				</ng-container>
 				<ng-container *ngIf="isCliente">
 					<li class="nav-item"><a class="nav-link" routerLink="/" routerLinkActive="active"><span class="sidebar-icon"><i class="bi bi-house"></i></span><span>Inicio</span></a></li>

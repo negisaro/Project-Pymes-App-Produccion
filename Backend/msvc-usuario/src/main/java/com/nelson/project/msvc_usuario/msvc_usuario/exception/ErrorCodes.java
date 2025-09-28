@@ -23,5 +23,7 @@ public final class ErrorCodes {
   public static final String INTERNAL_ERROR = "INTERNAL_ERROR";
   public static final String INVALID_TOKEN = "INVALID_TOKEN";
 
+  public static final String EMAIL_SEND_ERROR = "EMAIL_SEND_ERROR";
+
   private ErrorCodes() {}
 }

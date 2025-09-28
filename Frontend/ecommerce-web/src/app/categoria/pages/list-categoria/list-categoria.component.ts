@@ -1,6 +1,6 @@
 
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { Categoria } from '../../interfaces/categoria';
 import { CategoriaService } from '../../service/categoria.service';
 import { PaginaCategoria } from '../../interfaces/pagina-categoria';
@@ -20,7 +20,11 @@ export class ListCategoriaComponent implements OnInit {
   totalPages = 0;
   totalElements = 0;
 
-  constructor(private categoriaService: CategoriaService, private router: Router) {}
+  constructor(
+    private categoriaService: CategoriaService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
 
   ngOnInit(): void {
     this.cargarCategorias();
@@ -56,7 +60,7 @@ export class ListCategoriaComponent implements OnInit {
   }
 
   editarCategoria(categoria: Categoria): void {
-    this.router.navigate(['/dashboard/categoria/edit', categoria.id]);
+    this.router.navigate(['edit', categoria.id], { relativeTo: this.route });
   }
 
   eliminarCategoria(id: number): void {
@@ -99,6 +103,6 @@ export class ListCategoriaComponent implements OnInit {
   }
 
   agregarCategoria() {
-    this.router.navigate(['/dashboard/categoria/add']);
+    this.router.navigate(['add'], { relativeTo: this.route });
   }
 }

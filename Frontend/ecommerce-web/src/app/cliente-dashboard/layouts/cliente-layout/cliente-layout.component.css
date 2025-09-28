@@ -1,0 +1,20 @@
+/* Estilos básicos para el layout cliente */
+.cliente-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #f8f9fa;
+}
+.cliente-main {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.cliente-content {
+  flex: 1;
+  padding: 2rem;
+  background: #f8f9fa;
+}
+.cliente-footer {
+  width: 100%;
+}

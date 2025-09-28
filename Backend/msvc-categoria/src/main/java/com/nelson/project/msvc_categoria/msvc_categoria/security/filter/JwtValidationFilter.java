@@ -41,7 +41,6 @@ public class JwtValidationFilter extends OncePerRequestFilter {
     final String username;
 
     String path = request.getServletPath();
-    // Exentar rutas públicas centralizadas
     for (String publicPath : SecurityPaths.PUBLIC_GET) {
       if (path.matches(publicPath.replace("**", ".*"))) {
         filterChain.doFilter(request, response);
@@ -89,7 +88,6 @@ public class JwtValidationFilter extends OncePerRequestFilter {
       }
       filterChain.doFilter(request, response);
     } catch (io.jsonwebtoken.JwtException ex) {
-      // Lanza la excepción para que la maneje el filtro global
       throw ex;
     }
   }

@@ -29,7 +29,7 @@ eureka:
 
 jwt:
   secret:
-    jwt-secret: ${GATEWAY_JWT_SECRET:dev_secret}
+    jwt-secret: ${GATEWAY_JWT_SECRET}
 
 management:
   endpoints:

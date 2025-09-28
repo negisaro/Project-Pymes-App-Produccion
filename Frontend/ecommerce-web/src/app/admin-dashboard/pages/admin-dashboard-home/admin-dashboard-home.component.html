@@ -2,7 +2,10 @@
   <div *ngIf="loading" class="text-center py-5">
     <div class="spinner-border text-primary" role="status"></div>
   </div>
-  <div *ngIf="!loading">
+  <div *ngIf="errorMsg && !loading" class="alert alert-danger text-center my-4">
+    <i class="fas fa-exclamation-triangle me-2"></i>{{ errorMsg }}
+  </div>
+  <div *ngIf="!loading && !errorMsg">
     <!-- KPIs -->
     <admin-kpi-cards [kpis]="kpiData"></admin-kpi-cards>
 

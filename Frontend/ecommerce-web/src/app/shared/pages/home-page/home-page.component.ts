@@ -31,7 +31,12 @@ export class HomePageComponent implements OnInit, AfterViewInit {
       this.categoriaService.getCategorias().toPromise(),
       this.productoService.getProductos().toPromise()
     ]).then(([categorias, productos]) => {
-      const productosList = Array.isArray(productos) ? productos : [];
+      // Soportar respuesta paginada o array plano
+  const categoriasList = Array.isArray(categorias) ? categorias : (categorias as any)?.content || [];
+  const productosList = Array.isArray(productos) ? productos : (productos as any)?.content || [];
+      // Debug: mostrar cuántos productos y categorías llegan
+      console.log('[DEBUG] Categorías recibidas:', categoriasList.length, categoriasList);
+      console.log('[DEBUG] Productos recibidos:', productosList.length, productosList);
       // Mockear historial de stock para cada producto
       productosList.forEach((p: ProductoWithHistory) => {
         // Si ya existe un historial real, no lo sobrescribas
@@ -41,15 +46,31 @@ export class HomePageComponent implements OnInit, AfterViewInit {
           p.stockHistory = Array.from({ length: 7 }).map((_, i) => Math.max(0, base - Math.floor(Math.random() * 3) + i));
         }
       });
-      this.categoriasConProductos = (categorias || []).map(cat => ({
+      this.categoriasConProductos = (categoriasList || []).map((cat: Categoria) => ({
         ...cat,
         productos: productosList.filter((p: ProductoWithHistory) => p.categoriaId === cat.id)
-      })).filter(cat => cat.productos.length > 0);
+      })).filter((cat: any) => cat.productos.length > 0);
+      // Debug: mostrar resultado final de categorías con productos
+      console.log('[DEBUG] Categorías con productos:', this.categoriasConProductos.length, this.categoriasConProductos);
+      if (productosList.length === 0) {
+        console.warn('[DEBUG] No se recibieron productos del backend.');
+      }
+      if (this.categoriasConProductos.length === 0) {
+        console.warn('[DEBUG] No hay categorías con productos para mostrar.');
+      }
     });
   }
 
   ngAfterViewInit(): void {
-    // Si necesitas lógica tras renderizado, agrégala aquí
+    // Inyectar script de partículas premium para fondo animado
+    const id = 'home-bg-particles-script';
+    if (!document.getElementById(id)) {
+      const s = document.createElement('script');
+      s.id = id;
+      s.src = 'assets/js/home-bg-particles.js';
+      s.async = true;
+      document.body.appendChild(s);
+    }
   }
 
   /**

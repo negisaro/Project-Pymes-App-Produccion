@@ -120,6 +120,6 @@ export class AddProveedorComponent implements OnInit {
   }
 
   volver(): void {
-    this.router.navigate(['/dashboard/proveedor/list']);
+    this.router.navigate(['../'], { relativeTo: this.route });
   }
 }

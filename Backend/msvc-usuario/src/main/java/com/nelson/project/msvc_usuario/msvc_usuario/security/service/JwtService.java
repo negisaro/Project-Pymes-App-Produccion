@@ -13,19 +13,20 @@ import org.springframework.stereotype.Service;
 
 /**
  * Servicio profesional para manejo de JWT.
- * Variables y clave obtenidas desde TokenJwtConfig para uniformidad y seguridad.
+ * Clave y configuración obtenidas desde TokenJwtConfig para uniformidad y seguridad.
  * Métodos de generación, validación, parsing y refresh de tokens JWT.
  */
 @Service
 public class JwtService {
 
-  private static final Logger logger = LoggerFactory.getLogger(
-    JwtService.class
-  );
+  private static final Logger logger = LoggerFactory.getLogger(JwtService.class);
 
-  // Clave secreta y configuración obtenida de TokenJwtConfig
-  private static final SecretKey SECRET_KEY = TokenJwtConfig.SECRET_KEY;
+  private final TokenJwtConfig tokenJwtConfig;
   private static final int TOKEN_EXPIRATION_MINUTES = 60;
+
+  public JwtService(TokenJwtConfig tokenJwtConfig) {
+    this.tokenJwtConfig = tokenJwtConfig;
+  }
 
   // ================= MÉTODOS PÚBLICOS PRINCIPALES =================
 
@@ -43,10 +44,17 @@ public class JwtService {
       authorities
         .stream()
         .map(GrantedAuthority::getAuthority)
-        .collect(Collectors.toList())
+        .collect(Collectors.joining(","))
     );
     claims.put("email", email);
     claims.put("username", userDetails.getUsername());
+
+    SecretKey key = tokenJwtConfig.getSecretKey();
+
+    if (key == null) {
+      logger.error("[JwtService] SECRET_KEY no inicializada. No se puede firmar el token.");
+      throw new IllegalStateException("Clave JWT no inicializada. Revisa la configuración de TokenJwtConfig.");
+    }
 
     String token = Jwts.builder()
       .setClaims(claims)
@@ -57,7 +65,7 @@ public class JwtService {
           System.currentTimeMillis() + TOKEN_EXPIRATION_MINUTES * 60 * 1000
         )
       )
-      .signWith(SECRET_KEY, SignatureAlgorithm.HS256)
+      .signWith(key, SignatureAlgorithm.HS256)
       .compact();
 
     logger.info(
@@ -81,15 +89,16 @@ public class JwtService {
   public String refreshToken(String oldToken, String email) {
     Claims claims = extractAllClaims(oldToken);
     String username = claims.get("username", String.class);
-    List<String> roles = claims.get("roles", List.class);
+    String roles = claims.get("roles", String.class);
 
     org.springframework.security.core.userdetails.User userDetails =
       new org.springframework.security.core.userdetails.User(
         username,
         "",
         roles != null
-          ? roles
-            .stream()
+          ? Arrays.stream(roles.split(","))
+            .map(String::trim)
+            .filter(r -> !r.isEmpty())
             .map(r -> (GrantedAuthority) () -> r)
             .collect(Collectors.toList())
           : Collections.emptyList()
@@ -193,8 +202,13 @@ public class JwtService {
    */
   private Claims extractAllClaims(String token) {
     try {
+      SecretKey key = tokenJwtConfig.getSecretKey();
+      if (key == null) {
+        logger.error("[JwtService] SECRET_KEY no inicializada en extractAllClaims");
+        throw new IllegalStateException("Clave JWT no inicializada.");
+      }
       Claims claims = Jwts.parserBuilder()
-        .setSigningKey(SECRET_KEY)
+        .setSigningKey(key)
         .build()
         .parseClaimsJws(token)
         .getBody();

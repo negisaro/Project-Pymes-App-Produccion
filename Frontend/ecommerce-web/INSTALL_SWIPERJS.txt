@@ -1,3 +1,0 @@
-// Instalación de SwiperJS para Angular
-// Ejecuta este comando en la raíz del frontend:
-npm install swiper@^11.0.0 swiper-angular@^11.0.0 --save

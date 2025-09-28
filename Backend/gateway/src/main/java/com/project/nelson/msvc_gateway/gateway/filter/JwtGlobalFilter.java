@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.io.Decoders;
 import java.security.Key;
 import java.util.Arrays;
 import java.util.List;
@@ -22,16 +23,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-/**
- * Filtro JWT global para Gateway: exenta /api/public/ y utilidades antes del StripPrefix,
- * valida JWT solo en rutas bajo /api/segura/, profesional, robusto y uniforme.
- */
 @Component
 public class JwtGlobalFilter implements GlobalFilter, Ordered {
 
   private static final Logger logger = LoggerFactory.getLogger(JwtGlobalFilter.class);
 
-  @Value("${gateway.filter.jwt-secret:SuperClaveSecretaSeguraQueDebesCambiarSuperLarga123}")
+  @Value("${gateway.filter.jwt-secret}")
   private String jwtSecret;
 
   @Value("${gateway.filter.conditional-path:/api/segura/}")
@@ -103,13 +100,21 @@ public class JwtGlobalFilter implements GlobalFilter, Ordered {
     logger.debug("JWT recibido: {}... para path: {} | RequestID: {}", jwt.substring(0, Math.min(jwt.length(), 10)), path, requestId);
 
     try {
-      if (jwtSecret == null || jwtSecret.getBytes().length < 32) {
-        logger.error("La clave JWT debe tener al menos 32 bytes.");
+      if (jwtSecret == null || jwtSecret.isEmpty()) {
+        logger.error("La clave JWT está vacía o no definida.");
         exchange.getResponse().setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR);
         return exchange.getResponse().setComplete();
       }
 
-      Key key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
+      // DECODIFICAR EN BASE64
+      byte[] keyBytes = io.jsonwebtoken.io.Decoders.BASE64.decode(jwtSecret);
+      if (keyBytes.length < 32) {
+        logger.error("La clave JWT debe tener al menos 32 bytes después de decodificar Base64.");
+        exchange.getResponse().setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR);
+        return exchange.getResponse().setComplete();
+      }
+
+      Key key = Keys.hmacShaKeyFor(keyBytes);
       Claims claims = Jwts.parserBuilder()
         .setSigningKey(key)
         .build()

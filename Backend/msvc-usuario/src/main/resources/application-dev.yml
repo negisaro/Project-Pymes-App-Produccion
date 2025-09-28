@@ -27,6 +27,21 @@ eureka:
     service-url:
       defaultZone: ${EUREKA_SERVER_URL}
 
+  mail:
+    host: smtp.tu-servidor.com
+    port: 587
+    username: ${MAIL_USER}
+    password: ${MAIL_PASSWORD}
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+    default-encoding: UTF-8
+    test-connection: false
+
 springdoc:
   swagger-ui:
     enabled: true
@@ -42,4 +57,4 @@ management:
 
 jwt:
   secret:
-    jwt-secret: ${GATEWAY_JWT_SECRET:dev_secret}
+    jwt-secret: ${GATEWAY_JWT_SECRET}

@@ -1,6 +1,6 @@
 
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { Proveedor } from '../../interfaces/proveedor';
 import { ProveedorService } from '../../service/proveedor.service';
 import Swal from 'sweetalert2';
@@ -19,7 +19,11 @@ export class ListProveedorComponent implements OnInit {
   totalPages = 0;
   totalElements = 0;
 
-  constructor(private proveedorService: ProveedorService, private router: Router) {}
+  constructor(
+    private proveedorService: ProveedorService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
 
   ngOnInit(): void {
     this.cargarProveedores();
@@ -55,7 +59,7 @@ export class ListProveedorComponent implements OnInit {
   }
 
   editarProveedor(proveedor: Proveedor): void {
-    this.router.navigate(['/dashboard/proveedor/edit', proveedor.id]);
+    this.router.navigate(['edit', proveedor.id], { relativeTo: this.route });
   }
 
   eliminarProveedor(id?: number): void {
@@ -100,6 +104,6 @@ export class ListProveedorComponent implements OnInit {
   }
 
   agregarProveedor() {
-    this.router.navigate(['/dashboard/proveedor/add']);
+    this.router.navigate(['add'], { relativeTo: this.route });
   }
 }

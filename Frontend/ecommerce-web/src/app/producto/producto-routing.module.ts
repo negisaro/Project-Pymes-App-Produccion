@@ -9,13 +9,12 @@ const routes: Routes = [
     path: '',
     component: ProductoLayoutComponent,
     children: [
-  { path: '', redirectTo: 'list', pathMatch: 'full' },
-  { path: 'list', component: ListProductoComponent },
-  { path: 'add', component: AddProductoComponent },
-  { path: 'edit/:id', component: AddProductoComponent }
+      { path: '', component: ListProductoComponent },
+      { path: 'add', component: AddProductoComponent },
+      { path: 'edit/:id', component: AddProductoComponent }
     ]
   },
-  { path: '**', redirectTo: 'list' }
+  { path: '**', redirectTo: '' }
 ];
 
 @NgModule({

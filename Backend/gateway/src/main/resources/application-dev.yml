@@ -24,98 +24,98 @@ spring:
                 allowed-headers: "*"
                 exposed-headers: "Authorization,X-Usuario,X-Roles,X-Email,X-JWT-Id"
                 allow-credentials: true
-      routes:
-        # Rutas públicas (todas bajo /api/public/)
-        - id: msvc-usuario-auth-public
-          uri: lb://msvc-usuario
-          predicates:
-            - Path=/api/public/auth/**
-          filters:
-            - StripPrefix=1
-        - id: msvc-usuario-public
-          uri: lb://msvc-usuario
-          predicates:
-            - Path=/api/public/usuarios/**
-          filters:
-            - StripPrefix=1
-        - id: msvc-producto-public
-          uri: lb://msvc-producto
-          predicates:
-            - Path=/api/public/productos/**
-          filters:
-            - StripPrefix=1
-        - id: msvc-carrito-public
-          uri: lb://msvc-carrito
-          predicates:
-            - Path=/api/public/carrito/**
-          filters:
-            - StripPrefix=1
-        - id: msvc-categoria-public
-          uri: lb://msvc-categoria
-          predicates:
-            - Path=/api/public/categorias/**
-          filters:
-            - StripPrefix=1
-        - id: msvc-proveedor-public
-          uri: lb://msvc-proveedor
-          predicates:
-            - Path=/api/public/proveedores/**
-          filters:
-            - StripPrefix=1
-        - id: msvc-orden-public
-          uri: lb://msvc-orden
-          predicates:
-            - Path=/api/public/orden/**
-          filters:
-            - StripPrefix=1
+          routes:
+            # Rutas públicas (todas bajo /api/public/)
+            - id: msvc-usuario-auth-public
+              uri: lb://msvc-usuario
+              predicates:
+                - Path=/api/public/auth/**
+              filters:
+                - StripPrefix=1
+            - id: msvc-usuario-public
+              uri: lb://msvc-usuario
+              predicates:
+                - Path=/api/public/usuarios/**
+              filters:
+                - StripPrefix=1
+            - id: msvc-producto-public
+              uri: lb://msvc-producto
+              predicates:
+                - Path=/api/public/productos/**
+              filters:
+                - StripPrefix=1
+            - id: msvc-carrito-public
+              uri: lb://msvc-carrito
+              predicates:
+                - Path=/api/public/carrito/**
+              filters:
+                - StripPrefix=1
+            - id: msvc-categoria-public
+              uri: lb://msvc-categoria
+              predicates:
+                - Path=/api/public/categorias/**
+              filters:
+                - StripPrefix=1
+            - id: msvc-proveedor-public
+              uri: lb://msvc-proveedor
+              predicates:
+                - Path=/api/public/proveedores/**
+              filters:
+                - StripPrefix=1
+            - id: msvc-orden-public
+              uri: lb://msvc-orden
+              predicates:
+                - Path=/api/public/orden/**
+              filters:
+                - StripPrefix=1
 
-        # Rutas seguras bajo /api/segura/
-        - id: msvc-usuario-secure
-          uri: lb://msvc-usuario
-          predicates:
-            - Path=/api/segura/usuarios/**
-          filters:
-            - StripPrefix=2
-        - id: msvc-producto-secure
-          uri: lb://msvc-producto
-          predicates:
-            - Path=/api/segura/productos/**
-          filters:
-            - StripPrefix=2
-        - id: msvc-carrito-secure
-          uri: lb://msvc-carrito
-          predicates:
-            - Path=/api/segura/carrito/**
-          filters:
-            - StripPrefix=2
-        - id: msvc-categoria-secure
-          uri: lb://msvc-categoria
-          predicates:
-            - Path=/api/segura/categorias/**
-          filters:
-            - StripPrefix=2
-        - id: msvc-proveedor-secure
-          uri: lb://msvc-proveedor
-          predicates:
-            - Path=/api/segura/proveedores/**
-          filters:
-            - StripPrefix=2
-        - id: msvc-orden-secure
-          uri: lb://msvc-orden
-          predicates:
-            - Path=/api/segura/orden/**
-          filters:
-            - StripPrefix=2
+            # Rutas seguras bajo /api/segura/
+            - id: msvc-usuario-secure
+              uri: lb://msvc-usuario
+              predicates:
+                - Path=/api/segura/usuarios/**
+              filters:
+                - StripPrefix=2
+            - id: msvc-producto-secure
+              uri: lb://msvc-producto
+              predicates:
+                - Path=/api/segura/productos/**
+              filters:
+                - StripPrefix=2
+            - id: msvc-carrito-secure
+              uri: lb://msvc-carrito
+              predicates:
+                - Path=/api/segura/carrito/**
+              filters:
+                - StripPrefix=2
+            - id: msvc-categoria-secure
+              uri: lb://msvc-categoria
+              predicates:
+                - Path=/api/segura/categorias/**
+              filters:
+                - StripPrefix=2
+            - id: msvc-proveedor-secure
+              uri: lb://msvc-proveedor
+              predicates:
+                - Path=/api/segura/proveedores/**
+              filters:
+                - StripPrefix=2
+            - id: msvc-orden-secure
+              uri: lb://msvc-orden
+              predicates:
+                - Path=/api/segura/orden/**
+              filters:
+                - StripPrefix=2
 
-        # Rutas utilitarias
-        - id: producto-uploads
-          uri: lb://msvc-producto
-          predicates:
-            - Path=/uploads/**
+            # Rutas utilitarias
+            - id: producto-uploads
+              uri: lb://msvc-producto
+              predicates:
+                - Path=/uploads/**
 
 gateway:
   filter:
-    jwt-secret: ${GATEWAY_JWT_SECRET:dev_secret_super_segura_32bytes_minimo}
+    jwt-secret: ${GATEWAY_JWT_SECRET}
     conditional-path: /api/segura/
     allowed-roles: ROLE_ADMIN,ROLE_USER
     role-claim: roles

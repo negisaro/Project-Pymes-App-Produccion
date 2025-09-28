@@ -2,7 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import Swal from 'sweetalert2';
-import { RoleName, User } from '../../interfaces/user.interface';
+
+
+import { Role, RoleName, User } from '../../interfaces/user.interface';
+import { UserService } from '../../services/user.service';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environments';
 
 // DTO para crear/actualizar usuario
 interface UserCreateDto {
@@ -13,7 +18,6 @@ interface UserCreateDto {
   email: string;
   rolesIds: number[];
 }
-import { UserService } from '../../services/user.service';
 
 @Component({
   selector: 'user-add-user',
@@ -22,24 +26,21 @@ import { UserService } from '../../services/user.service';
 })
 export class AddUserComponent implements OnInit {
   userForm!: FormGroup;
-  rolesList = [
-    { value: RoleName.ADMIN, label: 'Administrador' },
-    { value: RoleName.USER, label: 'Usuario' },
-    { value: RoleName.CLIENTE, label: 'Cliente' },
-  ];
+  rolesList: Role[] = [];
   isEditMode = false;
   userId?: number;
   loading = false;
 
   // Debug visual
 
+
   constructor(
     private fb: FormBuilder,
     private userService: UserService,
     private route: ActivatedRoute,
-    private router: Router
-  ) // toastr eliminado, solo Swal
-  {}
+    private router: Router,
+    private http: HttpClient
+  ) {}
 
   ngOnInit(): void {
     this.userForm = this.fb.group({
@@ -62,6 +63,16 @@ export class AddUserComponent implements OnInit {
       active: [true],
     });
 
+    // Cargar roles dinámicamente desde el backend
+    this.http.get<Role[]>(`${environment.baseUrl}/api/segura/roles`).subscribe({
+      next: (roles) => {
+        this.rolesList = roles;
+      },
+      error: () => {
+        this.rolesList = [];
+      },
+    });
+
     this.route.paramMap.subscribe((params) => {
       const id = params.get('id');
       if (id) {
@@ -80,12 +91,15 @@ export class AddUserComponent implements OnInit {
     this.loading = true;
     this.userService.getUserById(id).subscribe({
       next: (user) => {
+        // Mapear los roles del usuario a los objetos Role de rolesList
+        const userRoleIds = user.roles.map((r) => r.id);
+        const selectedRoles = this.rolesList.filter((role) => userRoleIds.includes(role.id));
         this.userForm.patchValue({
           name: user.name,
           lastname: user.lastname,
           username: user.username,
           email: user.email,
-          roles: user.roles,
+          roles: selectedRoles,
           active: user.active,
         });
         this.loading = false;
@@ -94,7 +108,7 @@ export class AddUserComponent implements OnInit {
       error: () => {
         this.loading = false;
         this.showSwalError('No se pudo cargar el usuario.');
-        this.router.navigate(['/dashboard/user/list-user']);
+        this.router.navigate(['../list-user'], { relativeTo: this.route });
       },
     });
   }
@@ -116,7 +130,7 @@ export class AddUserComponent implements OnInit {
       password: formValue.password || undefined,
       email: formValue.email,
       rolesIds: Array.isArray(formValue.roles)
-        ? formValue.roles.map((r: any) => r.id)
+        ? formValue.roles.map((r: Role) => r.id)
         : [],
     };
 
@@ -125,7 +139,7 @@ export class AddUserComponent implements OnInit {
         next: () => {
           this.loading = false;
           this.showSwalToast('Usuario actualizado exitosamente', 'success');
-          this.router.navigate(['/dashboard/user/list-user']);
+    this.router.navigate(['../list-user'], { relativeTo: this.route });
         },
         error: (err) => {
           this.loading = false;
@@ -140,7 +154,7 @@ export class AddUserComponent implements OnInit {
           this.loading = false;
           this.showSwalToast('Usuario registrado exitosamente', 'success');
           this.userForm.reset({ active: true, roles: [] });
-          this.router.navigate(['/dashboard/user/list-user']);
+    this.router.navigate(['../list-user'], { relativeTo: this.route });
         },
         error: (err) => {
           this.loading = false;

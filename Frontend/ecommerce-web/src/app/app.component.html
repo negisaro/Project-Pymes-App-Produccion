@@ -1,25 +1,14 @@
-<!-- <div class="app-bg-bg"></div>
-<div class="app-bg" style="min-height: 100vh;">
-  <ng-container *ngIf="loading$ | async; else appContent">
-    <div class="app-loading">
-      <div class="spinner"></div>
-      <span>Cargando...</span>
-    </div>
-  </ng-container>
-  <ng-template #appContent>
-    <router-outlet></router-outlet>
-  </ng-template>
-</div> -->
 
 <div class="app-bg-gradient">
   <ng-container *ngIf="loading$ | async">
-    <div class="app-loading-overlay">
-      <div class="cool-spinner">
-        <div class="dot dot1"></div>
-        <div class="dot dot2"></div>
-        <div class="dot dot3"></div>
+    <div class="app-loading-overlay-premium">
+      <div class="spinner-aurora">
+        <span class="aurora-dot dot1"></span>
+        <span class="aurora-dot dot2"></span>
+        <span class="aurora-dot dot3"></span>
+        <span class="aurora-dot dot4"></span>
       </div>
-      <span class="mt-3 text-cool-primary fw-semibold">Cargando...</span>
+      <span class="mt-4 spinner-title">Cargando la experiencia Glow Dreams...</span>
     </div>
   </ng-container>
   <router-outlet></router-outlet>

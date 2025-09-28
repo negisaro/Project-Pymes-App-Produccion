@@ -1,9 +1,9 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow py-2">
+<nav class="navbar navbar-expand-lg navbar-glass shadow-lg py-2">
   <div class="container-fluid">
-    <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" routerLink="/dashboard/home">
-  <img src="assets/images/user.png" alt="Logo" width="36" height="36" class="d-inline-block align-text-top rounded-circle shadow-sm">
-      Glow Dreams
-    </a>
+  <a class="navbar-brand d-flex align-items-center gap-2 fw-bold gradient-text-navbar" routerLink="/home">
+    <img src="assets/images/user.png" alt="Logo" width="40" height="40" class="d-inline-block align-text-top rounded-circle shadow-glass">
+    <span class="brand-title-glass">Glow Dreams</span>
+  </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -12,7 +12,7 @@
         <li class="nav-item d-none d-lg-block w-25">
           <form class="d-flex align-items-center w-100" (submit)="onSearch(searchTerm.value)">
             <input #searchTerm type="text" class="form-control form-control-sm me-2" placeholder="Buscar productos...">
-            <button class="btn btn-light btn-sm" type="submit"><i class="bi bi-search"></i></button>
+            <button class="btn btn-glass btn-sm" type="submit"><i class="bi bi-search"></i></button>
           </form>
         </li>
         <li class="nav-item d-lg-none">
@@ -23,32 +23,42 @@
         <li class="nav-item w-100" *ngIf="showSearch && isMobile()">
           <form class="d-flex align-items-center w-100" (submit)="onSearch(searchTermMobile.value)">
             <input #searchTermMobile type="text" class="form-control form-control-sm me-2" placeholder="Buscar productos...">
-            <button class="btn btn-primary btn-sm" type="submit"><i class="bi bi-arrow-right"></i></button>
+            <button class="btn btn-glass btn-sm" type="submit"><i class="bi bi-arrow-right"></i></button>
           </form>
         </li>
         <li class="nav-item ms-lg-3" *ngIf="isCliente">
-          <a class="nav-link position-relative d-flex align-items-center" routerLink="/dashboard/home" aria-label="Carrito">
-            <i class="bi bi-cart3" style="font-size:1.8rem;"></i>
-            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:0.8rem; min-width:1.5em;">{{ cartCount }}</span>
+          <a class="nav-link position-relative d-flex align-items-center cart-link-glass" routerLink="/home" aria-label="Carrito">
+            <i class="bi bi-cart3 cart-icon-glass"></i>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart-badge-glass">{{ cartCount }}</span>
           </a>
         </li>
+
         <li class="nav-item">
           <a class="nav-link" routerLink="/dashboard/about">Acerca de</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" routerLink="/contact">Contáctenos</a>
         </li>
+        <li class="nav-item" *ngIf="isAdmin">
+          <a class="nav-link text-warning fw-bold d-flex align-items-center gap-2 admin-link-glass" routerLink="/dashboard-admin">
+            <i class="bi bi-speedometer2"></i> Ir al Panel Admin
+          </a>
+        </li>
 
       <div class="d-flex align-items-center ms-auto">
         <ng-container *ngIf="user$ | async as user; else loginButton">
-          <div class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarUserDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <!-- Botón de cierre de sesión solo para admin -->
+          <button *ngIf="isAdmin" class="btn btn-gradient-navbar fw-semibold me-2 d-flex align-items-center gap-2" (click)="logout()">
+            <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+          </button>
+          <div class="nav-item position-relative">
+            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarUserDropdown" role="button" (click)="toggleProfileMenu($event)" [attr.aria-expanded]="showProfileMenu">
               <div class="navbar-avatar me-2">
                 <img src="assets/images/user.png" alt="Avatar" width="32" height="32" class="rounded-circle">
               </div>
               <span class="navbar-user-name text-white fw-semibold d-none d-md-inline">{{ user?.username }}</span>
             </a>
-            <ul class="dropdown-menu dropdown-menu-end animate__animated animate__fadeIn" aria-labelledby="navbarUserDropdown">
+            <ul class="dropdown-menu dropdown-menu-end animate__animated animate__fadeIn" [class.show]="showProfileMenu" aria-labelledby="navbarUserDropdown" style="display: block; min-width: 240px;" *ngIf="showProfileMenu">
               <li>
                 <div class="dropdown-item d-flex flex-column align-items-center bg-light rounded-4 shadow-lg mb-2 p-4" style="min-width:240px;">
                   <div class="d-flex flex-column align-items-center w-100 mb-2">
@@ -60,7 +70,7 @@
               </li>
               <li><hr class="dropdown-divider"></li>
               <li>
-                <button class="dropdown-item text-danger fw-semibold d-flex align-items-center justify-content-center gap-2 py-2" (click)="logout()">
+                <button class="dropdown-item text-danger fw-semibold d-flex align-items-center justify-content-center gap-2 py-2" (click)="logout(); closeProfileMenu()">
                   <i class="bi bi-box-arrow-right"></i> Cerrar sesión
                 </button>
               </li>
@@ -68,7 +78,7 @@
           </div>
         </ng-container>
         <ng-template #loginButton>
-          <a class="btn btn-outline-light fw-semibold px-3 ms-2" routerLink="/auth/login">
+          <a class="btn btn-gradient-navbar fw-semibold px-3 ms-2" routerLink="/auth/login">
             <i class="bi bi-box-arrow-in-right"></i> Login
           </a>
         </ng-template>

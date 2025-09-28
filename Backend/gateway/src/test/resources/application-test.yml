@@ -1,0 +1,3 @@
+gateway:
+  filter:
+    jwt-secret: Yk4jD3gQnv9ZqF5wFhX4AZnJOLc2xG2G9x0KYvstXjE=

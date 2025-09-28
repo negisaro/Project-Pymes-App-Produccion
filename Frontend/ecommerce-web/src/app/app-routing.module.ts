@@ -33,7 +33,7 @@ const routes: Routes = [
     canActivate: [IsAuthenticatedGuard, RoleGuard],
     data: { roles: ['ROLE_CLIENT'] },
     loadChildren: () =>
-      import('./user/user.module').then((m) => m.UserModule),
+      import('./cliente-dashboard/cliente-dashboard.module').then((m) => m.ClienteDashboardModule),
   },
   // Buscar
   {

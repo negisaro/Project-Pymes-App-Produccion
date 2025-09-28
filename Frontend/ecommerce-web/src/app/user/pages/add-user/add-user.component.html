@@ -36,7 +36,7 @@
               <div class="col-md-6">
                 <label for="roles" class="form-label">Rol(es)</label>
                 <select id="roles" formControlName="roles" multiple required class="form-select" [ngClass]="{'is-invalid': userForm.get('roles')?.invalid && userForm.get('roles')?.touched}">
-                  <option *ngFor="let rol of rolesList" [ngValue]="rol.value">{{ rol.label }}</option>
+                  <option *ngFor="let rol of rolesList" [ngValue]="rol">{{ rol.name }}</option>
                 </select>
                 <div *ngIf="userForm.get('roles')?.invalid && userForm.get('roles')?.touched" class="invalid-feedback">Selecciona al menos un rol.</div>
                 <small class="text-muted">Mantén presionada la tecla Ctrl (Cmd en Mac) para seleccionar varios roles.</small>

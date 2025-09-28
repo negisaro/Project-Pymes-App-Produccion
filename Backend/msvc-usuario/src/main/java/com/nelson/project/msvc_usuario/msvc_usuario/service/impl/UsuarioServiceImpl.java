@@ -9,18 +9,18 @@ import com.nelson.project.msvc_usuario.msvc_usuario.model.entity.Rol;
 import com.nelson.project.msvc_usuario.msvc_usuario.model.entity.Usuario;
 import com.nelson.project.msvc_usuario.msvc_usuario.repository.RolRepository;
 import com.nelson.project.msvc_usuario.msvc_usuario.repository.UsuarioRepository;
+import com.nelson.project.msvc_usuario.msvc_usuario.service.EmailService;
 import com.nelson.project.msvc_usuario.msvc_usuario.service.UsuarioService;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,13 +31,14 @@ import org.springframework.util.StringUtils;
  * Incluye manejo de transacciones, logging, uso de mappers y buenas prácticas.
  */
 @Service
+@Slf4j
 public class UsuarioServiceImpl implements UsuarioService {
 
   private final UsuarioRepository usuarioRepository;
   private final RolRepository rolRepository;
   private final PasswordEncoder passwordEncoder;
   private final UsuarioMapper usuarioMapper;
-  private final JavaMailSender mailSender;
+  private final EmailService emailService;
 
   /**
    * Obtiene todos los usuarios como DTO.
@@ -117,6 +118,17 @@ public class UsuarioServiceImpl implements UsuarioService {
         ErrorCodes.USER_ALREADY_EXISTS
       );
     }
+    // Validar que el admin asigne al menos un rol
+    if (
+      usuarioCreateDto.getRolesIds() == null ||
+      usuarioCreateDto.getRolesIds().isEmpty()
+    ) {
+      throw new CustomException(
+        "Debes asignar al menos un rol al usuario.",
+        400,
+        ErrorCodes.USER_UPDATE_FAILED
+      );
+    }
     Usuario usuario = Usuario.builder()
       .name(usuarioCreateDto.getName())
       .lastname(usuarioCreateDto.getLastname())
@@ -125,6 +137,19 @@ public class UsuarioServiceImpl implements UsuarioService {
       .active(true)
       .password(passwordEncoder.encode(usuarioCreateDto.getPassword()))
       .build();
+    // Asignar roles según rolesIds
+    for (Long rolId : usuarioCreateDto.getRolesIds()) {
+      Rol rol = rolRepository
+        .findById(rolId)
+        .orElseThrow(() ->
+          new CustomException(
+            "Rol no encontrado con id: " + rolId,
+            404,
+            ErrorCodes.USER_UPDATE_FAILED
+          )
+        );
+      usuario.addRol(rol);
+    }
     Usuario saved = usuarioRepository.save(usuario);
     return usuarioMapper.toDto(saved);
   }
@@ -167,6 +192,7 @@ public class UsuarioServiceImpl implements UsuarioService {
       .active(true)
       .password(passwordEncoder.encode(usuarioCreateDto.getPassword()))
       .build();
+    // Siempre asignar solo el rol CLIENT
     Rol clientRol = rolRepository
       .findByName("ROLE_CLIENT")
       .orElseGet(() -> {
@@ -425,13 +451,13 @@ public class UsuarioServiceImpl implements UsuarioService {
     RolRepository rolRepository,
     PasswordEncoder passwordEncoder,
     UsuarioMapper usuarioMapper,
-    JavaMailSender mailSender
+    EmailService emailService
   ) {
     this.usuarioRepository = usuarioRepository;
     this.rolRepository = rolRepository;
     this.passwordEncoder = passwordEncoder;
     this.usuarioMapper = usuarioMapper;
-    this.mailSender = mailSender;
+    this.emailService = emailService;
   }
 
   @Override
@@ -452,17 +478,28 @@ public class UsuarioServiceImpl implements UsuarioService {
       LocalDateTime.now().plusMinutes(resetTokenExpiryMinutes)
     );
     usuarioRepository.save(usuario);
-    // Enviar email
-    SimpleMailMessage message = new SimpleMailMessage();
-    message.setTo(usuario.getEmail());
-    message.setSubject("Recuperación de contraseña");
-    message.setText(
-      "Para restablecer tu contraseña, usa este token: " +
-      token +
-      "\nEste token expirará en " +
-      resetTokenExpiryMinutes +
-      " minutos."
-    );
-    mailSender.send(message);
+    try {
+      emailService.sendPasswordResetToken(
+        usuario.getEmail(),
+        token,
+        resetTokenExpiryMinutes
+      );
+      log.info(
+        "[UsuarioService] Token de recuperación enviado a {}",
+        usuario.getEmail()
+      );
+    } catch (Exception e) {
+      log.error(
+        "[UsuarioService] Error enviando token de recuperación a {}: {}",
+        usuario.getEmail(),
+        e.getMessage(),
+        e
+      );
+      throw new CustomException(
+        "No se pudo enviar el email de recuperación. Intenta más tarde.",
+        500,
+        ErrorCodes.EMAIL_SEND_ERROR
+      );
+    }
   }
 }

@@ -231,7 +231,7 @@ export class AddProductoComponent implements OnInit {
           this.showSwalToast('Producto actualizado exitosamente', 'success');
           this.errores = [];
           setTimeout(() => {
-            this.router.navigate(['/dashboard/product/list-product']);
+            this.router.navigate(['../'], { relativeTo: this.route });
           }, 2000);
         },
         error: (err) => {
@@ -252,7 +252,7 @@ export class AddProductoComponent implements OnInit {
           this.imagenes.clear();
           this.mensaje = null;
           setTimeout(() => {
-            this.router.navigate(['/dashboard/product/list-product']);
+            this.router.navigate(['../'], { relativeTo: this.route });
           }, 2000);
         },
         error: (err) => {
