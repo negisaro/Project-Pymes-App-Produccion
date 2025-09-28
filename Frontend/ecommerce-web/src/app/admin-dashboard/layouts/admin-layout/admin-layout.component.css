@@ -1,0 +1,10 @@
+/* Estilos básicos para el layout admin */
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+}
+.admin-content {
+  flex: 1;
+  padding: 2rem;
+  background: #f8f9fa;
+}

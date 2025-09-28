@@ -48,8 +48,8 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "800kB",
-                  "maximumError": "2MB"
+                  "maximumWarning": "2MB",
+                  "maximumError": "4MB"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -59,7 +59,8 @@
               ],
               "outputHashing": "all",
               "allowedCommonJsDependencies": [
-                "sweetalert2"
+                "sweetalert2",
+                "apexcharts"
               ]
             },
             "development": {

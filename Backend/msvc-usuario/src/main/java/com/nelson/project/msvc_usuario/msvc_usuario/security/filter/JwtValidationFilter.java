@@ -37,12 +37,9 @@ public class JwtValidationFilter extends OncePerRequestFilter {
   ) throws ServletException, IOException {
     String path = request.getServletPath();
     if (
-      path.equals("/auth/login") ||
-      path.equals("/usuarios/register") ||
-      path.equals("/auth/forgot-password") ||
-      path.equals("/auth/reset-password") ||
       path.startsWith("/swagger-ui") ||
-      path.startsWith("/v3/api-docs")
+      path.startsWith("/v3/api-docs") ||
+      path.startsWith("/public/")
     ) {
       // Exenta rutas públicas y Swagger
       filterChain.doFilter(request, response);

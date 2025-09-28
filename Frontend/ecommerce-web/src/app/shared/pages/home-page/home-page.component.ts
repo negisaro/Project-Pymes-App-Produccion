@@ -1,101 +1,80 @@
 
-import { Component, OnInit } from '@angular/core';
-import { CartService } from '../../services/cart.service';
-import { Router } from '@angular/router';
-import { AuthService } from '../../../auth/services/auth.service';
-import { ProductoService, PaginaProducto } from '../../../producto/service/producto.service';
-import { Producto } from '../../../producto/interfaces/producto';
-import { environment } from '../../../../environments/environments';
-import Swal from 'sweetalert2';
+import { Component, OnInit, AfterViewInit, ElementRef, ViewChildren, QueryList } from '@angular/core';
+import { Producto as ProductoBase } from '../../../producto/interfaces/producto';
+import { ProductoPublicService } from '../../../producto/service/producto.service.public';
+import { Categoria } from '../../../categoria/interfaces/categoria';
+import { CategoriaPublicService } from '../../../categoria/service/categoria.service.public';
+
+// Extiende Producto para incluir stockHistory opcional
+export interface ProductoWithHistory extends ProductoBase {
+  stockHistory?: number[];
+}
 
 @Component({
   selector: 'shared-home-page',
   templateUrl: './home-page.component.html',
   styleUrls: ['./home-page.component.css'],
 })
-export class HomePageComponent implements OnInit {
-  availableProducts: Producto[] = [];
-  cartProducts: Producto[] = [];
-  page = 0;
-  size = 12;
-  totalPages = 0;
-  totalElements = 0;
+export class HomePageComponent implements OnInit, AfterViewInit {
+  categoriasConProductos: Array<Categoria & { productos: ProductoWithHistory[] }> = [];
+
+  @ViewChildren('carouselContainer') carouselContainers!: QueryList<ElementRef>;
 
   constructor(
-    private authService: AuthService,
-    private router: Router,
-    private cartService: CartService,
-    private productoService: ProductoService
+    private productoService: ProductoPublicService,
+    private categoriaService: CategoriaPublicService
   ) {}
 
   ngOnInit(): void {
-    this.cargarProductos();
-    this.updateCartCount();
-  }
-
-  cargarProductos(): void {
-    this.productoService.getProductosPaginados(this.page, this.size).subscribe({
-      next: (resp: PaginaProducto) => {
-        this.availableProducts = resp.content;
-        this.totalPages = resp.totalPages;
-        this.totalElements = resp.totalElements;
-      },
-      error: () => {
-        Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudieron cargar los productos.' });
-      }
+    // Consultar categorías y productos en paralelo
+    Promise.all([
+      this.categoriaService.getCategorias().toPromise(),
+      this.productoService.getProductos().toPromise()
+    ]).then(([categorias, productos]) => {
+      const productosList = Array.isArray(productos) ? productos : [];
+      // Mockear historial de stock para cada producto
+      productosList.forEach((p: ProductoWithHistory) => {
+        // Si ya existe un historial real, no lo sobrescribas
+        if (!('stockHistory' in p)) {
+          // Genera un historial de 7 días con variaciones aleatorias
+          const base = p.stock;
+          p.stockHistory = Array.from({ length: 7 }).map((_, i) => Math.max(0, base - Math.floor(Math.random() * 3) + i));
+        }
+      });
+      this.categoriasConProductos = (categorias || []).map(cat => ({
+        ...cat,
+        productos: productosList.filter((p: ProductoWithHistory) => p.categoriaId === cat.id)
+      })).filter(cat => cat.productos.length > 0);
     });
   }
 
-  addToCart(product: Producto) {
-    if (!this.cartProducts.find(p => p.id === product.id)) {
-      this.cartProducts.push(product);
-      this.updateCartCount();
-      Swal.fire({ icon: 'success', title: 'Agregado', text: 'Producto agregado al carrito', timer: 1200, showConfirmButton: false, toast: true, position: 'top-end' });
-    }
+  ngAfterViewInit(): void {
+    // Si necesitas lógica tras renderizado, agrégala aquí
   }
 
-  removeFromCart(product: Producto) {
-    this.cartProducts = this.cartProducts.filter(p => p.id !== product.id);
-    this.updateCartCount();
-    Swal.fire({ icon: 'info', title: 'Eliminado', text: 'Producto eliminado del carrito', timer: 1200, showConfirmButton: false, toast: true, position: 'top-end' });
-  }
-
-  updateCartCount() {
-    this.cartService.setCartCount(this.cartProducts.length);
-  }
-
-  getCartTotal(): number {
-    return this.cartProducts.reduce((total, p) => total + (p.precio || 0), 0);
-  }
-
-  pagarConWompi() {
-    const total = this.getCartTotal();
-    if (total <= 0) {
-      Swal.fire({ icon: 'info', title: 'Carrito vacío', text: 'Agrega productos antes de pagar.', timer: 1500, showConfirmButton: false, toast: true, position: 'top-end' });
-      return;
-    }
-    fetch('http://localhost:8080/api/payments/wompi-checkout', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount: total * 100 })
-    })
-      .then(response => response.json())
-      .then(data => {
-        if (data.checkoutUrl) {
-          window.location.href = data.checkoutUrl;
-        } else {
-          Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo generar el pago.' });
-        }
-      })
-      .catch(() => {
-        Swal.fire({ icon: 'error', title: 'Error', text: 'Error al conectar con el servidor de pagos.' });
+  /**
+   * Realiza scroll horizontal en el carrusel de la categoría indicada
+   * @param categoriaNombre nombre de la categoría
+   * @param direction -1 para izquierda, 1 para derecha
+   */
+  scrollCategoria(categoriaNombre: string, direction: number) {
+    const container = this.carouselContainers.find(
+      (ref) => ref.nativeElement.getAttribute('data-categoria') === categoriaNombre
+    );
+    if (container) {
+      const card = container.nativeElement.querySelector('.product-card');
+      const scrollAmount = card ? card.offsetWidth + 24 : 300; // 24px gap
+      container.nativeElement.scrollBy({
+        left: direction * scrollAmount * 2, // scrolla 2 cards
+        behavior: 'smooth',
       });
+    }
   }
 
   getImageUrl(imagePath: string): string {
     if (!imagePath) return 'https://via.placeholder.com/400x180?text=Sin+imagen';
     if (imagePath.startsWith('http')) return imagePath;
-    return `${environment.baseUrl}${imagePath}`;
+    return `https://tuservidor.com/${imagePath}`;
   }
 
   onImgError(event: Event) {
@@ -103,17 +82,7 @@ export class HomePageComponent implements OnInit {
     target.src = 'https://via.placeholder.com/400x180?text=Imagen+no+disponible';
   }
 
-  finalizarCompra() {
-    Swal.fire({
-      icon: 'info',
-      title: 'En desarrollo',
-      text: 'La pasarela de pago está en proceso de implementación. Disculpe las molestias.',
-      timer: 2000,
-      showConfirmButton: false,
-      toast: true,
-      position: 'top-end'
-    }).then(() => {
-      this.router.navigate(['/dashboard/productos']);
-    });
+  addToCart(product: ProductoWithHistory) {
+    // Tu lógica de agregar al carrito
   }
 }

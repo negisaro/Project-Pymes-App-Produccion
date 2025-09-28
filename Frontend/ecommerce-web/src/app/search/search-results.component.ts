@@ -2,9 +2,10 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CartService } from '../shared/services/cart.service';
-import { ProductoService, PaginaProducto } from '../producto/service/producto.service';
+import { PaginaProducto } from '../producto/interfaces/pagina-producto';
 import { Producto } from '../producto/interfaces/producto';
 import Swal from 'sweetalert2';
+import { ProductoPublicService } from '../producto/service/producto.service.public';
 
 @Component({
   selector: 'app-search-results',
@@ -25,9 +26,8 @@ export class SearchResultsComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private cartService: CartService,
-    private productoService: ProductoService
+    private productoService: ProductoPublicService
   ) {}
-
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
@@ -45,7 +45,7 @@ export class SearchResultsComponent implements OnInit {
     // Aquí se asume que el backend soporta búsqueda por nombre/descripción vía query param
     this.productoService.getProductosPaginados(0, this.size).subscribe({
       next: (resp: PaginaProducto) => {
-        this.filteredProducts = resp.content.filter(p =>
+        this.filteredProducts = resp.content.filter((p: Producto) =>
           (p.nombre && p.nombre.toLowerCase().includes(term.toLowerCase())) ||
           (p.descripcion && p.descripcion.toLowerCase().includes(term.toLowerCase()))
         );

@@ -1,5 +1,6 @@
 package com.nelson.project.msvc_producto.msvc_producto.security.filter;
 
+import com.nelson.project.msvc_producto.msvc_producto.security.SecurityPaths;
 import com.nelson.project.msvc_producto.msvc_producto.security.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -40,16 +41,18 @@ public class JwtValidationFilter extends OncePerRequestFilter {
     final String username;
 
     String path = request.getServletPath();
-    if (
-      path.startsWith("/public") ||
-      path.startsWith("/swagger-ui") ||
-      path.startsWith("/v3/api-docs") ||      
-      path.equals("/productos/list") ||
-      path.equals("/uploads/**") ||
-      path.startsWith("/productos/list/")
-    ) {
-      filterChain.doFilter(request, response);
-      return;
+    // Exentar rutas públicas centralizadas
+    for (String publicPath : SecurityPaths.PUBLIC_GET) {
+      if (path.matches(publicPath.replace("**", ".*"))) {
+        filterChain.doFilter(request, response);
+        return;
+      }
+    }
+    for (String publicPath : SecurityPaths.PUBLIC_POST) {
+      if (path.matches(publicPath.replace("**", ".*"))) {
+        filterChain.doFilter(request, response);
+        return;
+      }
     }
 
     if (authHeader == null || !authHeader.startsWith("Bearer ")) {

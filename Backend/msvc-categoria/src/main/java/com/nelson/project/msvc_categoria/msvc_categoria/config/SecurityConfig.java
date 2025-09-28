@@ -1,5 +1,6 @@
 package com.nelson.project.msvc_categoria.msvc_categoria.config;
 
+import com.nelson.project.msvc_categoria.msvc_categoria.security.SecurityPaths;
 import com.nelson.project.msvc_categoria.msvc_categoria.security.UserDetailsServiceImpl;
 import com.nelson.project.msvc_categoria.msvc_categoria.security.filter.JwtValidationFilter;
 import com.nelson.project.msvc_categoria.msvc_categoria.security.service.JwtService;
@@ -15,12 +16,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  */
 @Configuration
 public class SecurityConfig {
-
-  private static final String[] PUBLIC_ENDPOINTS = {
-    "/public/**",
-    "/swagger-ui/**",
-    "/v3/api-docs/**",
-  };
 
   /**
    * Bean para el filtro de validación JWT.
@@ -48,7 +43,9 @@ public class SecurityConfig {
       )
       .authorizeHttpRequests(authz ->
         authz
-          .requestMatchers(PUBLIC_ENDPOINTS)
+          .requestMatchers(SecurityPaths.PUBLIC_GET)
+          .permitAll()
+          .requestMatchers(SecurityPaths.PUBLIC_POST)
           .permitAll()
           .anyRequest()
           .authenticated()

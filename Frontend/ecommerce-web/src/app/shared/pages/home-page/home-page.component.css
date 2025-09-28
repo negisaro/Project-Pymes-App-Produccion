@@ -1,3 +1,96 @@
+/* Carrusel horizontal de productos por categoría */
+.categoria-carousel-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.categoria-carousel {
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding-bottom: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: #26d0ce #232526;
+}
+
+.categoria-carousel::-webkit-scrollbar {
+  height: 8px;
+}
+.categoria-carousel::-webkit-scrollbar-thumb {
+  background: #26d0ce;
+  border-radius: 8px;
+}
+.categoria-carousel::-webkit-scrollbar-track {
+  background: #232526;
+  border-radius: 8px;
+}
+
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  background: rgba(38,208,206,0.85);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 1.5rem;
+  box-shadow: 0 2px 8px rgba(38,208,206,0.18);
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.carousel-btn.prev {
+  left: -16px;
+}
+.carousel-btn.next {
+  right: -16px;
+}
+.carousel-btn:hover {
+  background: #1a8a86;
+  box-shadow: 0 4px 16px rgba(38,208,206,0.28);
+}
+
+@media (max-width: 900px) {
+  .categoria-carousel {
+    gap: 12px;
+  }
+  .carousel-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 1.1rem;
+  }
+  .carousel-btn.prev {
+    left: -8px;
+  }
+  .carousel-btn.next {
+    right: -8px;
+  }
+}
+
+@media (max-width: 576px) {
+  .categoria-carousel {
+    gap: 8px;
+    padding-bottom: 4px;
+  }
+  .carousel-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 1rem;
+  }
+  .carousel-btn.prev {
+    left: 0;
+  }
+  .carousel-btn.next {
+    right: 0;
+  }
+}
 /* Labels y títulos en blanco en todos los containers y secciones principales */
 .container label,
 

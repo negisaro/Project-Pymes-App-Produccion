@@ -5,15 +5,11 @@ package com.nelson.project.msvc_usuario.msvc_usuario.security;
  */
 public final class SecurityPaths {
 
-  public static final String[] PUBLIC_POST = {
-    "/auth/login",
-    "/usuarios/register",
-    "/auth/forgot-password",
-    "/auth/reset-password",
-  };
+  public static final String[] PUBLIC_POST = { "/public/**" };
   public static final String[] PUBLIC_GET = {
     "/swagger-ui/**",
     "/v3/api-docs/**",
+    "/public/**",
   };
 
   private SecurityPaths() {}

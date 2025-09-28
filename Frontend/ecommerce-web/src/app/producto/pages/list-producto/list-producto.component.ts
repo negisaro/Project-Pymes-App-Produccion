@@ -6,10 +6,8 @@ import { Categoria } from '../../../categoria/interfaces/categoria';
 import { CategoriaService } from '../../../categoria/service/categoria.service';
 import { environment } from '../../../../environments/environments';
 import { Producto } from '../../interfaces/producto';
-import {
-  PaginaProducto,
-  ProductoService,
-} from '../../service/producto.service';
+import { PaginaProducto } from '../../interfaces/pagina-producto';
+import { ProductoService } from '../../service/producto.service';
 import { ProveedorService } from '../../../proveedor/service/proveedor.service';
 import { Proveedor } from '../../../proveedor/interfaces/proveedor';
 
@@ -73,7 +71,7 @@ export class ListProductoComponent implements OnInit {
     this.loading = true;
     this.error = false;
     this.errorMsg = '';
-    this.productoService.getProductosPaginadosAdmin(this.page, this.size).subscribe({
+  this.productoService.getProductosPaginados(this.page, this.size).subscribe({
       next: (resp: PaginaProducto) => {
         this.productos = resp.content;
         this.totalPages = resp.totalPages;

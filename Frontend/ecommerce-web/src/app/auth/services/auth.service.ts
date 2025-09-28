@@ -5,7 +5,10 @@ import { environment } from '../../../environments/environments';
 import { Role, RoleName, User } from '../../user/interfaces/user.interface';
 import { AuthStatus } from '../interfaces';
 
-// Convierte string[] a Role[]
+import { LoginDto, LoginResponseDto, ForgotPasswordRequestDto, ResetPasswordRequestDto } from '../dto/auth.dto';
+
+
+  // Convierte string[] a Role[]
 function toRoleArray(roles: string[]): Role[] {
   return roles
     .map(role => {
@@ -13,12 +16,12 @@ function toRoleArray(roles: string[]): Role[] {
         case 'ROLE_ADMIN': return { name: RoleName.ADMIN };
         case 'ROLE_USER': return { name: RoleName.USER };
         case 'ROLE_CLIENT': return { name: RoleName.CLIENTE };
-        
         default: return undefined;
       }
     })
     .filter((r): r is Role => r !== undefined);
 }
+
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -47,7 +50,7 @@ export class AuthService {
 
   /** Inicia sesión y guarda usuario/token si es exitoso */
   login(username: string, password: string): Observable<boolean> {
-    const url = `${this.baseUrl}/api/auth/login`;
+    const url = `${this.baseUrl}/api/public/auth/login`;
     const body = { username, password };
     return this.http.post<any>(url, body).pipe(
       map((res) => {
@@ -101,7 +104,7 @@ export class AuthService {
 
   /** Verifica el estado de autenticación usando el token almacenado */
   checkAuthStatus(): Observable<boolean> {
-    const url = `${this.baseUrl}/api/auth/check-token`;
+    const url = `${this.baseUrl}/api/public/auth/check-token`;
     const token = localStorage.getItem('token');
     console.log('[AuthService] checkAuthStatus: token en localStorage:', token);
     if (!token) {
@@ -112,7 +115,7 @@ export class AuthService {
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     return this.http.get<any>(url, { headers }).pipe(
       map((res) => {
-        console.log('[AuthService] Respuesta de /auth/check-token:', res);
+        console.log('[AuthService] Respuesta de /api/public/auth/check-token:', res);
         const usuario = res.usuario;
         const newToken = res.token || token;
         if (!usuario || !newToken) {
@@ -149,7 +152,7 @@ export class AuthService {
         return this.setAuthentication(user, newToken);
       }),
       catchError((err) => {
-        console.error('[AuthService] Error en /auth/check-token:', err);
+        console.error('[AuthService] Error en /api/public/auth/check-token:', err);
         this._authStatus.set(AuthStatus.notAuthenticated);
         this.logout();
         return of(false);
@@ -159,21 +162,21 @@ export class AuthService {
 
   /** Envía email para recuperación de contraseña */
   sendResetPasswordEmail(email: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/api/auth/forgot-password`, { email }).pipe(
+    return this.http.post(`${this.baseUrl}/api/public/auth/forgot-password`, { email }).pipe(
       catchError((err) => throwError(() => new Error(err?.error?.mensaje || err?.error?.message || 'Error enviando email de recuperación')))
     );
   }
 
   /** Registra un nuevo usuario */
   register(data: Partial<User>): Observable<User> {
-    return this.http.post<User>(`${this.baseUrl}/api/usuarios/register`, data).pipe(
+    return this.http.post<User>(`${this.baseUrl}/api/public/auth/register`, data).pipe(
       catchError((err) => throwError(() => new Error(err?.error?.message || 'Error de registro')))
     );
   }
 
   /** Restablece la contraseña usando token */
   resetPassword(token: string, newPassword: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/api/auth/reset-password`, { token, newPassword }).pipe(
+    return this.http.post(`${this.baseUrl}/api/public/auth/reset-password`, { token, newPassword }).pipe(
       catchError((err) => throwError(() => new Error(err?.error?.mensaje || err?.error?.message || 'Error al restablecer contraseña')))
     );
   }
@@ -229,8 +232,28 @@ export class AuthService {
 
   /** Obtiene los roles disponibles desde el backend */
   getRoles(): Observable<string[]> {
-    return this.http.get<string[]>(`${this.baseUrl}/api/roles`).pipe(
+    return this.http.get<string[]>(`${this.baseUrl}/api/segura/roles`).pipe(
       catchError(() => of(['USER', 'ADMIN', 'CLIENTE']))
     );
   }
+
+   /** Refresca el token JWT */
+  refreshToken(token: string): Observable<{ token: string }> {
+    return this.http.post<{ token: string }>(
+      `${this.baseUrl}/api/public/auth/refresh`,
+      { token }
+    ).pipe(
+      catchError((err) => throwError(() => new Error(err?.error?.error || 'Error al refrescar token')))
+    );
+  }
+
+  /** Llama al endpoint de logout del backend (opcional, para trazabilidad) */
+  logoutBackend(): Observable<any> {
+    const token = this.getToken();
+    const headers = token ? new HttpHeaders().set('Authorization', `Bearer ${token}`) : undefined;
+    return this.http.post(`${this.baseUrl}/api/public/auth/logout`, {}, { headers }).pipe(
+      catchError((err) => of({ message: 'Sesión cerrada localmente.' }))
+    );
+  }
+
 }

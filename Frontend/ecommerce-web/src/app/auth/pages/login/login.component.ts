@@ -1,3 +1,4 @@
+import { RoleName } from '../../../user/interfaces/user.interface';
 import { Component, effect, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -25,7 +26,16 @@ export class LoginComponent implements OnInit {
   public loginEffect = effect(() => {
     if (this.authService.authStatus() === 'authenticated') {
       this.toastr.success('Bienvenido, acceso exitoso', 'Login');
-      this.router.navigateByUrl('/dashboard');
+      // Obtener roles del usuario autenticado
+      const user = this.authService.getCurrentUser();
+      const roles = user?.roles?.map(r => r.name) || [];
+      if (roles.includes(RoleName.ADMIN)) {
+        this.router.navigateByUrl('/dashboard-admin');
+      } else if (roles.includes(RoleName.USER) || roles.includes(RoleName.CLIENTE)) {
+        this.router.navigateByUrl('/dashboard-cliente');
+      } else {
+        this.router.navigateByUrl('/dashboard'); // fallback
+      }
     }
   });
 

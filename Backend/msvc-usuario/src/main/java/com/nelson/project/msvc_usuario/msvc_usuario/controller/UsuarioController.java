@@ -75,26 +75,6 @@ public class UsuarioController {
     }
   }
 
-  @Operation(summary = "Registrar usuario público")
-  @PostMapping("/register")
-  public ResponseEntity<UsuarioDto> register(
-    @RequestBody @Valid UsuarioCreateDto usuarioCreateDto
-  ) {
-    try {
-      UsuarioDto usuarioSaved = usuarioService.saveWithRoleUser(
-        usuarioCreateDto
-      );
-      return ResponseEntity.status(HttpStatus.CREATED).body(usuarioSaved);
-    } catch (Exception ex) {
-      throw new CustomException(
-        "Error al registrar usuario",
-        500,
-        "REGISTER_USER_ERROR",
-        ex.getMessage()
-      );
-    }
-  }
-
   @Operation(summary = "Crear usuario (admin)")
   @PostMapping("/create")
   public ResponseEntity<UsuarioDto> create(

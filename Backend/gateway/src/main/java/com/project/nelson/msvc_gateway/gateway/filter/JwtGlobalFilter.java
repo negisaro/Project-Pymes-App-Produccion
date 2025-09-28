@@ -22,14 +22,16 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+/**
+ * Filtro JWT global para Gateway: exenta /api/public/ y utilidades antes del StripPrefix,
+ * valida JWT solo en rutas bajo /api/segura/, profesional, robusto y uniforme.
+ */
 @Component
 public class JwtGlobalFilter implements GlobalFilter, Ordered {
 
-  private static final Logger logger = LoggerFactory.getLogger(
-    JwtGlobalFilter.class
-  );
+  private static final Logger logger = LoggerFactory.getLogger(JwtGlobalFilter.class);
 
-  @Value("${gateway.filter.jwt-secret:SuperClaveSecretaSeguraQueDebesCambiar}")
+  @Value("${gateway.filter.jwt-secret:SuperClaveSecretaSeguraQueDebesCambiarSuperLarga123}")
   private String jwtSecret;
 
   @Value("${gateway.filter.conditional-path:/api/segura/}")
@@ -38,92 +40,75 @@ public class JwtGlobalFilter implements GlobalFilter, Ordered {
   @Value("${gateway.filter.allowed-roles:ROLE_ADMIN,ROLE_USER}")
   private String allowedRoles;
 
-  @Value("${gateway.filter.role-claim:rol}")
+  @Value("${gateway.filter.role-claim:roles}")
   private String roleClaim;
 
   @Value("${gateway.filter.username-claim:username}")
   private String usernameClaim;
 
-  @Value("${gateway.filter.order:100}")
+  @Value("${gateway.filter.order:-20}")
   private int filterOrder;
 
-  @Value(
-    "${gateway.filter.exempt-paths:/login,/register,/public/,/swagger-ui/,/v3/api-docs/,/auth/login,/usuarios/register,/productos/list,/uploads/**,/auth/forgot-password,/auth/reset-password}"
-  )
+  @Value("${gateway.filter.exempt-paths:/api/public/,/uploads/,/swagger-ui/,/v3/api-docs/}")
   private String exemptPaths;
 
   @Override
-  public Mono<Void> filter(
-    ServerWebExchange exchange,
-    GatewayFilterChain chain
-  ) {
+  public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
     String path = exchange.getRequest().getPath().value();
     String method = exchange.getRequest().getMethod().name();
-    String contentType = exchange
-      .getRequest()
-      .getHeaders()
-      .getFirst("Content-Type");
+    String contentType = exchange.getRequest().getHeaders().getFirst("Content-Type");
+    String requestId = exchange.getRequest().getId();
 
-    logger.info(
-      "Evaluando petición: {} {} | Content-Type: {}",
-      method,
-      path,
-      contentType
-    );
+    logger.info("Evaluando petición: {} {} | Content-Type: {} | RequestID: {}", method, path, contentType, requestId);
 
-    // Ignorar preflight OPTIONS
+    // Exentar preflight OPTIONS
     if (exchange.getRequest().getMethod() == HttpMethod.OPTIONS) {
-      logger.info("Preflight OPTIONS detectado, exentando: {}", path);
+      logger.debug("Preflight OPTIONS detectado, exentando: {}", path);
       return chain.filter(exchange);
     }
 
-    // Exención flexible por 'contains'
+    // Exentar por prefijos centralizados
     List<String> exempt = Arrays.asList(exemptPaths.split(","));
-    boolean isExempt = exempt.stream().anyMatch(ex -> path.contains(ex));
-    logger.info("¿Ruta exenta? {} para path: {}", isExempt, path);
+    boolean isExempt = exempt.stream()
+      .map(String::trim)
+      .filter(ex -> !ex.isEmpty())
+      .anyMatch(ex -> path.startsWith(ex));
+    logger.debug("¿Ruta exenta? {} para path: {} | RequestID: {}", isExempt, path, requestId);
     if (isExempt) {
-      logger.info("Exentando ruta: {}", path);
+      logger.info("Ruta exenta (sin JWT): {}", path);
       return chain.filter(exchange);
     }
 
+    // Exentar binarios
     if ("application/octet-stream".equalsIgnoreCase(contentType)) {
-      logger.info("Exentando petición binaria: {}", path);
+      logger.debug("Exentando petición binaria: {}", path);
       return chain.filter(exchange);
     }
 
-    if (jwtSecret == null || jwtSecret.getBytes().length < 32) {
-      logger.error("La clave JWT debe tener al menos 32 bytes.");
-      exchange.getResponse().setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR);
-      return exchange.getResponse().setComplete();
-    }
-
-    // Solo validar JWT en rutas protegidas
+    // Validar JWT solo en rutas protegidas
     if (!path.startsWith(conditionalPath)) {
-      logger.info("Ruta fuera de protección JWT: {}", path);
+      logger.debug("Ruta fuera de protección JWT: {}", path);
       return chain.filter(exchange);
     }
 
-    List<String> authHeaders = exchange
-      .getRequest()
-      .getHeaders()
-      .getOrEmpty("Authorization");
+    // Validar token JWT
+    List<String> authHeaders = exchange.getRequest().getHeaders().getOrEmpty("Authorization");
     if (authHeaders.isEmpty() || !authHeaders.get(0).startsWith("Bearer ")) {
-      logger.warn(
-        "No hay token JWT válido en Authorization para ruta protegida: {}",
-        path
-      );
+      logger.warn("No hay token JWT válido en Authorization para ruta protegida: {} | RequestID: {}", path, requestId);
       exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
       return exchange.getResponse().setComplete();
     }
 
     String jwt = authHeaders.get(0).replace("Bearer ", "");
-    logger.info(
-      "JWT recibido: {}... para path: {}",
-      jwt.substring(0, Math.min(jwt.length(), 10)),
-      path
-    );
+    logger.debug("JWT recibido: {}... para path: {} | RequestID: {}", jwt.substring(0, Math.min(jwt.length(), 10)), path, requestId);
 
     try {
+      if (jwtSecret == null || jwtSecret.getBytes().length < 32) {
+        logger.error("La clave JWT debe tener al menos 32 bytes.");
+        exchange.getResponse().setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR);
+        return exchange.getResponse().setComplete();
+      }
+
       Key key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
       Claims claims = Jwts.parserBuilder()
         .setSigningKey(key)
@@ -135,26 +120,15 @@ public class JwtGlobalFilter implements GlobalFilter, Ordered {
       String username = claims.get(usernameClaim, String.class);
       String usuario = claims.getSubject() != null ? claims.getSubject() : "";
 
-      logger.info(
-        "Claims extraídos: usuario={}, username={}, rol={}",
-        usuario,
-        username,
-        rolClaimValue
-      );
+      logger.debug("Claims extraídos: usuario={}, username={}, rol={} | RequestID: {}", usuario, username, rolClaimValue, requestId);
 
       if (rolClaimValue == null || rolClaimValue.isEmpty()) {
-        logger.warn(
-          "No se encontró el claim de roles en el JWT para usuario: {}",
-          usuario
-        );
+        logger.warn("No se encontró el claim de roles en el JWT para usuario: {} | RequestID: {}", usuario, requestId);
         exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
         return exchange.getResponse().setComplete();
       }
       if (username == null || username.isEmpty()) {
-        logger.warn(
-          "No se encontró el claim de username en el JWT para usuario: {}",
-          usuario
-        );
+        logger.warn("No se encontró el claim de username en el JWT para usuario: {} | RequestID: {}", usuario, requestId);
         exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
         return exchange.getResponse().setComplete();
       }
@@ -168,55 +142,34 @@ public class JwtGlobalFilter implements GlobalFilter, Ordered {
         .filter(r -> !r.isEmpty())
         .collect(Collectors.toSet());
 
-      boolean hasAllowedRole = userRoles
-        .stream()
-        .anyMatch(allowedRolesSet::contains);
-      logger.info(
-        "Roles de usuario: {} | Roles permitidos: {} | ¿Autorizado?: {}",
-        userRoles,
-        allowedRolesSet,
-        hasAllowedRole
-      );
+      boolean hasAllowedRole = userRoles.stream().anyMatch(allowedRolesSet::contains);
+      logger.debug("Roles de usuario: {} | Roles permitidos: {} | ¿Autorizado?: {} | RequestID: {}", userRoles, allowedRolesSet, hasAllowedRole, requestId);
 
       if (!hasAllowedRole) {
-        logger.warn(
-          "Acceso denegado por roles. Usuario: {} | Roles del usuario: {} | Roles requeridos: {}",
-          usuario,
-          userRoles,
-          allowedRolesSet
-        );
+        logger.warn("Acceso denegado por roles. Usuario: {} | Roles del usuario: {} | Roles requeridos: {} | RequestID: {}", usuario, userRoles, allowedRolesSet, requestId);
         exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
         return exchange.getResponse().setComplete();
       }
 
-      ServerHttpRequest mutatedRequest = exchange
-        .getRequest()
+      // Añadir headers custom para downstream
+      ServerHttpRequest mutatedRequest = exchange.getRequest()
         .mutate()
         .header("X-Usuario", usuario)
         .header("X-Roles", String.join(",", userRoles))
         .header("X-Username", username)
         .header("X-JWT-Id", claims.getId() != null ? claims.getId() : "")
         .build();
-      ServerWebExchange mutatedExchange = exchange
-        .mutate()
-        .request(mutatedRequest)
-        .build();
+      ServerWebExchange mutatedExchange = exchange.mutate().request(mutatedRequest).build();
 
-      return chain
-        .filter(mutatedExchange)
-        .doOnSuccess(aVoid ->
-          logger.info(
-            "Petición autorizada para usuario: {} | Roles: {}",
-            usuario,
-            userRoles
-          )
-        );
+      return chain.filter(mutatedExchange).doOnSuccess(aVoid ->
+        logger.info("Petición autorizada para usuario: {} | Roles: {} | Path: {} | RequestID: {}", usuario, userRoles, path, requestId)
+      );
     } catch (ExpiredJwtException ex) {
-      logger.warn("JWT expirado para usuario: {}", ex.getClaims().getSubject());
+      logger.warn("JWT expirado para usuario: {} | Path: {} | RequestID: {}", ex.getClaims().getSubject(), path, requestId);
       exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
       return exchange.getResponse().setComplete();
     } catch (Exception e) {
-      logger.warn("JWT inválido: {} | Path: {}", e.getMessage(), path);
+      logger.warn("JWT inválido: {} | Path: {} | RequestID: {}", e.getMessage(), path, requestId);
       exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
       return exchange.getResponse().setComplete();
     }

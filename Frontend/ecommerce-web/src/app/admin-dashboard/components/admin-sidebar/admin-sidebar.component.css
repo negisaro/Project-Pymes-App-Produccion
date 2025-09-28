@@ -1,0 +1,33 @@
+.sidebar {
+  min-width: 220px;
+  max-width: 240px;
+  transition: all 0.2s;
+  background: linear-gradient(135deg, #232526 0%, #414345 100%);
+  box-shadow: 2px 0 12px rgba(44,62,80,0.08);
+}
+.sidebar.collapsed {
+  min-width: 60px;
+  max-width: 60px;
+  overflow-x: hidden;
+}
+.sidebar .nav-link.active {
+  background: linear-gradient(90deg, #0072ff 0%, #2c5364 100%);
+  color: #fff !important;
+  font-weight: 600;
+  border-radius: 0.5em;
+}
+.sidebar .nav-link {
+  transition: background 0.18s, color 0.18s;
+}
+.sidebar .nav-link:hover {
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+}
+.sidebar-header {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+.sidebar-footer {
+  margin-top: 2rem;
+  font-size: 0.95rem;
+}

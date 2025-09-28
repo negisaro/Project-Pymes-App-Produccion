@@ -1,14 +1,14 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow py-2">
   <div class="container-fluid">
     <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" routerLink="/dashboard/home">
-      <img src="assets/images/icons/favicon.ico" alt="Logo" width="36" height="36" class="d-inline-block align-text-top rounded-circle shadow-sm">
+  <img src="assets/images/user.png" alt="Logo" width="36" height="36" class="d-inline-block align-text-top rounded-circle shadow-sm">
       Glow Dreams
     </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarMain">
-      <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2 w-100">
+  <ul class="navbar-nav align-items-lg-center gap-lg-2 w-100">
         <li class="nav-item d-none d-lg-block w-25">
           <form class="d-flex align-items-center w-100" (submit)="onSearch(searchTerm.value)">
             <input #searchTerm type="text" class="form-control form-control-sm me-2" placeholder="Buscar productos...">
@@ -26,7 +26,7 @@
             <button class="btn btn-primary btn-sm" type="submit"><i class="bi bi-arrow-right"></i></button>
           </form>
         </li>
-        <li class="nav-item ms-lg-3">
+        <li class="nav-item ms-lg-3" *ngIf="isCliente">
           <a class="nav-link position-relative d-flex align-items-center" routerLink="/dashboard/home" aria-label="Carrito">
             <i class="bi bi-cart3" style="font-size:1.8rem;"></i>
             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:0.8rem; min-width:1.5em;">{{ cartCount }}</span>
@@ -38,50 +38,41 @@
         <li class="nav-item">
           <a class="nav-link" routerLink="/contact">Contáctenos</a>
         </li>
+
+      <div class="d-flex align-items-center ms-auto">
         <ng-container *ngIf="user$ | async as user; else loginButton">
-          <!-- Menú usuario/cliente -->
-          <li class="nav-item dropdown ms-lg-2">
+          <div class="nav-item dropdown">
             <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarUserDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               <div class="navbar-avatar me-2">
-                <img src="assets/images/icons/favicon.ico" alt="Avatar" width="32" height="32" class="rounded-circle">
+                <img src="assets/images/user.png" alt="Avatar" width="32" height="32" class="rounded-circle">
               </div>
-              <span class="navbar-user-name text-white fw-semibold d-none d-md-inline">{{ user?.name }} {{ user?.lastname }}</span>
+              <span class="navbar-user-name text-white fw-semibold d-none d-md-inline">{{ user?.username }}</span>
             </a>
             <ul class="dropdown-menu dropdown-menu-end animate__animated animate__fadeIn" aria-labelledby="navbarUserDropdown">
-              <li><a class="dropdown-item" href="#">Perfil</a></li>
-              <li *ngIf="isAdmin"><a class="dropdown-item" routerLink="/dashboard">Tablero Admin</a></li>
+              <li>
+                <div class="dropdown-item d-flex flex-column align-items-center bg-light rounded-4 shadow-lg mb-2 p-4" style="min-width:240px;">
+                  <div class="d-flex flex-column align-items-center w-100 mb-2">
+                    <img src="assets/images/user.png" alt="Avatar" width="56" height="56" class="rounded-circle border border-primary shadow mb-2">
+                    <span class="fw-bold text-dark" style="font-size:1.2rem;">{{ user?.username }}</span>
+                    <span class="badge bg-gradient bg-primary mt-2 px-3 py-2 shadow-sm" style="font-size:0.95rem;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(0,0,0,0.10);border-radius:1rem;">{{ user?.roles[0]?.name | titlecase }}</span>
+                  </div>
+                </div>
+              </li>
               <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item text-danger" href="#" (click)="logout()">Cerrar sesión</a></li>
+              <li>
+                <button class="dropdown-item text-danger fw-semibold d-flex align-items-center justify-content-center gap-2 py-2" (click)="logout()">
+                  <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+                </button>
+              </li>
             </ul>
-          </li>
-          <li class="nav-item ms-lg-2">
-            <button class="btn btn-link nav-link position-relative p-0" style="font-size:1.4rem;" aria-label="Notificaciones">
-              <i class="bi bi-bell"></i>
-              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:0.7rem;" *ngIf="notificationsCount > 0">{{ notificationsCount }}</span>
-            </button>
-          </li>
-          <!-- Menú admin: acceso a dashboard -->
-          <li class="nav-item ms-lg-2" *ngIf="isAdmin">
-            <a class="nav-link" routerLink="/dashboard">Dashboard</a>
-          </li>
-          <!-- Menú cliente: solo acceso a productos, carrito, perfil, contacto, etc. -->
-          <li class="nav-item ms-lg-2" *ngIf="isCliente">
-            <a class="nav-link" routerLink="/home">Inicio</a>
-          </li>
-          <li class="nav-item ms-lg-2">
-            <a class="logout-btn-modern" (click)="logout()" aria-label="Cerrar sesión">
-              <i class="bi bi-door-open-fill logout-icon"></i>
-              <span>Salir</span>
-            </a>
-          </li>
+          </div>
         </ng-container>
         <ng-template #loginButton>
-          <li class="nav-item ms-lg-2">
-            <a class="btn btn-outline-light fw-semibold px-3" routerLink="auth/login">
-              <i class="bi bi-box-arrow-in-right"></i> Login
-            </a>
-          </li>
+          <a class="btn btn-outline-light fw-semibold px-3 ms-2" routerLink="/auth/login">
+            <i class="bi bi-box-arrow-in-right"></i> Login
+          </a>
         </ng-template>
+      </div>
       </ul>
     </div>
   </div>

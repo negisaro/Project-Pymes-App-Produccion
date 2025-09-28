@@ -34,7 +34,7 @@ public class JwtAuthenticationFilter
     this.authenticationManager = authenticationManager;
     this.jwtService = jwtService;
     this.usuarioService = usuarioService;
-    setFilterProcessesUrl("/auth/login");
+    setFilterProcessesUrl("/public/auth/login");
   }
 
   @Override

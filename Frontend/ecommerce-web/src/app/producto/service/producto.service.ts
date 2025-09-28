@@ -3,15 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environments';
 import { Producto } from '../interfaces/producto';
-
-// Interfaz para la respuesta paginada
-export interface PaginaProducto {
-  content: Producto[];
-  totalElements: number;
-  totalPages: number;
-  size: number;
-  number: number;
-}
+import { PaginaProducto } from '../interfaces/pagina-producto';
 
 @Injectable({ providedIn: 'root' })
 export class ProductoService {
@@ -19,21 +11,19 @@ export class ProductoService {
 
   constructor(private http: HttpClient) {}
 
-  // Listado paginado (público para la home)
+  // Listado paginado administrativo (ruta segura)
   getProductosPaginados(
     page: number,
     size: number
   ): Observable<PaginaProducto> {
     return this.http.get<PaginaProducto>(
-      `${this.baseUrl}/api/productos/list?page=${page}&size=${size}`
+      `${this.baseUrl}/api/segura/productos/list?page=${page}&size=${size}`
     );
   }
 
-  /**
-   * Obtiene un producto por ID (público para la home)
-   */
-  getProducto(id: number): Observable<Producto> {
-    return this.http.get<Producto>(`${this.baseUrl}/api/productos/list/${id}`);
+  // Listado simple administrativo (ruta segura)
+  getProductos(): Observable<Producto[]> {
+    return this.http.get<Producto[]>(`${this.baseUrl}/api/segura/productos/list`);
   }
 
   /**
@@ -70,20 +60,6 @@ export class ProductoService {
     return this.http.post<{ url: string }>(
       `${this.baseUrl}/api/segura/productos/upload`,
       formData
-    );
-  }
-
-  // === MÉTODOS ADMINISTRATIVOS (requieren autenticación) ===
-
-  /**
-   * Listado paginado para administración
-   */
-  getProductosPaginadosAdmin(
-    page: number,
-    size: number
-  ): Observable<PaginaProducto> {
-    return this.http.get<PaginaProducto>(
-      `${this.baseUrl}/api/segura/productos/list?page=${page}&size=${size}`
     );
   }
 

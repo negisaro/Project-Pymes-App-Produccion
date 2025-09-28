@@ -9,6 +9,7 @@ import com.nelson.project.msvc_usuario.msvc_usuario.model.dto.ForgotPasswordRequ
 import com.nelson.project.msvc_usuario.msvc_usuario.model.dto.LoginDto;
 import com.nelson.project.msvc_usuario.msvc_usuario.model.dto.LoginResponseDto;
 import com.nelson.project.msvc_usuario.msvc_usuario.model.dto.ResetPasswordRequestDto;
+import com.nelson.project.msvc_usuario.msvc_usuario.model.dto.UsuarioCreateDto;
 import com.nelson.project.msvc_usuario.msvc_usuario.model.dto.UsuarioDto;
 import com.nelson.project.msvc_usuario.msvc_usuario.security.service.JwtService;
 import com.nelson.project.msvc_usuario.msvc_usuario.service.UsuarioService;
@@ -32,25 +33,30 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/public/auth")
 @Tag(
   name = "Autenticación",
   description = "Endpoints para autenticación y gestión de sesión JWT"
 )
 public class AuthController {
 
-  @Autowired
-  private UsuarioService usuarioService;
+  private final UsuarioService usuarioService;
+  private final AuthenticationManager authenticationManager;
+  private final JwtService jwtService;
+
+  public AuthController(
+    UsuarioService usuarioService,
+    AuthenticationManager authenticationManager,
+    JwtService jwtService
+  ) {
+    this.usuarioService = usuarioService;
+    this.authenticationManager = authenticationManager;
+    this.jwtService = jwtService;
+  }
 
   private static final Logger logger = LoggerFactory.getLogger(
     AuthController.class
   );
-
-  @Autowired
-  private AuthenticationManager authenticationManager;
-
-  @Autowired
-  private JwtService jwtService;
 
   /**
    * Login y generación del JWT.
@@ -113,6 +119,26 @@ public class AuthController {
         ex
       );
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    }
+  }
+
+  @Operation(summary = "Registrar usuario público")
+  @PostMapping("/register")
+  public ResponseEntity<UsuarioDto> register(
+    @RequestBody @Valid UsuarioCreateDto usuarioCreateDto
+  ) {
+    try {
+      UsuarioDto usuarioSaved = usuarioService.saveWithRoleUser(
+        usuarioCreateDto
+      );
+      return ResponseEntity.status(HttpStatus.CREATED).body(usuarioSaved);
+    } catch (Exception ex) {
+      throw new CustomException(
+        "Error al registrar usuario",
+        500,
+        "REGISTER_USER_ERROR",
+        ex.getMessage()
+      );
     }
   }
 

@@ -2,15 +2,9 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environments';
-import { Categoria } from '../interfaces/categoria';
 
-export interface PaginaCategoria {
-  content: Categoria[];
-  totalElements: number;
-  totalPages: number;
-  size: number;
-  number: number;
-}
+import { Categoria } from '../interfaces/categoria';
+import { PaginaCategoria } from '../interfaces/pagina-categoria';
 
 @Injectable({ providedIn: 'root' })
 export class CategoriaService {

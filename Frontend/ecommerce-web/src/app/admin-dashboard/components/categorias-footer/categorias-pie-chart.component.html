@@ -1,0 +1,14 @@
+<div class="card shadow h-100">
+  <div class="card-header bg-white fw-bold">
+    <i class="fas fa-pie-chart me-2 text-success"></i> Productos por categoría
+  </div>
+  <div class="card-body">
+    <apx-chart
+      [series]="series"
+      [labels]="labels"
+      [chart]="{ type: 'pie' }"
+      [colors]="colors"
+      height="300">
+    </apx-chart>
+  </div>
+</div>

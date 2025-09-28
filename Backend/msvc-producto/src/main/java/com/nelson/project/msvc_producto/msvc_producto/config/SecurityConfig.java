@@ -1,5 +1,6 @@
 package com.nelson.project.msvc_producto.msvc_producto.config;
 
+import com.nelson.project.msvc_producto.msvc_producto.security.SecurityPaths;
 import com.nelson.project.msvc_producto.msvc_producto.security.UserDetailsServiceImpl;
 import com.nelson.project.msvc_producto.msvc_producto.security.filter.JwtValidationFilter;
 import com.nelson.project.msvc_producto.msvc_producto.security.service.JwtService;
@@ -33,14 +34,9 @@ public class SecurityConfig {
       )
       .authorizeHttpRequests(authz ->
         authz
-          .requestMatchers(
-            "/public/**",
-            "/swagger-ui/**",
-            "/v3/api-docs/**",
-            "/productos/list",
-            "/uploads/**",
-            "/productos/list/**"
-          )
+          .requestMatchers(SecurityPaths.PUBLIC_GET)
+          .permitAll()
+          .requestMatchers(SecurityPaths.PUBLIC_POST)
           .permitAll()
           .anyRequest()
           .authenticated()

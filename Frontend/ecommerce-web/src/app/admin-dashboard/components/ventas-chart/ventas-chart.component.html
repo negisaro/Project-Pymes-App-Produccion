@@ -1,0 +1,17 @@
+<div class="card shadow h-100">
+  <div class="card-header bg-white fw-bold">
+    <i class="fas fa-chart-line me-2 text-primary"></i> Ventas por mes
+  </div>
+  <div class="card-body">
+    <apx-chart
+      [series]="series"
+      [chart]="chart"
+      [xaxis]="xaxis"
+      [colors]="colors"
+      [stroke]="{ width: 3 }"
+      [dataLabels]="{ enabled: false }"
+      [tooltip]="{ enabled: true }"
+      height="300">
+    </apx-chart>
+  </div>
+</div>

@@ -1,0 +1,56 @@
+<div class="container-fluid py-4">
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status"></div>
+  </div>
+  <div *ngIf="!loading">
+    <!-- KPIs -->
+    <admin-kpi-cards [kpis]="kpiData"></admin-kpi-cards>
+
+    <!-- Gráficos -->
+    <div class="row g-4 mb-4">
+      <div class="col-12 col-lg-8">
+        <admin-ventas-chart [series]="ventasSeries" [chart]="ventasChart" [xaxis]="ventasXaxis" [colors]="['#0d6efd']"></admin-ventas-chart>
+      </div>
+      <div class="col-12 col-lg-4">
+        <admin-categorias-pie-chart [series]="categoriasSeries" [labels]="categoriasLabels" [colors]="categoriasColors"></admin-categorias-pie-chart>
+      </div>
+    </div>
+
+    <!-- Tabla de pedidos recientes -->
+    <div class="card shadow mb-4">
+      <div class="card-header bg-white fw-bold d-flex align-items-center">
+        <i class="fas fa-shopping-bag me-2 text-primary"></i> Últimos pedidos
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>#</th>
+              <th>Cliente</th>
+              <th>Fecha</th>
+              <th>Total</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let pedido of pedidosRecientes">
+              <td>{{ pedido.id }}</td>
+              <td>{{ pedido.cliente?.nombre || '-' }}</td>
+              <td>{{ pedido.fecha | date:'short' }}</td>
+              <td>{{ pedido.total | currency:'COP':'symbol':'1.0-0':'es-CO' }}</td>
+              <td>
+                <span class="badge bg-success" *ngIf="pedido.estado === 'COMPLETADO'">Completado</span>
+                <span class="badge bg-warning text-dark" *ngIf="pedido.estado === 'PENDIENTE'">Pendiente</span>
+                <span class="badge bg-danger" *ngIf="pedido.estado === 'CANCELADO'">Cancelado</span>
+                <span class="badge bg-secondary" *ngIf="pedido.estado !== 'COMPLETADO' && pedido.estado !== 'PENDIENTE' && pedido.estado !== 'CANCELADO'">{{ pedido.estado }}</span>
+              </td>
+            </tr>
+            <tr *ngIf="!pedidosRecientes || pedidosRecientes.length === 0">
+              <td colspan="5" class="text-center text-muted">No hay pedidos recientes.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,40 @@
+<nav class="sidebar bg-dark text-white flex-shrink-0 p-3" [ngClass]="{'collapsed': !sidebarOpen}">
+  <div class="sidebar-header d-flex align-items-center justify-content-between mb-4">
+    <span class="fs-4 fw-bold">PYMES Admin</span>
+    <button class="btn btn-sm btn-outline-light d-md-none" (click)="toggleSidebar()">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <ul class="nav nav-pills flex-column mb-auto">
+    <li class="nav-item">
+      <a routerLink="/dashboard-admin" routerLinkActive="active" class="nav-link text-white">
+        <i class="fas fa-tachometer-alt me-2"></i> Inicio
+      </a>
+    </li>
+    <li>
+      <a routerLink="/dashboard-admin/user" routerLinkActive="active" class="nav-link text-white">
+        <i class="fas fa-users me-2"></i> Usuarios
+      </a>
+    </li>
+    <li>
+      <a routerLink="/dashboard-admin/product" routerLinkActive="active" class="nav-link text-white">
+        <i class="fas fa-boxes me-2"></i> Productos
+      </a>
+    </li>
+    <li>
+      <a routerLink="/dashboard-admin/categoria" routerLinkActive="active" class="nav-link text-white">
+        <i class="fas fa-tags me-2"></i> Categorías
+      </a>
+    </li>
+    <li>
+      <a routerLink="/dashboard-admin/proveedor" routerLinkActive="active" class="nav-link text-white">
+        <i class="fas fa-truck me-2"></i> Proveedores
+      </a>
+    </li>
+    <!-- Agrega más módulos aquí -->
+  </ul>
+  <hr>
+  <div class="sidebar-footer">
+    <a routerLink="/" class="nav-link text-white"><i class="fas fa-home me-2"></i> Volver al sitio</a>
+  </div>
+</nav>
