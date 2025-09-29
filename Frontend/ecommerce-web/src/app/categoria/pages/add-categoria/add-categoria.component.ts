@@ -103,7 +103,7 @@ export class AddCategoriaComponent implements OnInit {
           this.debugResponse = response;
           this.showSwalToast('¡Categoría actualizada!', 'success');
           setTimeout(() => {
-            this.router.navigate(['../list'], { relativeTo: this.route });
+            this.router.navigate(['../'], { relativeTo: this.route });
           }, 1800);
         },
         error: (error) => {
@@ -119,7 +119,7 @@ export class AddCategoriaComponent implements OnInit {
           this.debugResponse = response;
           this.showSwalToast('¡Categoría agregada!', 'success');
           setTimeout(() => {
-            this.router.navigate(['../list'], { relativeTo: this.route });
+            this.router.navigate(['../'], { relativeTo: this.route });
           }, 1800);
         },
         error: (error) => {

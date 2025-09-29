@@ -61,6 +61,7 @@
             <div>
               <h5 class="card-title gradient-text fw-bold">{{ product.nombre }}</h5>
               <p class="mb-1 text-light-50 small">{{ product.descripcion }}</p>
+              <span class="badge bg-gradient bg-primary mb-2">{{ categoria.nombre }}</span>
               <product-sparkline [data]="product.stockHistory || [product.stock]" [color]="'#0d6efd'" [type]="'line'"></product-sparkline>
             </div>
             <div class="d-flex justify-content-between align-items-center mt-3">

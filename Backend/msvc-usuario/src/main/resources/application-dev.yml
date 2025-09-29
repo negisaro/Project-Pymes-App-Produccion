@@ -4,8 +4,8 @@ spring:
 
   datasource:
     url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DATABASE}?serverTimezone=America/Bogota
-    username: "${MYSQL_USER}"
-    password: "${MYSQL_PASSWORD}"
+    username: ${MYSQL_USER}
+    password: ${MYSQL_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
@@ -17,20 +17,10 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.MySQL8Dialect
 
-server:
-  port: 8081
-
-eureka:
-  instance:
-    instance-id: ${spring.cloud.client.hostname}:${spring.application.name}:${random.value}
-  client:
-    service-url:
-      defaultZone: ${EUREKA_SERVER_URL}
-
   mail:
-    host: smtp.tu-servidor.com
-    port: 587
-    username: ${MAIL_USER}
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
     password: ${MAIL_PASSWORD}
     protocol: smtp
     properties:
@@ -40,7 +30,16 @@ eureka:
           starttls:
             enable: true
     default-encoding: UTF-8
-    test-connection: false
+
+server:
+  port: 8081
+
+eureka:
+  instance:
+    instance-id: ${spring.cloud.client.hostname}:${spring.application.name}:${random.value}
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL}
 
 springdoc:
   swagger-ui:
@@ -58,3 +57,17 @@ management:
 jwt:
   secret:
     jwt-secret: ${GATEWAY_JWT_SECRET}
+
+app:
+  frontend-url: ${FRONTEND_URL:http://localhost:4200}
+  mail:
+    debug: ${MAIL_DEBUG:false}
+
+# Notas de configuración:
+# - Definir variables de entorno para desarrollo local (Windows cmd):
+#   set MAIL_USERNAME=tu_correo@gmail.com
+#   set MAIL_PASSWORD=tu_app_password_generada
+#   set FRONTEND_URL=http://localhost:4200
+#   set MAIL_DEBUG=true
+# - En PowerShell usar: $env:MAIL_USERNAME="..." etc.
+# - JAMÁS commitear la app password real / secrets.

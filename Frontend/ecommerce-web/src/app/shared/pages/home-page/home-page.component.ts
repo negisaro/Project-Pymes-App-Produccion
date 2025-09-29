@@ -1,5 +1,6 @@
 
 import { Component, OnInit, AfterViewInit, ElementRef, ViewChildren, QueryList } from '@angular/core';
+import { environment } from '../../../../environments/environments';
 import { Producto as ProductoBase } from '../../../producto/interfaces/producto';
 import { ProductoPublicService } from '../../../producto/service/producto.service.public';
 import { Categoria } from '../../../categoria/interfaces/categoria';
@@ -92,10 +93,12 @@ export class HomePageComponent implements OnInit, AfterViewInit {
     }
   }
 
+
   getImageUrl(imagePath: string): string {
     if (!imagePath) return 'https://via.placeholder.com/400x180?text=Sin+imagen';
     if (imagePath.startsWith('http')) return imagePath;
-    return `https://tuservidor.com/${imagePath}`;
+    // Si la imagen viene como "/api/public/productos/img/archivo.jpg" o similar, anteponer baseUrl
+    return `${environment.baseUrl}${imagePath}`;
   }
 
   onImgError(event: Event) {

@@ -6,6 +6,60 @@
   box-shadow: 0 8px 32px 0 rgba(38,208,206,0.10), 0 1.5px 8px 0 rgba(0,0,0,0.10);
   z-index: 100;
 }
+
+/* Forzar color blanco en todos los links y labels de la navbar */
+.navbar-glass .navbar-nav .nav-link,
+.navbar-glass .navbar-nav .nav-link:visited,
+.navbar-glass .navbar-nav .nav-link:active,
+.navbar-glass .navbar-nav .nav-link:focus {
+  color: #fff !important;
+  text-shadow: 0 2px 8px #0008;
+}
+
+/* Forzar color blanco en el toggler (icono hamburguesa) */
+.navbar-glass .navbar-toggler {
+  border-color: #fff !important;
+}
+.navbar-glass .navbar-toggler .navbar-toggler-icon {
+  background-image: none !important;
+  width: 1.8em;
+  height: 1.8em;
+  display: inline-block;
+  position: relative;
+}
+.navbar-glass .navbar-toggler .navbar-toggler-icon::before,
+.navbar-glass .navbar-toggler .navbar-toggler-icon::after,
+.navbar-glass .navbar-toggler .navbar-toggler-icon {
+  background-color: #fff !important;
+  box-shadow: none;
+}
+.navbar-glass .navbar-toggler .navbar-toggler-icon {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 0.2em;
+  background: #fff;
+  border-radius: 2px;
+  margin: 0.35em 0;
+  box-shadow: 0 2px 8px #0004;
+}
+.navbar-glass .navbar-toggler .navbar-toggler-icon::before,
+.navbar-glass .navbar-toggler .navbar-toggler-icon::after {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 0.2em;
+  background: #fff;
+  border-radius: 2px;
+  position: absolute;
+  left: 0;
+}
+.navbar-glass .navbar-toggler .navbar-toggler-icon::before {
+  top: -0.5em;
+}
+.navbar-glass .navbar-toggler .navbar-toggler-icon::after {
+  top: 0.5em;
+}
 .gradient-text-navbar {
   background: linear-gradient(90deg, #26d0ce 0%, #1a2980 100%);
   -webkit-background-clip: text;

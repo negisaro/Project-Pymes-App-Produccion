@@ -1,6 +1,5 @@
 package com.nelson.project.msvc_usuario.msvc_usuario.config;
 
-import java.util.Properties;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -12,18 +11,11 @@ public class TestMailConfig {
   @Bean
   public JavaMailSender javaMailSender() {
     JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-    mailSender.setHost("smtp.example.com");
+    mailSender.setHost("smtp.gmail.com");
     mailSender.setPort(587);
-
-    mailSender.setUsername("your_email@example.com");
-    mailSender.setPassword("your_password");
-
-    Properties props = mailSender.getJavaMailProperties();
-    props.put("mail.transport.protocol", "smtp");
-    props.put("mail.smtp.auth", "true");
-    props.put("mail.smtp.starttls.enable", "true");
-    props.put("mail.debug", "true");
-
+    mailSender.setUsername("alexandervinokuro3@gmail.com");
+    mailSender.setPassword("AlexanderVinokuro/1970");
+    // No necesitas properties avanzadas en test, pero puedes agregar si mockeas un servidor SMTP local
     return mailSender;
   }
 }

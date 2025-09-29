@@ -80,6 +80,12 @@ services:
       MYSQL_PORT: ${MYSQL_PORT}
       EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
       GATEWAY_JWT_SECRET: ${GATEWAY_JWT_SECRET}
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_DEBUG: ${MAIL_DEBUG}
+      FRONTEND_URL: ${FRONTEND_URL}
     depends_on:
       db:
         condition: service_healthy

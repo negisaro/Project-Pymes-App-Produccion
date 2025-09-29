@@ -22,7 +22,7 @@ public class RolController {
     summary = "Listar todos los roles",
     description = "Devuelve la lista de roles"
   )
-  @GetMapping
+  @GetMapping("/list")
   public ResponseEntity<List<RolDto>> getAllRoles() {
     return ResponseEntity.ok(rolService.findAll());
   }
@@ -31,7 +31,7 @@ public class RolController {
     summary = "Obtener rol por ID",
     description = "Devuelve un rol específico por su ID"
   )
-  @GetMapping("/{id}")
+  @GetMapping("/list/{id}")
   public ResponseEntity<RolDto> getRolById(@PathVariable Long id) {
     return rolService
       .findById(id)
@@ -40,7 +40,7 @@ public class RolController {
   }
 
   @Operation(summary = "Crear nuevo rol", description = "Crea un rol")
-  @PostMapping
+  @PostMapping("/create")
   public ResponseEntity<RolDto> createRol(
     @RequestBody RolCreateDto rolCreateDto
   ) {
@@ -52,7 +52,7 @@ public class RolController {
     summary = "Actualizar rol",
     description = "Actualiza un rol existente"
   )
-  @PutMapping("/{id}")
+  @PutMapping("/update/{id}")
   public ResponseEntity<RolDto> updateRol(
     @PathVariable Long id,
     @RequestBody RolCreateDto rolCreateDto
@@ -62,7 +62,7 @@ public class RolController {
   }
 
   @Operation(summary = "Eliminar rol", description = "Elimina un rol por su ID")
-  @DeleteMapping("/{id}")
+  @DeleteMapping("/delete/{id}")
   public ResponseEntity<Void> deleteRol(@PathVariable Long id) {
     rolService.deleteById(id);
     return ResponseEntity.noContent().build();

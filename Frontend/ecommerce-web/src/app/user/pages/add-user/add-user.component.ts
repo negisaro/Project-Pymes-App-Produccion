@@ -64,11 +64,13 @@ export class AddUserComponent implements OnInit {
     });
 
     // Cargar roles dinámicamente desde el backend
-    this.http.get<Role[]>(`${environment.baseUrl}/api/segura/roles`).subscribe({
+    this.http.get<Role[]>(`${environment.baseUrl}/api/segura/roles/list`).subscribe({
       next: (roles) => {
+        console.log('[DEBUG] Roles recibidos del backend:', roles);
         this.rolesList = roles;
       },
-      error: () => {
+      error: (err) => {
+        console.error('[ERROR] No se pudieron obtener los roles:', err);
         this.rolesList = [];
       },
     });

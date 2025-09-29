@@ -114,7 +114,7 @@ export class AddProductoComponent implements OnInit {
               timer: 2000,
               showConfirmButton: false
             });
-            this.router.navigate(['/dashboard/product/list']);
+            this.router.navigate(['../'], { relativeTo: this.route });
           }
         });
       }

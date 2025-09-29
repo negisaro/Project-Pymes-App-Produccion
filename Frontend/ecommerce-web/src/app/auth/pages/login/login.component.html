@@ -1,44 +1,92 @@
-<section class="auth-bg-animated">
-  <div class="auth-card-glass shadow-lg">
+<div class="auth-bg-gradient min-vh-100 d-flex align-items-center justify-content-center">
+  <div class="auth-card card shadow-lg p-4 animate__animated animate__fadeIn">
+    <div class="text-center mb-4">
+      <div class="auth-logo mb-2">
+        <i class="bi bi-bag-check-fill fs-1 text-primary"></i>
+      </div>
+      <h2 class="fw-bold mb-0" style="letter-spacing:1px;">Iniciar sesión</h2>
+      <p class="text-muted mb-0">Bienvenido de nuevo a <span class="fw-semibold text-primary">Pymes Shop</span></p>
+    </div>
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" autocomplete="off">
-      <div class="auth-logo mb-3 text-center">
-        <img src="assets/logo.svg" alt="Logo" style="height: 48px;" />
-      </div>
-      <h2 class="auth-title">¡Bienvenido!</h2>
-      <p class="auth-subtitle">Accede a tu cuenta para gestionar tu negocio</p>
-      <div class="auth-fields">
-        <div class="input-group position-relative mb-3">
-          <span class="input-icon"><i class="bi bi-person"></i></span>
-          <input id="username" formControlName="username" type="text" class="form-control form-control-lg ps-5" placeholder="Usuario" [ngClass]="{'is-invalid': loginForm.get('username')?.invalid && loginForm.get('username')?.touched}" />
-          <div *ngIf="loginForm.get('username')?.invalid && loginForm.get('username')?.touched" class="invalid-feedback d-block ms-5 mt-1">
-            <i class="bi bi-exclamation-triangle"></i> El usuario es obligatorio.
-          </div>
+      <div class="mb-3">
+        <label for="username" class="form-label">Usuario o Email</label>
+        <div class="input-group input-group-lg">
+          <span class="input-group-text bg-light border-0"><i class="bi bi-person"></i></span>
+          <input id="username" type="text" class="form-control border-0 border-bottom rounded-0 bg-light" formControlName="username" placeholder="Tu usuario o email" autofocus [ngClass]="{'is-invalid': loginForm.get('username')?.invalid && loginForm.get('username')?.touched}">
         </div>
-        <div class="input-group position-relative mb-3">
-          <span class="input-icon"><i class="bi bi-lock"></i></span>
-          <input id="password" formControlName="password" type="password" class="form-control form-control-lg ps-5" placeholder="Contraseña" [ngClass]="{'is-invalid': loginForm.get('password')?.invalid && loginForm.get('password')?.touched}" />
-          <div *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" class="invalid-feedback d-block ms-5 mt-1">
-            <i class="bi bi-exclamation-triangle"></i> La contraseña es obligatoria.
-          </div>
-        </div>
+        <div *ngIf="loginForm.get('username')?.invalid && loginForm.get('username')?.touched" class="form-text text-danger">Campo requerido</div>
       </div>
-      <button type="submit" [disabled]="loading" class="btn-auth btn-auth-primary mt-2">
-        <span *ngIf="loading" class="spinner-border spinner-border-sm"></span>
+      <div class="mb-2">
+        <label for="password" class="form-label">Contraseña</label>
+        <div class="input-group input-group-lg">
+          <span class="input-group-text bg-light border-0"><i class="bi bi-lock"></i></span>
+          <input id="password" type="password" class="form-control border-0 border-bottom rounded-0 bg-light" formControlName="password" placeholder="Contraseña" [ngClass]="{'is-invalid': loginForm.get('password')?.invalid && loginForm.get('password')?.touched}">
+        </div>
+        <div *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" class="form-text text-danger">Campo requerido</div>
+      </div>
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="rememberMe">
+          <label class="form-check-label small" for="rememberMe">Recordarme</label>
+        </div>
+        <a routerLink="/auth/forgot-password" class="link-secondary small">¿Olvidaste tu contraseña?</a>
+      </div>
+      <button type="submit" class="btn btn-primary btn-lg w-100 shadow-sm mt-2" [disabled]="loginForm.invalid || loading">
         <span *ngIf="!loading">Ingresar</span>
+        <span *ngIf="loading"><span class="spinner-border spinner-border-sm"></span> Ingresando...</span>
       </button>
-      <div class="auth-links d-flex justify-content-between mt-3 mb-2">
-        <a routerLink="/auth/forgot-password">¿Olvidaste tu contraseña?</a>
-        <a routerLink="/auth/register">Registrarse</a>
-      </div>
-      <div *ngIf="loading" class="text-primary text-center mt-2">
-        <span class="spinner-border spinner-border-sm"></span> Verificando credenciales...
-      </div>
       <div *ngIf="errorMsg" class="auth-error mt-2">
         <i class="bi bi-exclamation-triangle"></i> {{ errorMsg }}
       </div>
     </form>
+    <div class="text-center mt-4">
+      <span class="text-muted">¿No tienes cuenta?</span>
+      <a routerLink="/auth/register" class="fw-semibold link-primary ms-1">Regístrate</a>
+    </div>
   </div>
-</section>
+</div>
+<!-- Estilos personalizados para el login -->
+<style>
+.auth-bg-gradient {
+  background: linear-gradient(120deg, #1a237e 0%, #3949ab 60%, #e3e6f3 100%);
+}
+.auth-card {
+  max-width: 400px;
+  width: 100%;
+  border-radius: 1.5rem;
+  background: #fff;
+  border: none;
+}
+.auth-logo {
+  width: 60px;
+  height: 60px;
+  background: #e3e6f3;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+.btn-primary {
+  background: linear-gradient(90deg, #1a237e 0%, #3949ab 100%);
+  border: none;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.btn-primary:hover, .btn-primary:focus {
+  box-shadow: 0 4px 16px rgba(26,35,126,0.15);
+  transform: translateY(-2px) scale(1.03);
+}
+.input-group-text {
+  color: #3949ab;
+}
+.form-control:focus {
+  box-shadow: none;
+  border-color: #3949ab;
+}
+@media (max-width: 600px) {
+  .auth-card { max-width: 98vw; padding: 1.5rem; }
+}
+</style>
 <!-- <div *ngIf="authService.isAuthenticated">
   <ng-container *ngIf="authService.isAuthenticated; else loginRedirect">
     Contenido para usuarios autenticados
