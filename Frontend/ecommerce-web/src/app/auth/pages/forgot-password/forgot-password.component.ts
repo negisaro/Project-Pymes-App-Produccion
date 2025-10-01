@@ -6,7 +6,8 @@ import { AuthService } from '../../services/auth.service';
 @Component({
   selector: 'app-forgot-password',
   templateUrl: './forgot-password.component.html',
-  styleUrls: ['./forgot-password.component.css'], // <--- aquí
+  // Estilos legacy eliminados; se usa theme global auth
+  styles: []
 })
 
 export class ForgotPasswordComponent {
@@ -15,6 +16,7 @@ export class ForgotPasswordComponent {
   errorMsg = '';
   loading = false;
   successMsg = '';
+  currentYear = new Date().getFullYear();
 
   constructor(
     private fb: FormBuilder,
@@ -27,7 +29,10 @@ export class ForgotPasswordComponent {
   }
 
   submit() {
-    if (this.form.invalid) return;
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
     this.loading = true;
     this.errorMsg = '';
     this.authService.sendResetPasswordEmail(this.form.value.email).subscribe({

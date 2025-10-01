@@ -1,1 +1,15 @@
+spring:
+  application:
+    name: msvc-usuario
+
+jwt:
+  # Producción: variable central unificada (alineada con gateway y otros msvc)
+  secret: ${GATEWAY_JWT_SECRET}
+  expiration-minutes: ${JWT_EXPIRATION_MINUTES:60}
+  issuer: ${JWT_ISSUER:project-pymes}
+  audience: ${JWT_AUDIENCE:project-pymes-clients}
+
+# Notas:
+# - GATEWAY_JWT_SECRET debe ser Base64 de al menos 256 bits (HS256)
+# - Ajustar JWT_EXPIRATION_MINUTES según políticas de sesión
 

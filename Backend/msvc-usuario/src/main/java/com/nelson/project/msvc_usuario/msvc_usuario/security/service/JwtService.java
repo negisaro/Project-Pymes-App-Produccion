@@ -19,10 +19,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class JwtService {
 
-  private static final Logger logger = LoggerFactory.getLogger(JwtService.class);
+  private static final Logger logger = LoggerFactory.getLogger(
+    JwtService.class
+  );
 
   private final TokenJwtConfig tokenJwtConfig;
-  private static final int TOKEN_EXPIRATION_MINUTES = 60;
+
+  // Eliminado valor fijo; se usa configuración externa en TokenJwtConfig
 
   public JwtService(TokenJwtConfig tokenJwtConfig) {
     this.tokenJwtConfig = tokenJwtConfig;
@@ -52,17 +55,24 @@ public class JwtService {
     SecretKey key = tokenJwtConfig.getSecretKey();
 
     if (key == null) {
-      logger.error("[JwtService] SECRET_KEY no inicializada. No se puede firmar el token.");
-      throw new IllegalStateException("Clave JWT no inicializada. Revisa la configuración de TokenJwtConfig.");
+      logger.error(
+        "[JwtService] SECRET_KEY no inicializada. No se puede firmar el token."
+      );
+      throw new IllegalStateException(
+        "Clave JWT no inicializada. Revisa la configuración de TokenJwtConfig."
+      );
     }
 
+    int expirationMinutes = tokenJwtConfig.getExpirationMinutes();
     String token = Jwts.builder()
       .setClaims(claims)
       .setSubject(userDetails.getUsername())
+      .setIssuer(tokenJwtConfig.getIssuer())
+      .setAudience(tokenJwtConfig.getAudience())
       .setIssuedAt(new Date())
       .setExpiration(
         new Date(
-          System.currentTimeMillis() + TOKEN_EXPIRATION_MINUTES * 60 * 1000
+          System.currentTimeMillis() + (long) expirationMinutes * 60 * 1000
         )
       )
       .signWith(key, SignatureAlgorithm.HS256)
@@ -85,7 +95,6 @@ public class JwtService {
   /**
    * Refresca el token usando los claims del anterior.
    */
-  @SuppressWarnings("unchecked")
   public String refreshToken(String oldToken, String email) {
     Claims claims = extractAllClaims(oldToken);
     String username = claims.get("username", String.class);
@@ -144,37 +153,6 @@ public class JwtService {
     }
   }
 
-  /**
-   * Construye el cuerpo de respuesta para autenticación.
-   */
-  public Map<String, Object> buildResponseBody(
-    String token,
-    Long id,
-    String username,
-    String name,
-    String lastname,
-    String email,
-    Boolean activo,
-    Collection<? extends GrantedAuthority> authorities
-  ) {
-    Map<String, Object> body = new HashMap<>();
-    body.put("id", id);
-    body.put("username", username);
-    body.put("token", token);
-    body.put("name", name);
-    body.put("lastname", lastname);
-    body.put("email", email);
-    body.put("activo", activo);
-    body.put(
-      "roles",
-      authorities
-        .stream()
-        .map(GrantedAuthority::getAuthority)
-        .collect(Collectors.toList())
-    );
-    return body;
-  }
-
   // ================= MÉTODOS PRIVADOS AUXILIARES =================
 
   /**
@@ -202,16 +180,52 @@ public class JwtService {
    */
   private Claims extractAllClaims(String token) {
     try {
-      SecretKey key = tokenJwtConfig.getSecretKey();
-      if (key == null) {
-        logger.error("[JwtService] SECRET_KEY no inicializada en extractAllClaims");
-        throw new IllegalStateException("Clave JWT no inicializada.");
+      List<SecretKey> keys = tokenJwtConfig.getAllSecretKeys();
+      if (keys == null || keys.isEmpty()) {
+        logger.error(
+          "[JwtService] No hay claves JWT inicializadas en extractAllClaims"
+        );
+        throw new IllegalStateException("Sin claves JWT para verificación");
       }
-      Claims claims = Jwts.parserBuilder()
-        .setSigningKey(key)
-        .build()
-        .parseClaimsJws(token)
-        .getBody();
+      Claims claims = null;
+      RuntimeException lastError = null;
+      for (SecretKey k : keys) {
+        try {
+          claims = Jwts.parserBuilder()
+            .setSigningKey(k)
+            .build()
+            .parseClaimsJws(token)
+            .getBody();
+          break; // verificación exitosa
+        } catch (JwtException ex) {
+          lastError = new RuntimeException(ex);
+        }
+      }
+      if (claims == null) {
+        throw new JwtException(
+          "No se pudo verificar el token con ninguna clave",
+          lastError
+        );
+      }
+      // Validación de issuer y audience configurados
+      String expectedIssuer = tokenJwtConfig.getIssuer();
+      if (expectedIssuer != null && !expectedIssuer.isBlank()) {
+        if (
+          claims.getIssuer() == null ||
+          !expectedIssuer.equals(claims.getIssuer())
+        ) {
+          throw new JwtException("Issuer inválido");
+        }
+      }
+      String expectedAudience = tokenJwtConfig.getAudience();
+      if (expectedAudience != null && !expectedAudience.isBlank()) {
+        String tokenAudience = claims.getAudience();
+        if (
+          tokenAudience == null || !tokenAudience.contains(expectedAudience)
+        ) {
+          throw new JwtException("Audience inválida");
+        }
+      }
       logger.debug("[JwtService] Claims extraídos: {}", claims);
       return claims;
     } catch (JwtException ex) {

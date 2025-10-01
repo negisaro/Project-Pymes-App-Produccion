@@ -1,92 +1,71 @@
-<div class="auth-bg-gradient min-vh-100 d-flex align-items-center justify-content-center">
-  <div class="auth-card card shadow-lg p-4 animate__animated animate__fadeIn">
-    <div class="text-center mb-4">
-      <div class="auth-logo mb-2">
-        <i class="bi bi-bag-check-fill fs-1 text-primary"></i>
+<div class="auth-shell">
+  <aside class="auth-side">
+    <div class="brand">
+      <div class="logo-mark">
+        <i class="bi bi-bag-heart"></i>
       </div>
-      <h2 class="fw-bold mb-0" style="letter-spacing:1px;">Iniciar sesión</h2>
-      <p class="text-muted mb-0">Bienvenido de nuevo a <span class="fw-semibold text-primary">Pymes Shop</span></p>
+      <h1>Pymes<span>Shop</span></h1>
+      <p class="tagline">La plataforma para hacer crecer tu e-commerce con velocidad.</p>
     </div>
-    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" autocomplete="off">
-      <div class="mb-3">
-        <label for="username" class="form-label">Usuario o Email</label>
-        <div class="input-group input-group-lg">
-          <span class="input-group-text bg-light border-0"><i class="bi bi-person"></i></span>
-          <input id="username" type="text" class="form-control border-0 border-bottom rounded-0 bg-light" formControlName="username" placeholder="Tu usuario o email" autofocus [ngClass]="{'is-invalid': loginForm.get('username')?.invalid && loginForm.get('username')?.touched}">
-        </div>
-        <div *ngIf="loginForm.get('username')?.invalid && loginForm.get('username')?.touched" class="form-text text-danger">Campo requerido</div>
-      </div>
-      <div class="mb-2">
-        <label for="password" class="form-label">Contraseña</label>
-        <div class="input-group input-group-lg">
-          <span class="input-group-text bg-light border-0"><i class="bi bi-lock"></i></span>
-          <input id="password" type="password" class="form-control border-0 border-bottom rounded-0 bg-light" formControlName="password" placeholder="Contraseña" [ngClass]="{'is-invalid': loginForm.get('password')?.invalid && loginForm.get('password')?.touched}">
-        </div>
-        <div *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" class="form-text text-danger">Campo requerido</div>
-      </div>
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <div class="form-check">
-          <input class="form-check-input" type="checkbox" id="rememberMe">
-          <label class="form-check-label small" for="rememberMe">Recordarme</label>
-        </div>
-        <a routerLink="/auth/forgot-password" class="link-secondary small">¿Olvidaste tu contraseña?</a>
-      </div>
-      <button type="submit" class="btn btn-primary btn-lg w-100 shadow-sm mt-2" [disabled]="loginForm.invalid || loading">
-        <span *ngIf="!loading">Ingresar</span>
-        <span *ngIf="loading"><span class="spinner-border spinner-border-sm"></span> Ingresando...</span>
+    <ul class="selling-points">
+      <li><i class="bi bi-lightning-charge"></i> Rendimiento optimizado</li>
+      <li><i class="bi bi-shield-check"></i> Seguridad integral</li>
+      <li><i class="bi bi-graph-up-arrow"></i> Escalabilidad</li>
+    </ul>
+    <div class="side-footer">© {{ currentYear }} PymesShop</div>
+  </aside>
+
+  <main class="auth-panel">
+    <div class="panel-header">
+      <h2>Bienvenido de nuevo</h2>
+      <p class="subtitle">Accede con tus credenciales para continuar.</p>
+      <button type="button" class="btn-primary-modern" style="margin-top:.5rem; align-self:flex-start; padding:.45rem .9rem; font-size:.7rem;" (click)="toggleTheme()">
+        <span *ngIf="theme==='dark'">☀️ Modo claro</span>
+        <span *ngIf="theme==='light'">🌙 Modo oscuro</span>
       </button>
-      <div *ngIf="errorMsg" class="auth-error mt-2">
-        <i class="bi bi-exclamation-triangle"></i> {{ errorMsg }}
-      </div>
-    </form>
-    <div class="text-center mt-4">
-      <span class="text-muted">¿No tienes cuenta?</span>
-      <a routerLink="/auth/register" class="fw-semibold link-primary ms-1">Regístrate</a>
     </div>
-  </div>
+
+    <form class="auth-form" [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate aria-live="polite">
+      <div class="field" [class.field--error]="loginForm.get('username')?.invalid && loginForm.get('username')?.touched">
+        <label for="username">Usuario o Email</label>
+        <div class="input-wrapper">
+          <i class="bi bi-person"></i>
+          <input id="username" type="text" formControlName="username" placeholder="tu_usuario" autocomplete="username" />
+        </div>
+        <p class="field-msg" *ngIf="loginForm.get('username')?.invalid && loginForm.get('username')?.touched">Campo obligatorio</p>
+      </div>
+
+      <div class="field" [class.field--error]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+        <label for="password">Contraseña</label>
+        <div class="input-wrapper password-wrapper">
+          <i class="bi bi-lock"></i>
+          <input id="password" type="password" formControlName="password" placeholder="••••••••" autocomplete="current-password" />
+        </div>
+        <p class="field-msg" *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">Campo obligatorio</p>
+      </div>
+
+      <div class="form-meta">
+        <label class="remember">
+          <input type="checkbox" /> <span>Recordarme</span>
+        </label>
+        <a routerLink="/auth/forgot-password" class="muted-link">¿Olvidaste tu contraseña?</a>
+      </div>
+
+      <button type="submit" class="btn-primary-modern" [disabled]="loginForm.invalid || loading">
+        <span *ngIf="!loading">Ingresar</span>
+        <span *ngIf="loading" class="loading-inline"><span class="spinner"></span> Validando...</span>
+      </button>
+
+      <div class="form-message error" *ngIf="errorMsg"><i class="bi bi-exclamation-triangle"></i> {{ errorMsg }}</div>
+    </form>
+
+    <div class="panel-footer">
+      ¿No tienes cuenta?
+      <a routerLink="/auth/register" class="link-bold">Crear cuenta</a>
+    </div>
+  </main>
+<!-- Fin shell auth -->
 </div>
-<!-- Estilos personalizados para el login -->
-<style>
-.auth-bg-gradient {
-  background: linear-gradient(120deg, #1a237e 0%, #3949ab 60%, #e3e6f3 100%);
-}
-.auth-card {
-  max-width: 400px;
-  width: 100%;
-  border-radius: 1.5rem;
-  background: #fff;
-  border: none;
-}
-.auth-logo {
-  width: 60px;
-  height: 60px;
-  background: #e3e6f3;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto;
-}
-.btn-primary {
-  background: linear-gradient(90deg, #1a237e 0%, #3949ab 100%);
-  border: none;
-  transition: box-shadow 0.2s, transform 0.2s;
-}
-.btn-primary:hover, .btn-primary:focus {
-  box-shadow: 0 4px 16px rgba(26,35,126,0.15);
-  transform: translateY(-2px) scale(1.03);
-}
-.input-group-text {
-  color: #3949ab;
-}
-.form-control:focus {
-  box-shadow: none;
-  border-color: #3949ab;
-}
-@media (max-width: 600px) {
-  .auth-card { max-width: 98vw; padding: 1.5rem; }
-}
-</style>
 <!-- <div *ngIf="authService.isAuthenticated">
   <ng-container *ngIf="authService.isAuthenticated; else loginRedirect">
     Contenido para usuarios autenticados

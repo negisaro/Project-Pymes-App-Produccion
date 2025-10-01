@@ -18,6 +18,7 @@ export class RegisterComponent implements OnInit {
   errorJson: any = null;
   debugResponse: any = null;
   debugError: any = null;
+  currentYear = new Date().getFullYear();
 
   ngOnInit() {
     // Ya no se requiere cargar roles, el backend asigna uno por defecto
@@ -50,7 +51,10 @@ export class RegisterComponent implements OnInit {
   }
 
   submit() {
-    if (this.form.invalid) return;
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
     this.loading = true;
     this.error = '';
     this.successMsg = '';
@@ -74,7 +78,7 @@ export class RegisterComponent implements OnInit {
         this.toastr.success('Usuario registrado correctamente', 'Registro exitoso');
         this.form.reset({ isActive: true });
         this.debugResponse = res;
-        setTimeout(() => this.router.navigate(['/dashboard/auth/login']), 1500);
+        setTimeout(() => this.router.navigate(['/auth/login']), 1500);
       },
       error: err => {
         this.loading = false;

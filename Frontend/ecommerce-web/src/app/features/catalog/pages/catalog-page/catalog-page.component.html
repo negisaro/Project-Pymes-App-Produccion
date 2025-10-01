@@ -1,0 +1,15 @@
+<section class="catalog">
+  <header class="catalog__header">
+    <h1>Catálogo</h1>
+  </header>
+
+  <div class="catalog__grid" *ngIf="!loading(); else loadingTpl">
+  <app-product-tile *ngFor="let p of products()" [product]="p" />
+  </div>
+
+  <ng-template #loadingTpl>
+    <div class="catalog__grid">
+      <div class="skeleton" *ngFor="let s of [1,2,3,4,5,6,7,8,9,10,11,12]"></div>
+    </div>
+  </ng-template>
+</section>

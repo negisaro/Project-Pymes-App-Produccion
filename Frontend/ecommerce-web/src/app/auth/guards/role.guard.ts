@@ -10,26 +10,39 @@ export class RoleGuard implements CanActivate {
 
   canActivate(route: ActivatedRouteSnapshot): Observable<boolean | UrlTree> {
     const expectedRoles: string[] = route.data['roles'] || [];
-    // Esperar a que el usuario esté restaurado y autenticado
+    const fallback: string = route.data['fallback'] || '/';
+
+    // Si no hay restricción de roles, permitir el acceso directo
+    if (!expectedRoles.length) return of(true);
+
+    // Esperar a que el estado de auth esté resuelto (el IsAuthenticatedGuard debería haber corrido antes, pero mantenemos robustez)
     return this.authService.authStatus$.pipe(
       take(1),
       switchMap(status => {
         if (status !== 'authenticated') {
-          // Si no está autenticado, redirigir a login
           return of(this.router.createUrlTree(['/auth/login']));
         }
-        // Usuario restaurado, validar roles
         return this.authService.currentUser$.pipe(
           take(1),
-          map(user => {
-            if (user && this.authService.hasRole(expectedRoles)) {
-              return true;
-            }
-            // Si no tiene rol, redirigir a unauthorized
-            return this.router.createUrlTree(['/unauthorized']);
-          })
+            map(user => {
+              if (!user) return this.router.createUrlTree(['/auth/login']);
+              const userRoles = (user.roles || []).map(r => r.name);
+              if (this.matchesAnyRole(expectedRoles, userRoles)) {
+                return true;
+              }
+              return this.router.createUrlTree([fallback]);
+            })
         );
       })
     );
+  }
+
+  /**
+   * Compara roles de forma tolerante (acepta ROLE_ADMIN / ADMIN, case-insensitive)
+   */
+  private matchesAnyRole(expected: string[], userRoles: string[]): boolean {
+    const norm = (r: string) => r.replace(/^ROLE_/i, '').toUpperCase();
+    const expectedSet = new Set(expected.map(norm));
+    return userRoles.some(r => expectedSet.has(norm(r)));
   }
 }

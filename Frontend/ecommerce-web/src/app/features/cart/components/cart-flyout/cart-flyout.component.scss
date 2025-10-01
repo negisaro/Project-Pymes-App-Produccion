@@ -1,0 +1,22 @@
+.flyout-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.32);backdrop-filter:blur(2px);z-index:80;}
+.flyout{position:fixed;top:0;right:0;width:380px;max-width:100%;height:100%;background:var(--color-bg-elevated);border-left:1px solid var(--color-border);display:flex;flex-direction:column;z-index:90;box-shadow:var(--shadow-lg);animation:slide .25s ease;}
+@keyframes slide{from{transform:translateX(30px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+.flyout__header{display:flex;align-items:center;justify-content:space-between;padding:var(--space-5) var(--space-6);border-bottom:1px solid var(--color-border);}
+.flyout__header h2{margin:0;font-size:1.05rem;}
+.flyout__body{flex:1;overflow:auto;padding:var(--space-5) var(--space-6);}
+.flyout__list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--space-4);}
+.flyout-item{display:flex;gap:var(--space-4);}
+.flyout-item__media{width:64px;height:64px;border:1px solid var(--color-border);border-radius:var(--radius-sm);overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--color-bg-subtle);}
+.flyout-item__media img{width:100%;height:100%;object-fit:cover;}
+.flyout-item__main{flex:1;display:flex;flex-direction:column;gap:.35rem;}
+.flyout-item__name{font-size:.85rem;font-weight:600;}
+.flyout-item__price{font-size:.8rem;color:var(--color-text-soft);}
+.flyout-item__qty{display:flex;align-items:center;gap:.5rem;}
+.flyout-item__qty input{width:60px;padding:.25rem .4rem;border:1px solid var(--color-border);border-radius:var(--radius-sm);}
+.link{background:none;border:0;color:var(--color-primary);cursor:pointer;font-size:.7rem;}
+.flyout__empty{padding:var(--space-8) 0;text-align:center;color:var(--color-text-soft);font-size:.85rem;}
+.flyout__footer{border-top:1px solid var(--color-border);padding:var(--space-5) var(--space-6);display:flex;flex-direction:column;gap:var(--space-4);}
+.flyout__subtotal{display:flex;align-items:center;justify-content:space-between;font-size:.9rem;}
+.flyout__actions{display:flex;gap:var(--space-3);}
+.btn.btn--outline{background:transparent;border:1px solid var(--color-border);}
+@media (max-width:520px){.flyout{width:100%;}}

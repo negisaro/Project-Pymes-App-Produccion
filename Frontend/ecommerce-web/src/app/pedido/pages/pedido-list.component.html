@@ -1,0 +1,22 @@
+<div class="pedido-list">
+  <table class="pedido-table" aria-label="Listado de pedidos">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Cliente</th>
+        <th>Fecha</th>
+        <th>Total</th>
+        <th>Estado</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let p of pedidos">
+        <td>{{ p.id }}</td>
+        <td>{{ p.cliente }}</td>
+       <!--  <td>{{ p.fecha | date:'shortDate' }}</td>
+        <td>{{ p.total | currency:'USD': 'symbol' }}</td> -->
+        <td>{{ p.estado }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

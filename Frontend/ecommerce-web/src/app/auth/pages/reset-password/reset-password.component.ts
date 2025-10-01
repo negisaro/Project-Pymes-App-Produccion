@@ -7,7 +7,7 @@ import { AuthService } from '../../services/auth.service';
 @Component({
   selector: 'app-reset-password',
   templateUrl: './reset-password.component.html',
-  styleUrls: ['./reset-password.component.css']
+  styles: []
 })
 
 export class ResetPasswordComponent {
@@ -17,6 +17,7 @@ export class ResetPasswordComponent {
   loading = false;
   token: string;
   successMsg = '';
+  currentYear = new Date().getFullYear();
 
   constructor(
     private fb: FormBuilder,
@@ -32,7 +33,10 @@ export class ResetPasswordComponent {
   }
 
   submit() {
-    if (this.form.invalid || !this.token) return;
+    if (this.form.invalid || !this.token) {
+      this.form.markAllAsTouched();
+      return;
+    }
     this.loading = true;
     this.errorMsg = '';
     this.authService.resetPassword(this.token, this.form.value.password).subscribe({

@@ -1,6 +1,7 @@
 package com.nelson.project.msvc_usuario.msvc_usuario.config.configmail;
 
 import com.nelson.project.msvc_usuario.msvc_usuario.exception.CustomException;
+import com.nelson.project.msvc_usuario.msvc_usuario.exception.ErrorCodes;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,7 +33,7 @@ public class MailConfig {
       throw new CustomException(
         "Error de configuración de email: spring.mail.host no está configurado",
         500,
-        "MAIL_CONFIG_ERROR",
+        ErrorCodes.MAIL_CONFIG_ERROR,
         "Falta la propiedad spring.mail.host en el entorno o archivo de configuración"
       );
     }
@@ -40,7 +41,7 @@ public class MailConfig {
       throw new CustomException(
         "Error de configuración de email: spring.mail.port no está configurado",
         500,
-        "MAIL_CONFIG_ERROR",
+        ErrorCodes.MAIL_CONFIG_ERROR,
         "Falta la propiedad spring.mail.port en el entorno o archivo de configuración"
       );
     }
@@ -48,7 +49,7 @@ public class MailConfig {
       throw new CustomException(
         "Error de configuración de email: spring.mail.username no está configurado",
         500,
-        "MAIL_CONFIG_ERROR",
+        ErrorCodes.MAIL_CONFIG_ERROR,
         "Falta la propiedad spring.mail.username en el entorno o archivo de configuración"
       );
     }
@@ -56,7 +57,7 @@ public class MailConfig {
       throw new CustomException(
         "Error de configuración de email: spring.mail.password no está configurado",
         500,
-        "MAIL_CONFIG_ERROR",
+        ErrorCodes.MAIL_CONFIG_ERROR,
         "Falta la propiedad spring.mail.password en el entorno o archivo de configuración"
       );
     }

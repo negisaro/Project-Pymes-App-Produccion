@@ -2,26 +2,27 @@ package com.nelson.project.msvc_usuario.msvc_usuario.controller;
 
 import static com.nelson.project.msvc_usuario.msvc_usuario.security.TokenJwtConfig.*;
 
+import com.nelson.project.msvc_usuario.msvc_usuario.assembler.AuthResponseAssembler;
 import com.nelson.project.msvc_usuario.msvc_usuario.exception.CustomException;
 import com.nelson.project.msvc_usuario.msvc_usuario.exception.ErrorCodes;
-import com.nelson.project.msvc_usuario.msvc_usuario.mapper.LoginResponseMapper;
+import com.nelson.project.msvc_usuario.msvc_usuario.model.dto.AuthResponseDto;
 import com.nelson.project.msvc_usuario.msvc_usuario.model.dto.ForgotPasswordRequestDto;
 import com.nelson.project.msvc_usuario.msvc_usuario.model.dto.LoginDto;
-import com.nelson.project.msvc_usuario.msvc_usuario.model.dto.LoginResponseDto;
 import com.nelson.project.msvc_usuario.msvc_usuario.model.dto.ResetPasswordRequestDto;
 import com.nelson.project.msvc_usuario.msvc_usuario.model.dto.UsuarioCreateDto;
 import com.nelson.project.msvc_usuario.msvc_usuario.model.dto.UsuarioDto;
 import com.nelson.project.msvc_usuario.msvc_usuario.security.service.JwtService;
+import com.nelson.project.msvc_usuario.msvc_usuario.service.PasswordRecoveryService;
+import com.nelson.project.msvc_usuario.msvc_usuario.service.RefreshTokenService;
 import com.nelson.project.msvc_usuario.msvc_usuario.service.UsuarioService;
 import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -41,17 +42,26 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
   private final UsuarioService usuarioService;
+  private final PasswordRecoveryService passwordRecoveryService;
   private final AuthenticationManager authenticationManager;
   private final JwtService jwtService;
+  private final RefreshTokenService refreshTokenService;
+  private final AuthResponseAssembler authResponseAssembler;
 
   public AuthController(
     UsuarioService usuarioService,
     AuthenticationManager authenticationManager,
-    JwtService jwtService
+    JwtService jwtService,
+    PasswordRecoveryService passwordRecoveryService,
+    RefreshTokenService refreshTokenService,
+    AuthResponseAssembler authResponseAssembler
   ) {
     this.usuarioService = usuarioService;
     this.authenticationManager = authenticationManager;
     this.jwtService = jwtService;
+    this.passwordRecoveryService = passwordRecoveryService;
+    this.refreshTokenService = refreshTokenService;
+    this.authResponseAssembler = authResponseAssembler;
   }
 
   private static final Logger logger = LoggerFactory.getLogger(
@@ -63,7 +73,7 @@ public class AuthController {
    */
   @Operation(summary = "Login de usuario")
   @PostMapping("/login")
-  public ResponseEntity<LoginResponseDto> login(
+  public ResponseEntity<AuthResponseDto> login(
     @RequestBody @Valid LoginDto loginDto
   ) {
     logger.info(
@@ -98,13 +108,22 @@ public class AuthController {
         usuario.getEmail()
       );
 
-      LoginResponseDto responseDto =
-        LoginResponseMapper.INSTANCE.usuarioDtoToLoginResponseDto(usuario);
-      responseDto.setToken(token);
+      var refresh = refreshTokenService.generate(usuario.getUsername());
+      var authResponse = authResponseAssembler.from(
+        token,
+        jwtService.parseToken(token).getExpiration(),
+        usuario.getUsername(),
+        authentication.getAuthorities()
+      );
+      authResponseAssembler.attachRefresh(
+        authResponse,
+        refresh.getToken(),
+        refresh.getExpiryDate()
+      );
       return ResponseEntity.ok()
         .header(HEADER_AUTHORIZATION, PREFIX_TOKEN + token)
         .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
-        .body(responseDto);
+        .body(authResponse);
     } catch (BadCredentialsException ex) {
       throw new CustomException(
         "Credenciales inválidas",
@@ -163,37 +182,66 @@ public class AuthController {
   @Operation(summary = "Refresh token")
   @PreAuthorize("isAuthenticated()")
   @PostMapping("/refresh")
-  public ResponseEntity<?> refreshToken(
-    @RequestBody Map<String, String> requestBody
-  ) {
-    String oldToken = requestBody.get("token");
-    logger.info("[AuthController] Refresh token solicitado");
+  public ResponseEntity<?> refreshToken(@RequestBody Map<String, String> body) {
+    logger.info("[AuthController] Refresh token solicitado (rotación)");
+    String refreshTokenStr = body.get("refreshToken");
+    if (refreshTokenStr == null || refreshTokenStr.isBlank()) {
+      return ResponseEntity.badRequest()
+        .body(Map.of("error", "refreshToken requerido"));
+    }
     try {
-      if (oldToken == null || oldToken.isBlank()) {
-        logger.warn("[AuthController] Token no proporcionado para refresh");
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-          Map.of("error", "Token requerido")
-        );
-      }
-      String email = "";
-      try {
-        Claims claims = jwtService.parseToken(oldToken);
-        email = claims.get("email", String.class);
-      } catch (Exception e) {
-        logger.warn(
-          "[AuthController] No se pudo extraer el email del token para refresh"
-        );
-      }
-      String newToken = jwtService.refreshToken(oldToken, email);
-      return ResponseEntity.ok(Map.of("token", newToken));
-    } catch (Exception ex) {
-      logger.error(
-        "[AuthController] Error al refrescar token: {}",
-        ex.getMessage(),
-        ex
+      var refreshEntityOpt = refreshTokenService.findEntityByToken(
+        refreshTokenStr
       );
+      if (refreshEntityOpt.isEmpty()) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+          Map.of("error", "refreshToken no encontrado")
+        );
+      }
+      var refreshEntity = refreshTokenService.validateUsableOrThrow(
+        refreshEntityOpt.get()
+      );
+      String username = refreshEntity.getUsername();
+      Optional<UsuarioDto> usuarioOpt = usuarioService.findByUsername(username);
+      if (usuarioOpt.isEmpty()) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+          Map.of("error", "Usuario no encontrado")
+        );
+      }
+      UsuarioDto usuario = usuarioOpt.get();
+      // Construir userDetails mínimo para regenerar access token
+      org.springframework.security.core.userdetails.User principal =
+        new org.springframework.security.core.userdetails.User(
+          usuario.getUsername(),
+          "",
+          Collections.emptyList()
+        );
+      String newAccess = jwtService.generateToken(
+        principal,
+        principal.getAuthorities(),
+        usuario.getEmail()
+      );
+      var newRefresh = refreshTokenService.rotate(refreshEntity);
+      var resp = authResponseAssembler.from(
+        newAccess,
+        jwtService.parseToken(newAccess).getExpiration(),
+        usuario.getUsername(),
+        principal.getAuthorities()
+      );
+      authResponseAssembler.attachRefresh(
+        resp,
+        newRefresh.getToken(),
+        newRefresh.getExpiryDate()
+      );
+      return ResponseEntity.ok(resp);
+    } catch (IllegalStateException ise) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-        Map.of("error", "Token inválido")
+        Map.of("error", ise.getMessage())
+      );
+    } catch (Exception ex) {
+      logger.error("[AuthController] Error en rotación refresh token", ex);
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+        Map.of("error", "Error interno")
       );
     }
   }
@@ -223,17 +271,33 @@ public class AuthController {
         );
       }
       UsuarioDto usuario = usuarioOpt.get();
-      LoginResponseDto responseDto =
-        LoginResponseMapper.INSTANCE.usuarioDtoToLoginResponseDto(usuario);
-      responseDto.setToken(token);
+      // Extraer roles del token para reconstruir authorities ligeras (sin re-autenticar)
+      Claims claims = jwtService.parseToken(token);
+      String rolesStr = claims.get("roles", String.class);
+      Collection<
+        org.springframework.security.core.GrantedAuthority
+      > authorities = rolesStr == null || rolesStr.isBlank()
+        ? Collections.emptyList()
+        : Arrays.stream(rolesStr.split(","))
+          .map(String::trim)
+          .filter(r -> !r.isEmpty())
+          .map(r -> (org.springframework.security.core.GrantedAuthority) () -> r
+          )
+          .collect(Collectors.toList());
+      AuthResponseDto authResponse = authResponseAssembler.from(
+        token,
+        jwtService.parseToken(token).getExpiration(),
+        usuario.getUsername(),
+        authorities
+      );
       logger.info(
         "[AuthController] Respuesta enviada al frontend: {}",
-        responseDto
+        authResponse
       );
       return ResponseEntity.ok()
         .header(HEADER_AUTHORIZATION, PREFIX_TOKEN + token)
         .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
-        .body(responseDto);
+        .body(authResponse);
     } catch (Exception ex) {
       logger.warn("[AuthController] Token inválido al verificar sesión");
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
@@ -247,13 +311,21 @@ public class AuthController {
   public ResponseEntity<?> forgotPassword(
     @RequestBody @Valid ForgotPasswordRequestDto request
   ) {
-    usuarioService.sendPasswordResetToken(request.getEmail());
-    return ResponseEntity.ok(
-      Map.of(
-        "mensaje",
-        "Si el email existe, se ha enviado un correo con instrucciones para restablecer la contraseña."
-      )
-    );
+    passwordRecoveryService.requestReset(request.getEmail());
+    return ResponseEntity.accepted()
+      .body(
+        Map.of(
+          "mensaje",
+          "Si el email existe, se enviará un correo con instrucciones para restablecer la contraseña."
+        )
+      );
+  }
+
+  @Operation(summary = "Valida un token de recuperación de contraseña")
+  @GetMapping("/reset-password/validate")
+  public ResponseEntity<?> validateResetToken(@RequestParam String token) {
+    passwordRecoveryService.validateTokenOrThrow(token);
+    return ResponseEntity.ok(Map.of("valido", true));
   }
 
   @Operation(summary = "Restablece la contraseña usando un token")
@@ -261,18 +333,12 @@ public class AuthController {
   public ResponseEntity<?> resetPassword(
     @RequestBody @Valid ResetPasswordRequestDto request
   ) {
-    boolean ok = usuarioService.resetPassword(
+    passwordRecoveryService.resetPassword(
       request.getToken(),
       request.getNewPassword()
     );
-    if (ok) {
-      return ResponseEntity.ok(
-        Map.of("mensaje", "Contraseña restablecida correctamente.")
-      );
-    } else {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-        Map.of("mensaje", "No se pudo restablecer la contraseña.")
-      );
-    }
+    return ResponseEntity.ok(
+      Map.of("mensaje", "Contraseña restablecida correctamente.")
+    );
   }
 }

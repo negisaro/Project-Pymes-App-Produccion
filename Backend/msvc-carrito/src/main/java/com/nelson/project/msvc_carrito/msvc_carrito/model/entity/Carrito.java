@@ -1,32 +1,330 @@
 package com.nelson.project.msvc_carrito.msvc_carrito.model.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
+/**
+ * Entidad Carrito mejorada siguiendo principios SOLID y DDD.
+ *
+ * Responsabilidades:
+ * - Gestionar items del carrito
+ * - Calcular totales y subtotales
+ * - Mantener estado del carrito
+ * - Aplicar reglas de negocio
+ *
+ * Principios SOLID aplicados:
+ * - Single Responsibility: Solo gestiona el carrito
+ * - Open/Closed: Extensible para nuevas funcionalidades
+ * - Liskov Substitution: Hereda correctamente de BaseEntity
+ */
 @Entity
-@Table(name = "carritos")
-public class Carrito {
+@Table(
+  name = "carritos",
+  indexes = {
+    @Index(name = "idx_carrito_usuario_id", columnList = "usuario_id"),
+    @Index(name = "idx_carrito_estado", columnList = "estado"),
+    @Index(name = "idx_carrito_creado_en", columnList = "creado_en"),
+  }
+)
+public class Carrito extends BaseEntityCorrected {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  // Relación moderna: solo guardamos el id, la consulta se hace vía REST a
-  // microservicio Usuario
+  @NotNull
+  @Positive
   @Column(name = "usuario_id", nullable = false)
   private Long usuarioId;
 
-  private LocalDateTime creadoEn;
+  @NotNull
+  @Enumerated(EnumType.STRING)
+  @Column(name = "estado", nullable = false, length = 20)
+  private EstadoCarrito estado = EstadoCarrito.ACTIVO;
+
+  @DecimalMin(value = "0.0", inclusive = true)
+  @Column(name = "subtotal", precision = 12, scale = 2, nullable = false)
+  private BigDecimal subtotal = BigDecimal.ZERO;
+
+  @DecimalMin(value = "0.0", inclusive = true)
+  @Column(name = "descuento", precision = 12, scale = 2, nullable = false)
+  private BigDecimal descuento = BigDecimal.ZERO;
+
+  @DecimalMin(value = "0.0", inclusive = true)
+  @Column(name = "total", precision = 12, scale = 2, nullable = false)
+  private BigDecimal total = BigDecimal.ZERO;
+
+  @Column(name = "codigo_descuento", length = 50)
+  private String codigoDescuento;
+
+  @Column(name = "expira_en")
+  private LocalDateTime expiraEn;
+
+  @Column(name = "ip_cliente", length = 45)
+  private String ipCliente;
+
+  @Size(max = 500)
+  @Column(name = "notas", length = 500)
+  private String notas;
 
   @OneToMany(
     mappedBy = "carrito",
     cascade = CascadeType.ALL,
-    orphanRemoval = true
+    orphanRemoval = true,
+    fetch = FetchType.LAZY
   )
-  private List<ItemCarrito> items;
+  private List<ItemCarrito> items = new ArrayList<>();
 
-  public Carrito() {}
+  // Constructors
+  public Carrito() {
+    super();
+    this.expiraEn = LocalDateTime.now().plusDays(7); // Expira en 7 días por defecto
+  }
+
+  public Carrito(Long usuarioId) {
+    this();
+    this.usuarioId = usuarioId;
+  }
+
+  // Métodos de negocio principales
+
+  /**
+   * Agrega un item al carrito aplicando reglas de negocio.
+   * Si el producto ya existe, actualiza la cantidad.
+   */
+  public void agregarItem(ItemCarrito nuevoItem) {
+    validarCarritoModificable();
+    Objects.requireNonNull(nuevoItem, "El item no puede ser nulo");
+    Objects.requireNonNull(
+      nuevoItem.getProductoId(),
+      "El producto ID no puede ser nulo"
+    );
+
+    Optional<ItemCarrito> itemExistente = buscarItemPorProducto(
+      nuevoItem.getProductoId()
+    );
+
+    if (itemExistente.isPresent()) {
+      itemExistente.get().incrementarCantidad(nuevoItem.getCantidad());
+    } else {
+      nuevoItem.setCarrito(this);
+      items.add(nuevoItem);
+    }
+
+    recalcularTotales();
+    actualizarExpiracion();
+  }
+
+  /**
+   * Actualiza la cantidad de un item específico
+   */
+  public void actualizarCantidadItem(Long productoId, Integer nuevaCantidad) {
+    validarCarritoModificable();
+    Objects.requireNonNull(productoId, "El producto ID no puede ser nulo");
+    Objects.requireNonNull(nuevaCantidad, "La cantidad no puede ser nula");
+
+    if (nuevaCantidad <= 0) {
+      quitarItem(productoId);
+      return;
+    }
+
+    ItemCarrito item = buscarItemPorProducto(productoId).orElseThrow(() ->
+      new IllegalArgumentException("Producto no encontrado en el carrito")
+    );
+
+    item.setCantidad(nuevaCantidad);
+    recalcularTotales();
+    actualizarExpiracion();
+  }
+
+  /**
+   * Quita un item del carrito
+   */
+  public void quitarItem(Long productoId) {
+    validarCarritoModificable();
+    Objects.requireNonNull(productoId, "El producto ID no puede ser nulo");
+
+    items.removeIf(item -> item.getProductoId().equals(productoId));
+    recalcularTotales();
+    actualizarExpiracion();
+  }
+
+  /**
+   * Vacía completamente el carrito
+   */
+  public void vaciar() {
+    validarCarritoModificable();
+    items.clear();
+    recalcularTotales();
+    limpiarDescuentos();
+    actualizarExpiracion();
+  }
+
+  /**
+   * Aplica un descuento al carrito
+   */
+  public void aplicarDescuento(BigDecimal montoDescuento, String codigo) {
+    validarCarritoModificable();
+    Objects.requireNonNull(
+      montoDescuento,
+      "El monto de descuento no puede ser nulo"
+    );
+
+    if (montoDescuento.compareTo(BigDecimal.ZERO) < 0) {
+      throw new IllegalArgumentException("El descuento no puede ser negativo");
+    }
+
+    if (montoDescuento.compareTo(subtotal) > 0) {
+      throw new IllegalArgumentException(
+        "El descuento no puede ser mayor al subtotal"
+      );
+    }
+
+    this.descuento = montoDescuento.setScale(2, RoundingMode.HALF_UP);
+    this.codigoDescuento = codigo;
+    recalcularTotal();
+  }
+
+  /**
+   * Marca el carrito como procesado (convertido en pedido)
+   */
+  public void marcarComoProcesado() {
+    if (items.isEmpty()) {
+      throw new IllegalStateException("No se puede procesar un carrito vacío");
+    }
+    this.estado = EstadoCarrito.PROCESADO;
+  }
+
+  /**
+   * Marca el carrito como abandonado
+   */
+  public void marcarComoAbandonado() {
+    if (estado == EstadoCarrito.ACTIVO) {
+      this.estado = EstadoCarrito.ABANDONADO;
+    }
+  }
+
+  /**
+   * Extiende la expiración del carrito
+   */
+  public void extenderExpiracion(int dias) {
+    if (dias > 0) {
+      this.expiraEn = LocalDateTime.now().plusDays(dias);
+    }
+  }
+
+  // Métodos de cálculo privados
+
+  public void recalcularTotales() {
+    recalcularSubtotal();
+    recalcularTotal();
+  }
+
+  /**
+   * Remueve un item por ID de producto (método público para servicio)
+   */
+  public void removerItem(Long productoId) {
+    quitarItem(productoId);
+  }
+
+  private void recalcularSubtotal() {
+    this.subtotal = items
+      .stream()
+      .map(ItemCarrito::getSubtotal)
+      .reduce(BigDecimal.ZERO, BigDecimal::add)
+      .setScale(2, RoundingMode.HALF_UP);
+  }
+
+  private void recalcularTotal() {
+    this.total = subtotal
+      .subtract(descuento)
+      .max(BigDecimal.ZERO) // El total nunca puede ser negativo
+      .setScale(2, RoundingMode.HALF_UP);
+  }
+
+  private void limpiarDescuentos() {
+    this.descuento = BigDecimal.ZERO;
+    this.codigoDescuento = null;
+  }
+
+  private void actualizarExpiracion() {
+    if (estado == EstadoCarrito.ACTIVO) {
+      this.expiraEn = LocalDateTime.now().plusDays(7);
+    }
+  }
+
+  // Métodos de consulta
+
+  /**
+   * Busca un item por ID de producto
+   */
+  public Optional<ItemCarrito> buscarItemPorProducto(Long productoId) {
+    return items
+      .stream()
+      .filter(item -> item.getProductoId().equals(productoId))
+      .findFirst();
+  }
+
+  /**
+   * Obtiene el número total de items en el carrito
+   */
+  public int getTotalItems() {
+    return items.stream().mapToInt(ItemCarrito::getCantidad).sum();
+  }
+
+  /**
+   * Verifica si el carrito está vacío
+   */
+  public boolean estaVacio() {
+    return items.isEmpty();
+  }
+
+  /**
+   * Verifica si el carrito ha expirado
+   */
+  public boolean haExpirado() {
+    return expiraEn != null && LocalDateTime.now().isAfter(expiraEn);
+  }
+
+  /**
+   * Verifica si el carrito puede ser modificado
+   */
+  public boolean esModificable() {
+    return estado.esModificable() && !haExpirado();
+  }
+
+  /**
+   * Obtiene el peso total del carrito (suma de subtotales)
+   */
+  public BigDecimal getPesoEconomico() {
+    return subtotal;
+  }
+
+  // Métodos de validación
+
+  private void validarCarritoModificable() {
+    if (!esModificable()) {
+      throw new IllegalStateException(
+        String.format(
+          "El carrito no puede ser modificado. Estado: %s, Expirado: %s",
+          estado,
+          haExpirado()
+        )
+      );
+    }
+  }
+
+  // Getters y Setters
 
   public Long getId() {
     return id;
@@ -44,39 +342,94 @@ public class Carrito {
     this.usuarioId = usuarioId;
   }
 
-  public LocalDateTime getCreadoEn() {
-    return creadoEn;
+  public EstadoCarrito getEstado() {
+    return estado;
   }
 
-  public void setCreadoEn(LocalDateTime creadoEn) {
-    this.creadoEn = creadoEn;
+  public void setEstado(EstadoCarrito estado) {
+    this.estado = estado;
+  }
+
+  public BigDecimal getSubtotal() {
+    return subtotal;
+  }
+
+  public BigDecimal getDescuento() {
+    return descuento;
+  }
+
+  public BigDecimal getTotal() {
+    return total;
+  }
+
+  public String getCodigoDescuento() {
+    return codigoDescuento;
+  }
+
+  public LocalDateTime getExpiraEn() {
+    return expiraEn;
+  }
+
+  public void setExpiraEn(LocalDateTime expiraEn) {
+    this.expiraEn = expiraEn;
+  }
+
+  public String getIpCliente() {
+    return ipCliente;
+  }
+
+  public void setIpCliente(String ipCliente) {
+    this.ipCliente = ipCliente;
+  }
+
+  public String getNotas() {
+    return notas;
+  }
+
+  public void setNotas(String notas) {
+    this.notas = notas;
   }
 
   public List<ItemCarrito> getItems() {
-    return items;
+    return new ArrayList<>(items); // Retorna copia defensiva
   }
 
   public void setItems(List<ItemCarrito> items) {
-    this.items = items;
+    this.items.clear();
+    if (items != null) {
+      items.forEach(this::agregarItem);
+    }
   }
 
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((id == null) ? 0 : id.hashCode());
-    return result;
-  }
+  // equals y hashCode
 
   @Override
   public boolean equals(Object obj) {
     if (this == obj) return true;
-    if (obj == null) return false;
-    if (getClass() != obj.getClass()) return false;
-    Carrito other = (Carrito) obj;
-    if (id == null) {
-      if (other.id != null) return false;
-    } else if (!id.equals(other.id)) return false;
-    return true;
+    if (obj == null || getClass() != obj.getClass()) return false;
+    Carrito carrito = (Carrito) obj;
+    return (
+      Objects.equals(id, carrito.id) ||
+      (id == null &&
+        Objects.equals(usuarioId, carrito.usuarioId) &&
+        Objects.equals(getCreadoEn(), carrito.getCreadoEn()))
+    );
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id != null ? id : usuarioId, getCreadoEn());
+  }
+
+  @Override
+  public String toString() {
+    return String.format(
+      "Carrito{id=%d, usuarioId=%d, estado=%s, items=%d, total=%s}",
+      id,
+      usuarioId,
+      estado,
+      items.size(),
+      total
+    );
   }
 }

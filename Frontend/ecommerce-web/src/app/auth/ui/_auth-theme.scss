@@ -1,0 +1,135 @@
+/* Estilos compartidos para vistas de autenticación (paleta azul neutra) */
+
+.auth-shell {
+  display: grid;
+  min-height: 100dvh;
+  /* Reducimos mínima y ajustamos comportamiento fluido */
+  grid-template-columns: clamp(280px,42%,500px) 1fr;
+  background: linear-gradient(135deg,#0f1319 0%,#151d27 55%,#1c2733 100%);
+  color: var(--color-text-strong);
+  overflow: hidden;
+}
+@media (max-width: 1024px) { .auth-shell { grid-template-columns: 1fr; } }
+/* Colapsar antes en tablets verticales medianas */
+@media (max-width: 840px) { .auth-shell { grid-template-columns: 1fr; } .auth-side { display:none; } }
+
+.auth-side {
+  position: relative;
+  padding: 3.2rem clamp(2.2rem,4vw,4rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  background:
+    radial-gradient(circle at 20% 20%,rgba(61,99,255,.18),transparent 60%),
+    linear-gradient(180deg,#121920 0%,#121920 45%,#18222d 100%);
+  border-right: 1px solid var(--color-border);
+}
+@media (max-width: 1024px) { .auth-side { display: none; } }
+
+.auth-side .brand .logo-mark {
+  width: 64px; height: 64px;
+  display:flex; align-items:center; justify-content:center;
+  border-radius: 18px;
+  background: linear-gradient(145deg,#273041,#1c2430);
+  box-shadow: var(--shadow-md);
+  font-size: 1.75rem;
+  color: var(--color-primary);
+  margin-bottom: 1.4rem;
+}
+.auth-side .brand h1 { font-size: 2.15rem; font-weight:600; margin:0; letter-spacing:-.5px; }
+.auth-side .brand h1 span { color: var(--color-primary); }
+.auth-side .brand .tagline { margin-top:.75rem; font-size:.95rem; line-height:1.45; color: var(--color-text-soft); max-width: 42ch; }
+
+.selling-points { list-style:none; margin:2.6rem 0 0; padding:0; display:flex; flex-direction:column; gap:.95rem; }
+.selling-points li { font-size:.85rem; color: var(--color-text-soft); display:flex; gap:.6rem; align-items:center; }
+.selling-points li i { color: var(--color-primary); }
+.side-footer { margin-top:auto; font-size:.7rem; opacity:.55; }
+
+/* Panel formulario */
+.auth-panel {
+  position:relative;
+  display:flex; flex-direction:column;
+  padding: clamp(2.4rem,4.2vw,4.2rem);
+  max-width: 560px;
+  width:100%;
+  margin: 0 auto;
+}
+.auth-panel .panel-header { margin-bottom: 1.8rem; }
+.auth-panel .panel-header h2 { font-size:1.95rem; font-weight:600; margin:0 0 .4rem; letter-spacing:-.5px; }
+.auth-panel .panel-header .subtitle { margin:0; font-size:.95rem; color: var(--color-text-soft); }
+
+.auth-form { display:flex; flex-direction:column; gap:1.15rem; }
+.field { display:flex; flex-direction:column; gap:.45rem; }
+.field label { font-size:.7rem; text-transform:uppercase; letter-spacing:.55px; font-weight:600; color: var(--color-text-soft); }
+.field .input-wrapper { position:relative; display:flex; align-items:center; gap:.75rem; background: var(--color-surface); border:1px solid var(--color-border); padding:.85rem 1rem; border-radius:14px; transition:160ms cubic-bezier(.4,0,.2,1); }
+.field .input-wrapper i { color: var(--color-text-soft); font-size:1rem; }
+.field .input-wrapper input { border:none; background:transparent; color: var(--color-text-strong); width:100%; font-size:.95rem; font-weight:500; }
+.field .input-wrapper input:focus { outline:none; }
+.field .input-wrapper:focus-within { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(61,99,255,.35); }
+.field.field--error .input-wrapper { border-color: var(--color-danger); }
+.field .field-msg { font-size:.66rem; color: var(--color-danger); margin:0; padding-left:.25rem; letter-spacing:.3px; }
+
+.form-meta { display:flex; justify-content:space-between; align-items:center; margin-top:.25rem; font-size:.7rem; }
+.form-meta .remember { display:flex; gap:.5rem; align-items:center; }
+.form-meta .remember input { accent-color: var(--color-primary); }
+.form-meta .remember span { color: var(--color-text-soft); font-weight:500; }
+
+.btn-primary-modern { --btn-bg: linear-gradient(95deg,#3352ff 0%,#4f6dff 55%,#6d87ff 100%); border:none; background: var(--btn-bg); color:#fff; font-weight:600; font-size:.95rem; padding:.95rem 1.2rem; border-radius:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:.55rem; box-shadow: 0 8px 28px -8px rgba(61,99,255,.55); transition:160ms cubic-bezier(.4,0,.2,1); }
+.btn-primary-modern .loading-inline { display:flex; align-items:center; gap:.55rem; }
+.btn-primary-modern .spinner { width:16px; height:16px; border:2px solid rgba(255,255,255,.35); border-top-color:#fff; border-radius:50%; animation: spin .7s linear infinite; }
+.btn-primary-modern:hover:not(:disabled) { filter:brightness(1.08) saturate(1.1); transform: translateY(-2px); }
+.btn-primary-modern:active:not(:disabled) { transform: translateY(0); }
+.btn-primary-modern:disabled { opacity:.55; cursor:not-allowed; }
+
+.panel-footer { margin-top:2.2rem; font-size:.75rem; color: var(--color-text-soft); }
+.panel-footer .link-bold { color: var(--color-primary); font-weight:600; text-decoration:none; }
+.panel-footer .link-bold:hover { text-decoration:underline; }
+
+.form-message { font-size:.7rem; border-radius:8px; padding:.6rem .75rem; display:flex; gap:.5rem; align-items:center; line-height:1.2; }
+.form-message.error { background:rgba(255,77,79,.08); color:var(--color-danger); border:1px solid rgba(255,77,79,.3); }
+.form-message.success { background:rgba(82,196,26,.08); color:var(--color-success); border:1px solid rgba(82,196,26,.3); }
+
+.muted-link { color: var(--color-text-soft); text-decoration:none; font-weight:500; transition:150ms; }
+.muted-link:hover { color: var(--color-primary); }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Breakpoints adicionales para mejorar usabilidad en tablets y móviles */
+@media (max-width: 768px) {
+  .auth-panel { padding: 2.2rem clamp(1.2rem,4vw,2rem); }
+  .auth-panel .panel-header h2 { font-size:1.65rem; }
+  .auth-panel .panel-header .subtitle { font-size:.9rem; }
+  .btn-primary-modern { font-size:.9rem; padding:.85rem 1rem; }
+}
+
+@media (max-width: 600px) {
+  .auth-panel { max-width: 100%; padding: 1.85rem 1.15rem 2.2rem; }
+  .auth-shell { display:flex; flex-direction:column; overflow:visible; }
+  .panel-footer { text-align:center; }
+  .auth-panel .panel-header h2 { font-size:1.5rem; }
+}
+
+@media (max-width: 480px) {
+  .auth-panel { padding: 1.55rem .95rem 2rem; min-height:100dvh; overflow-y:auto; }
+  .auth-panel .panel-header h2 { font-size:1.35rem; line-height:1.15; }
+  .auth-panel .panel-header .subtitle { font-size:.82rem; }
+  .auth-form { gap:.95rem; }
+  .field .input-wrapper { padding:.7rem .8rem; border-radius:12px; }
+  .btn-primary-modern { padding:.7rem .85rem; font-size:.88rem; }
+  .form-meta { flex-direction:column; gap:.65rem; align-items:flex-start; }
+  .panel-footer { margin-top:1.6rem; }
+}
+
+/* Micro break: teléfonos muy pequeños o vista reducida */
+@media (max-width: 360px) {
+  .auth-panel { padding: 1.25rem .75rem 1.7rem; }
+  .auth-panel .panel-header h2 { font-size:1.22rem; }
+  .auth-panel .panel-header .subtitle { display:none; }
+  .auth-form { gap:.75rem; }
+  .field .input-wrapper { padding:.6rem .7rem; }
+  .btn-primary-modern { padding:.6rem .75rem; font-size:.8rem; }
+  .form-message { font-size:.62rem; }
+}
+
+/* Utilidad de accesibilidad si se requiere ocultar texto decorativo */
+.visually-hidden { position:absolute !important; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0; }

@@ -1,11 +1,12 @@
 package com.nelson.project.msvc_usuario.msvc_usuario.config.configsecurity;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nelson.project.msvc_usuario.msvc_usuario.assembler.AuthResponseAssembler;
 import com.nelson.project.msvc_usuario.msvc_usuario.security.JpaUserDetailsService;
 import com.nelson.project.msvc_usuario.msvc_usuario.security.SecurityPaths;
 import com.nelson.project.msvc_usuario.msvc_usuario.security.filter.JwtAuthenticationFilter;
 import com.nelson.project.msvc_usuario.msvc_usuario.security.filter.JwtValidationFilter;
 import com.nelson.project.msvc_usuario.msvc_usuario.security.service.JwtService;
-import com.nelson.project.msvc_usuario.msvc_usuario.service.UsuarioService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -15,24 +16,31 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 
+/**
+ * Configuración de seguridad central.
+ * Inyecta ObjectMapper en el filtro de autenticación para soportar Java Time y formato consistente.
+ */
 @Configuration
 public class SecurityConfig {
 
   private final AuthenticationConfiguration authenticationConfiguration;
   private final JwtService jwtService;
-  private final UsuarioService usuarioService;
   private final JpaUserDetailsService userDetailsService;
+  private final AuthResponseAssembler authResponseAssembler;
+  private final ObjectMapper objectMapper;
 
   public SecurityConfig(
     AuthenticationConfiguration authenticationConfiguration,
     JwtService jwtService,
-    UsuarioService usuarioService,
-    JpaUserDetailsService userDetailsService
+    JpaUserDetailsService userDetailsService,
+    AuthResponseAssembler authResponseAssembler,
+    ObjectMapper objectMapper
   ) {
     this.authenticationConfiguration = authenticationConfiguration;
     this.jwtService = jwtService;
-    this.usuarioService = usuarioService;
     this.userDetailsService = userDetailsService;
+    this.authResponseAssembler = authResponseAssembler;
+    this.objectMapper = objectMapper;
   }
 
   @Bean
@@ -43,6 +51,13 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http)
     throws Exception {
+    JwtAuthenticationFilter authFilter = new JwtAuthenticationFilter(
+      authenticationManager(),
+      jwtService,
+      authResponseAssembler,
+      objectMapper
+    );
+
     return http
       .csrf(csrf -> csrf.disable())
       .sessionManagement(session ->
@@ -57,13 +72,7 @@ public class SecurityConfig {
           .anyRequest()
           .authenticated()
       )
-      .addFilter(
-        new JwtAuthenticationFilter(
-          authenticationManager(),
-          jwtService,
-          usuarioService
-        )
-      )
+      .addFilter(authFilter)
       .addFilterBefore(
         new JwtValidationFilter(jwtService, userDetailsService),
         JwtAuthenticationFilter.class

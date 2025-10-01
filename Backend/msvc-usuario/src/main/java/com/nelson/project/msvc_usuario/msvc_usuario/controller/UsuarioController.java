@@ -4,6 +4,7 @@ import com.nelson.project.msvc_usuario.msvc_usuario.exception.CustomException;
 import com.nelson.project.msvc_usuario.msvc_usuario.exception.ErrorCodes;
 import com.nelson.project.msvc_usuario.msvc_usuario.model.dto.UsuarioCreateDto;
 import com.nelson.project.msvc_usuario.msvc_usuario.model.dto.UsuarioDto;
+import com.nelson.project.msvc_usuario.msvc_usuario.model.dto.UsuarioUpdateDto;
 import com.nelson.project.msvc_usuario.msvc_usuario.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -93,23 +94,15 @@ public class UsuarioController {
     }
   }
 
-  @Operation(summary = "Actualizar usuario")
+  @Operation(summary = "Actualizar usuario (parcial o total)")
   @PutMapping("/update/{id}")
   public ResponseEntity<UsuarioDto> update(
     @PathVariable Long id,
-    @RequestBody @Valid UsuarioCreateDto usuarioCreateDto
+    @RequestBody @Valid UsuarioUpdateDto usuarioUpdateDto
   ) {
-    try {
-      UsuarioDto usuarioUpdated = usuarioService.update(id, usuarioCreateDto);
-      return ResponseEntity.ok(usuarioUpdated);
-    } catch (Exception ex) {
-      throw new CustomException(
-        "Error al actualizar usuario",
-        500,
-        "UPDATE_USER_ERROR",
-        ex.getMessage()
-      );
-    }
+    // El servicio gestiona validaciones específicas y lanza CustomException con códigos apropiados.
+    UsuarioDto usuarioUpdated = usuarioService.update(id, usuarioUpdateDto);
+    return ResponseEntity.ok(usuarioUpdated);
   }
 
   @Operation(summary = "Eliminar usuario")

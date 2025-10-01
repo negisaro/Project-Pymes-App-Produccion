@@ -1,5 +1,6 @@
 package com.nelson.project.msvc_usuario.msvc_usuario.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -37,12 +38,13 @@ public class UsuarioDto implements Serializable {
 
   /** Nombre de usuario */
   @NotBlank
-  @Size(min = 4, max = 12)
+  @Size(min = 4, max = 20)
   private String username;
 
   /** Contraseña del usuario */
   @NotBlank
-  @Size(min = 6, max = 100)
+  @Size(min = 8, max = 100)
+  @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
   private String password;
 
   /** Correo electrónico del usuario */

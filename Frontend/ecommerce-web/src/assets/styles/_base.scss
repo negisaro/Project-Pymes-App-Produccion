@@ -1,0 +1,44 @@
+// Base layout & utilidades globales
+// Centraliza estilos comunes de layouts para evitar duplicación en componentes.
+
+// Paleta mínima (placeholder, futura tarea 12.1 variables SCSS base)
+$color-bg-app: #f8f9fa;
+$color-bg-auth-gradient-start: #f5f7fa;
+$color-bg-auth-gradient-end: #c3cfe2;
+
+html {
+  box-sizing: border-box;
+  width:100%;
+  min-width:0;
+}
+*, *::before, *::after { box-sizing: inherit; }
+body {
+  margin:0;
+  width:100%;
+  min-width:0;
+  /* Ya no forzamos ocultar scroll horizontal global: permitir tablas y paneles desplazables */
+  background: $color-bg-app;
+}
+
+// Layouts legacy (alias) -> Usar ahora clases de _layout-system.scss, estos quedan para compatibilidad temporal
+.layout-vertical { display:flex; flex-direction:column; min-height:100vh; background:$color-bg-app; }
+.layout-main-row { display:flex; flex:1 1 auto; min-height:0; }
+.layout-content { flex:1 1 auto; padding:2rem; background:$color-bg-app; }
+.layout-footer { width:100%; }
+
+// Utilidades
+.full-height {
+  min-height: 100vh;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Alias para compatibilidad con clases existentes (cliente-layout*)
+.cliente-layout { @extend .layout-vertical; }
+.cliente-main { @extend .layout-main-row; }
+.cliente-content { @extend .layout-content; }
+.cliente-footer { @extend .layout-footer; }

@@ -1,13 +1,13 @@
 package com.nelson.project.msvc_usuario.msvc_usuario.security.filter;
 
+import com.nelson.project.msvc_usuario.msvc_usuario.exception.ErrorCodes;
+import com.nelson.project.msvc_usuario.msvc_usuario.security.SecurityErrorUtil;
 import com.nelson.project.msvc_usuario.msvc_usuario.security.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -74,19 +74,13 @@ public class JwtValidationFilter extends OncePerRequestFilter {
         SecurityContextHolder.getContext().setAuthentication(authToken);
         // ...existing code...
       } else {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.setContentType("application/json;charset=UTF-8");
-        Map<String, Object> body = new HashMap<>();
-        body.put("status", HttpServletResponse.SC_UNAUTHORIZED);
-        body.put("error", "INVALID_TOKEN");
-        body.put("message", "Token inválido o expirado");
-        body.put("detalle", "Token inválido para usuario: " + username);
-        response
-          .getWriter()
-          .write(
-            new com.fasterxml.jackson.databind.ObjectMapper()
-              .writeValueAsString(body)
-          );
+        SecurityErrorUtil.writeError(
+          response,
+          HttpServletResponse.SC_UNAUTHORIZED,
+          ErrorCodes.INVALID_TOKEN,
+          "Token inválido o expirado",
+          "Token inválido para usuario: " + username
+        );
         return;
       }
     }

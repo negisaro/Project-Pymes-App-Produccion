@@ -1,0 +1,12 @@
+.nav { position: sticky; top: 0; z-index: 50; background: var(--color-bg-elevated); border-bottom: 1px solid var(--color-border); }
+.nav__inner { display: flex; align-items: center; gap: var(--space-4); padding: 0 var(--space-6); height: 64px; }
+.nav__burger { display: none; background: none; border: 0; font-size: 1.4rem; cursor: pointer; }
+.nav__search { flex: 1; }
+.nav__actions { display: flex; align-items: center; gap: var(--space-3); }
+.nav__drawer { display: none; }
+
+@media (max-width: 900px) {
+  .nav__burger { display: inline-flex; }
+  .nav__links.d-none-md { display: none !important; }
+  .nav__drawer { display: block; position: absolute; left: 0; right: 0; top: 64px; background: var(--color-bg-elevated); padding: var(--space-4) var(--space-6); box-shadow: var(--shadow-md); }
+}

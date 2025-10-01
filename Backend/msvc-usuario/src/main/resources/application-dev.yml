@@ -16,6 +16,8 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.MySQL8Dialect
+  flyway:
+    enabled: false # Mitigación temporal: desactivado en dev hasta añadir dependencia flyway-mysql y scripts V1
 
   mail:
     host: ${MAIL_HOST}
@@ -55,14 +57,21 @@ management:
         include: health,info
 
 jwt:
-  secret:
-    jwt-secret: ${GATEWAY_JWT_SECRET}
+  # Secreto unificado compartido con gateway y otros microservicios
+  secret: ${GATEWAY_JWT_SECRET}
+  expiration-minutes: ${JWT_EXPIRATION_MINUTES:60}
+  issuer: ${JWT_ISSUER:project-pymes}
+  audience: ${JWT_AUDIENCE:project-pymes-clients}
 
 app:
   frontend-url: ${FRONTEND_URL:http://localhost:4200}
   mail:
     debug: ${MAIL_DEBUG:false}
 
+password:
+  reset:
+    expiration-minutes: ${PASSWORD_RESET_EXPIRATION_MINUTES:30}
+    max-active-tokens: ${PASSWORD_RESET_MAX_ACTIVE_TOKENS:3}
 # Notas de configuración:
 # - Definir variables de entorno para desarrollo local (Windows cmd):
 #   set MAIL_USERNAME=tu_correo@gmail.com
@@ -71,3 +80,4 @@ app:
 #   set MAIL_DEBUG=true
 # - En PowerShell usar: $env:MAIL_USERNAME="..." etc.
 # - JAMÁS commitear la app password real / secrets.
+# - Flyway desactivado temporalmente: reactivar cuando exista `flyway-mysql` y migraciones en db/migration.

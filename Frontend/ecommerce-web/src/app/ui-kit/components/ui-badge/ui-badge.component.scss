@@ -1,0 +1,35 @@
+$gray-700: #344054;
+$gray-100: #f2f4f7;
+$success: #2e7d32;
+$success-bg: #e6f4ea;
+$info: #01579b;
+$info-bg: #e1f3ff;
+$warning: #b26a00;
+$warning-bg: #fff4e0;
+$danger: #c62828;
+$danger-bg: #fdecea;
+
+.ui-badge {
+  display: inline-flex;
+  align-items: center;
+  font-weight: 500;
+  font-size: 0.65rem;
+  line-height: 1;
+  padding: 0.35rem 0.45rem;
+  border-radius: 4px;
+  letter-spacing: 0.25px;
+  text-transform: uppercase;
+  background: $gray-100;
+  color: $gray-700;
+  white-space: nowrap;
+
+  &.ui-badge--sm { font-size: 0.55rem; padding: 0.25rem 0.4rem; }
+  &.ui-badge--md { font-size: 0.65rem; }
+
+  &.ui-badge--pill { border-radius: 12px; }
+
+  &.ui-badge--success { background: $success-bg; color: $success; }
+  &.ui-badge--info { background: $info-bg; color: $info; }
+  &.ui-badge--warning { background: $warning-bg; color: $warning; }
+  &.ui-badge--danger { background: $danger-bg; color: $danger; }
+}

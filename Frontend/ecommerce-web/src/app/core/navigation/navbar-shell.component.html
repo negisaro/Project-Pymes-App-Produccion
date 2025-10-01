@@ -1,0 +1,17 @@
+<nav class="nav" aria-label="Principal">
+  <div class="nav__inner">
+  <button class="nav__burger" (click)="toggleMobile()" aria-label="Menú" [attr.aria-expanded]="mobileOpen()" aria-controls="nav-drawer">☰</button>
+    <app-navbar-brand></app-navbar-brand>
+    <app-navbar-search class="nav__search"></app-navbar-search>
+    <app-navbar-links class="nav__links d-none-md"></app-navbar-links>
+    <div class="nav__actions">
+      <app-navbar-theme-toggle></app-navbar-theme-toggle>
+      <app-navbar-cart-indicator [count]="cart.count()" (openRequested)="cartOpen = true"></app-navbar-cart-indicator>
+      <app-navbar-user-menu></app-navbar-user-menu>
+    </div>
+  </div>
+  <div id="nav-drawer" class="nav__drawer" *ngIf="mobileOpen()" (keydown.escape)="closeMobile()">
+    <app-navbar-links (navigate)="closeMobile()"></app-navbar-links>
+  </div>
+  <app-cart-flyout [(open)]="cartOpen"></app-cart-flyout>
+</nav>

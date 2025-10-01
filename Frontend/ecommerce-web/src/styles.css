@@ -1,9 +1,2 @@
 
-@import 'bootstrap-icons/font/bootstrap-icons.css';
-html, body {
-	width: 100%;
-	min-width: 0;
-	overflow-x: hidden !important;
-	box-sizing: border-box;
-}
-/* You can add global styles to this file, and also import other style files */
+/* Migrado a styles.scss + assets/styles/_base.scss */

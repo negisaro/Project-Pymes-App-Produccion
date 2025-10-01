@@ -2,12 +2,17 @@ package com.nelson.project.msvc_usuario.msvc_usuario.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.nelson.project.msvc_usuario.msvc_usuario.model.domain.UsuarioDomainValidator;
+import com.nelson.project.msvc_usuario.msvc_usuario.model.valueobject.EmailAddress;
+import com.nelson.project.msvc_usuario.msvc_usuario.model.valueobject.Username;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
@@ -16,12 +21,12 @@ import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -31,12 +36,24 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "usuarios")
+@Table(
+  name = "usuarios",
+  indexes = {
+    @Index(name = "idx_usuario_email", columnList = "email"),
+    @Index(name = "idx_usuario_username", columnList = "username"),
+  },
+  uniqueConstraints = {
+    @UniqueConstraint(name = "uk_usuario_email", columnNames = "email"),
+    @UniqueConstraint(name = "uk_usuario_username", columnNames = "username"),
+  }
+)
 @EntityListeners(AuditingEntityListener.class)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 public class Usuario extends AuditableEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @EqualsAndHashCode.Include
   private Long id;
 
   @NotBlank
@@ -50,7 +67,7 @@ public class Usuario extends AuditableEntity {
   //@ExistsByUsername
   @NotBlank
   @Size(min = 4, max = 20)
-  @Column(unique = true, nullable = false)
+  @Column(nullable = false)
   private String username;
 
   @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
@@ -60,11 +77,11 @@ public class Usuario extends AuditableEntity {
 
   @NotBlank
   @Email
-  @Column(unique = true, nullable = false)
+  @Column(nullable = false)
   private String email;
 
   @JsonIgnoreProperties({ "usuarios", "handler", "hibernateLazyInitializer" })
-  @ManyToMany
+  @ManyToMany(fetch = FetchType.LAZY)
   @JoinTable(
     name = "user_roles",
     joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
@@ -81,12 +98,6 @@ public class Usuario extends AuditableEntity {
   @Builder.Default
   @Column(nullable = false)
   private boolean active = true;
-
-  @Column(name = "reset_token")
-  private String resetToken;
-
-  @Column(name = "reset_token_expiry")
-  private LocalDateTime resetTokenExpiry;
 
   // Métodos para manipular roles de forma controlada (encapsulamiento)
   public void addRol(Rol rol) {
@@ -105,7 +116,8 @@ public class Usuario extends AuditableEntity {
 
   // Métodos de actualización controlada para atributos sensibles
   public void updatePassword(String newPassword) {
-    if (newPassword != null && !newPassword.isBlank()) {
+    if (newPassword != null) {
+      UsuarioDomainValidator.validatePassword(newPassword);
       this.password = newPassword;
     }
   }
@@ -115,7 +127,8 @@ public class Usuario extends AuditableEntity {
    * @param newName Nuevo nombre (no nulo ni vacío)
    */
   public void updateName(String newName) {
-    if (newName != null && !newName.isBlank()) {
+    if (newName != null) {
+      UsuarioDomainValidator.validateName(newName);
       this.name = newName;
     }
   }
@@ -125,7 +138,8 @@ public class Usuario extends AuditableEntity {
    * @param newLastname Nuevo apellido (no nulo ni vacío)
    */
   public void updateLastname(String newLastname) {
-    if (newLastname != null && !newLastname.isBlank()) {
+    if (newLastname != null) {
+      UsuarioDomainValidator.validateLastname(newLastname);
       this.lastname = newLastname;
     }
   }
@@ -135,8 +149,8 @@ public class Usuario extends AuditableEntity {
    * @param newUsername Nuevo username (no nulo ni vacío)
    */
   public void updateUsername(String newUsername) {
-    if (newUsername != null && !newUsername.isBlank()) {
-      this.username = newUsername;
+    if (newUsername != null) {
+      this.username = Username.of(newUsername).value();
     }
   }
 
@@ -145,25 +159,9 @@ public class Usuario extends AuditableEntity {
    * @param newEmail Nuevo email (no nulo ni vacío)
    */
   public void updateEmail(String newEmail) {
-    if (newEmail != null && !newEmail.isBlank()) {
-      this.email = newEmail;
+    if (newEmail != null) {
+      this.email = EmailAddress.of(newEmail).value();
     }
-  }
-
-  public String getResetToken() {
-    return resetToken;
-  }
-
-  public void setResetToken(String resetToken) {
-    this.resetToken = resetToken;
-  }
-
-  public LocalDateTime getResetTokenExpiry() {
-    return resetTokenExpiry;
-  }
-
-  public void setResetTokenExpiry(LocalDateTime resetTokenExpiry) {
-    this.resetTokenExpiry = resetTokenExpiry;
   }
 
   public void deactivate() {

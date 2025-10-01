@@ -1,0 +1,120 @@
+// Variables base (podrán migrar a un archivo de tokens futuros)
+$primary: #1976d2;
+$primary-hover: #155a9e;
+$danger: #d32f2f;
+$danger-hover: #b71c1c;
+$gray-100: #f5f5f5;
+$gray-300: #d0d5dd;
+$gray-600: #475467;
+$gray-700: #344054;
+$focus-ring: 0 0 0 3px rgba(25,118,210,0.35);
+
+.ui-btn {
+  --btn-padding-y: 0.55rem;
+  --btn-padding-x: 1.1rem;
+  --btn-font-size: 0.95rem;
+  --btn-radius: 6px;
+  --btn-transition: 0.18s ease-in-out;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  border-radius: var(--btn-radius);
+  padding: var(--btn-padding-y) var(--btn-padding-x);
+  font-size: var(--btn-font-size);
+  line-height: 1.2;
+  cursor: pointer;
+  user-select: none;
+  border: 1px solid transparent;
+  background: $primary;
+  color: #fff;
+  transition: background var(--btn-transition), color var(--btn-transition), box-shadow var(--btn-transition);
+
+  &:hover:not(.ui-btn--disabled):not(.ui-btn--loading) {
+    background: $primary-hover;
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: $focus-ring;
+  }
+
+  &.ui-btn--secondary {
+    background: $gray-100;
+    color: $gray-700;
+    border-color: $gray-300;
+
+    &:hover:not(.ui-btn--disabled):not(.ui-btn--loading) {
+      background: #e4e7ec;
+    }
+  }
+
+  &.ui-btn--outline {
+    background: transparent;
+    color: $primary;
+    border-color: $primary;
+
+    &:hover:not(.ui-btn--disabled):not(.ui-btn--loading) {
+      background: rgba(25,118,210,0.07);
+    }
+  }
+
+  &.ui-btn--danger {
+    background: $danger;
+
+    &:hover:not(.ui-btn--disabled):not(.ui-btn--loading) {
+      background: $danger-hover;
+    }
+  }
+
+  &.ui-btn--link {
+    background: transparent;
+    color: $primary;
+    border-color: transparent;
+    padding-left: 0;
+    padding-right: 0;
+
+    &:hover:not(.ui-btn--disabled):not(.ui-btn--loading) {
+      text-decoration: underline;
+      background: transparent;
+    }
+  }
+
+  &.ui-btn--sm {
+    --btn-padding-y: 0.35rem;
+    --btn-padding-x: 0.75rem;
+    --btn-font-size: 0.75rem;
+  }
+
+  &.ui-btn--lg {
+    --btn-padding-y: 0.75rem;
+    --btn-padding-x: 1.4rem;
+    --btn-font-size: 1.05rem;
+  }
+
+  &.ui-btn--loading {
+    cursor: progress;
+    opacity: 0.85;
+  }
+
+  &.ui-btn--disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  .ui-btn__spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.6);
+    border-top-color: #fff;
+    border-radius: 50%;
+    margin-right: 6px;
+    animation: spin 0.75s linear infinite;
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

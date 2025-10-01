@@ -1,0 +1,57 @@
+@use './design-system/theme/index';
+
+html, body {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  background: var(--color-bg);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+body.theme-transition * { transition: background-color .25s, color .25s, border-color .25s; }
+
+h1,h2,h3,h4,h5 { font-weight: 600; line-height: 1.15; }
+
+.ui-btn {
+  --_bg: var(--color-primary);
+  --_bg-hover: var(--color-primary-hover);
+  --_color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--btn-height);
+  padding: 0 var(--btn-padding-x);
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  background: var(--_bg);
+  color: var(--_color);
+  border: 1px solid transparent;
+  box-shadow: var(--shadow-sm);
+  transition: background .18s, box-shadow .18s, transform .15s;
+}
+.ui-btn:hover { background: var(--_bg-hover); }
+.ui-btn:active { transform: translateY(1px); }
+.ui-btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.ui-btn.outline { background: transparent; color: var(--color-primary); border-color: var(--color-primary); }
+.ui-btn.outline:hover { background: rgba(37,99,235,.08); }
+.ui-btn.subtle { background: var(--color-surface-alt); color: var(--color-text); }
+.ui-btn.subtle:hover { background: var(--color-surface); }
+.ui-btn.danger { --_bg: var(--color-danger); --_bg-hover: #e11d48; }
+.ui-btn.ghost { background: transparent; color: var(--color-text-muted); }
+.ui-btn.ghost:hover { color: var(--color-text); background: rgba(255,255,255,.05); }
+.ui-btn.loading { pointer-events: none; opacity: .7; }
+
+.ui-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--card-radius);
+  padding: var(--card-padding);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow .2s, transform .2s, border-color .2s;
+}
+.ui-card:hover { box-shadow: var(--shadow-md); border-color: var(--color-border-strong); }
+.ui-card--interactive { cursor: pointer; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition: none !important; }
+}

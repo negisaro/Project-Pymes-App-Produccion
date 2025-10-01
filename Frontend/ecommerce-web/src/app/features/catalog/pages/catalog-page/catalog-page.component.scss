@@ -1,0 +1,5 @@
+.catalog{padding:var(--space-7) var(--space-6) var(--space-10);}
+.catalog__header{margin-bottom:var(--space-6);}
+.catalog__grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:var(--space-5);}
+.skeleton{height:260px;border-radius:var(--radius-md);background:linear-gradient(110deg,var(--color-bg-subtle) 8%,var(--color-bg-elevated) 18%,var(--color-bg-subtle) 33%);background-size:200% 100%;animation:shimmer 1.2s linear infinite;}
+@keyframes shimmer{to{background-position:-200% 0;}}

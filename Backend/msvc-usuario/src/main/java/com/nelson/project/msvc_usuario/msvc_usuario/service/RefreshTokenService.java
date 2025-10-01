@@ -1,55 +1,108 @@
 package com.nelson.project.msvc_usuario.msvc_usuario.service;
 
-import com.nelson.project.msvc_usuario.msvc_usuario.mapper.RefreshTokenMapper;
-import com.nelson.project.msvc_usuario.msvc_usuario.model.dto.RefreshTokenDto;
+import com.nelson.project.msvc_usuario.msvc_usuario.exception.CustomException;
+import com.nelson.project.msvc_usuario.msvc_usuario.exception.ErrorCodes;
 import com.nelson.project.msvc_usuario.msvc_usuario.model.entity.RefreshToken;
 import com.nelson.project.msvc_usuario.msvc_usuario.repository.RefreshTokenRepository;
+import com.nelson.project.msvc_usuario.msvc_usuario.security.TokenJwtConfig;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
+@Slf4j
 public class RefreshTokenService {
 
-  @Value("${jwt.refresh.expiration.ms:604800000}") // 7 días por defecto
-  private Long refreshTokenDurationMs;
-
-  private final RefreshTokenRepository refreshTokenRepository;
-
-  private final RefreshTokenMapper refreshTokenMapper;
+  private final RefreshTokenRepository repository;
+  private final TokenJwtConfig tokenJwtConfig;
 
   public RefreshTokenService(
-    RefreshTokenRepository refreshTokenRepository,
-    RefreshTokenMapper refreshTokenMapper
+    RefreshTokenRepository repository,
+    TokenJwtConfig tokenJwtConfig
   ) {
-    this.refreshTokenRepository = refreshTokenRepository;
-    this.refreshTokenMapper = refreshTokenMapper;
+    this.repository = repository;
+    this.tokenJwtConfig = tokenJwtConfig;
   }
 
-  public RefreshTokenDto createRefreshToken(String username) {
-    RefreshToken refreshToken = new RefreshToken();
-    refreshToken.setUsername(username);
-    refreshToken.setExpiryDate(
-      Instant.now().plusMillis(refreshTokenDurationMs)
+  public RefreshToken generate(String username) {
+    log.debug(
+      "[RefreshTokenService] Generando refresh token para usuario={}",
+      username
     );
-    refreshToken.setToken(UUID.randomUUID().toString());
-    RefreshToken saved = refreshTokenRepository.save(refreshToken);
-    return refreshTokenMapper.toDto(saved);
+    RefreshToken rt = new RefreshToken();
+    rt.setUsername(username);
+    rt.setToken(UUID.randomUUID().toString());
+    rt.setExpiryDate(
+      Instant.now()
+        .plus(tokenJwtConfig.getRefreshExpirationMinutes(), ChronoUnit.MINUTES)
+    );
+    RefreshToken saved = repository.save(rt);
+    log.trace(
+      "[RefreshTokenService] Token generado id={}, expira={} ",
+      saved.getId(),
+      saved.getExpiryDate()
+    );
+    return saved;
   }
 
-  public Optional<RefreshTokenDto> findByToken(String token) {
-    return refreshTokenRepository
-      .findByToken(token)
-      .map(refreshTokenMapper::toDto);
+  public Optional<RefreshToken> findEntityByToken(String token) {
+    return repository.findByToken(token);
   }
 
-  public boolean isExpired(RefreshTokenDto tokenDto) {
-    return tokenDto.getExpiryDate().isBefore(Instant.now());
+  public RefreshToken validateUsableOrThrow(RefreshToken rt) {
+    if (rt.isRevoked()) {
+      log.debug(
+        "[RefreshTokenService] Token revocado username={} token={}",
+        rt.getUsername(),
+        rt.getToken()
+      );
+      throw new CustomException(
+        "Refresh token revocado",
+        400,
+        ErrorCodes.INVALID_TOKEN
+      );
+    }
+    if (rt.getExpiryDate().isBefore(Instant.now())) {
+      log.debug(
+        "[RefreshTokenService] Token expirado username={} token={}",
+        rt.getUsername(),
+        rt.getToken()
+      );
+      throw new CustomException(
+        "Refresh token expirado",
+        400,
+        ErrorCodes.INVALID_TOKEN
+      );
+    }
+    return rt;
   }
 
-  public void deleteByUsername(String username) {
-    refreshTokenRepository.deleteByUsername(username);
+  public RefreshToken rotate(RefreshToken oldToken) {
+    log.debug(
+      "[RefreshTokenService] Rotando refresh token para username={}",
+      oldToken.getUsername()
+    );
+    oldToken.setRevoked(true);
+    repository.save(oldToken);
+    RefreshToken nuevo = generate(oldToken.getUsername());
+    log.trace(
+      "[RefreshTokenService] Rotación completada oldToken={} newToken={}",
+      oldToken.getToken(),
+      nuevo.getToken()
+    );
+    return nuevo;
+  }
+
+  public void revokeAllForUser(String username) {
+    log.info(
+      "[RefreshTokenService] Revocando todos los refresh tokens para usuario={}",
+      username
+    );
+    repository.deleteByUsername(username);
   }
 }

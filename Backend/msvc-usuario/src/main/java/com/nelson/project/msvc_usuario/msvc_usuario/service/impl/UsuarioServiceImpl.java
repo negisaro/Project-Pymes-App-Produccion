@@ -5,19 +5,16 @@ import com.nelson.project.msvc_usuario.msvc_usuario.exception.ErrorCodes;
 import com.nelson.project.msvc_usuario.msvc_usuario.mapper.UsuarioMapper;
 import com.nelson.project.msvc_usuario.msvc_usuario.model.dto.UsuarioCreateDto;
 import com.nelson.project.msvc_usuario.msvc_usuario.model.dto.UsuarioDto;
+import com.nelson.project.msvc_usuario.msvc_usuario.model.dto.UsuarioUpdateDto;
 import com.nelson.project.msvc_usuario.msvc_usuario.model.entity.Rol;
 import com.nelson.project.msvc_usuario.msvc_usuario.model.entity.Usuario;
 import com.nelson.project.msvc_usuario.msvc_usuario.repository.RolRepository;
 import com.nelson.project.msvc_usuario.msvc_usuario.repository.UsuarioRepository;
-import com.nelson.project.msvc_usuario.msvc_usuario.service.EmailService;
 import com.nelson.project.msvc_usuario.msvc_usuario.service.UsuarioService;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.validation.annotation.Validated;
 
 /**
  * Implementación profesional y escalable del servicio de usuarios.
@@ -32,13 +30,13 @@ import org.springframework.util.StringUtils;
  */
 @Service
 @Slf4j
+@Validated
 public class UsuarioServiceImpl implements UsuarioService {
 
   private final UsuarioRepository usuarioRepository;
   private final RolRepository rolRepository;
   private final PasswordEncoder passwordEncoder;
   private final UsuarioMapper usuarioMapper;
-  private final EmailService emailService;
 
   /**
    * Obtiene todos los usuarios como DTO.
@@ -96,20 +94,11 @@ public class UsuarioServiceImpl implements UsuarioService {
    */
   @Override
   @Transactional
-  public UsuarioDto save(UsuarioCreateDto usuarioCreateDto) {
-    if (
-      usuarioCreateDto == null ||
-      !StringUtils.hasText(usuarioCreateDto.getUsername()) ||
-      !StringUtils.hasText(usuarioCreateDto.getPassword()) ||
-      !StringUtils.hasText(usuarioCreateDto.getEmail()) ||
-      !StringUtils.hasText(usuarioCreateDto.getName()) ||
-      !StringUtils.hasText(usuarioCreateDto.getLastname())
-    ) {
-      throw new CustomException(
-        "Error al actualizar los datos del usuario, verifica los campos obligatorios.",
-        400,
-        ErrorCodes.USER_UPDATE_FAILED
-      );
+  public UsuarioDto save(
+    @jakarta.validation.Valid UsuarioCreateDto usuarioCreateDto
+  ) {
+    if (usuarioCreateDto == null) {
+      throw new CustomException("DTO nulo", 400, ErrorCodes.USER_UPDATE_FAILED);
     }
     if (usuarioRepository.existsByUsername(usuarioCreateDto.getUsername())) {
       throw new CustomException(
@@ -162,20 +151,11 @@ public class UsuarioServiceImpl implements UsuarioService {
    */
   @Override
   @Transactional
-  public UsuarioDto saveWithRoleUser(UsuarioCreateDto usuarioCreateDto) {
-    if (
-      usuarioCreateDto == null ||
-      !StringUtils.hasText(usuarioCreateDto.getUsername()) ||
-      !StringUtils.hasText(usuarioCreateDto.getPassword()) ||
-      !StringUtils.hasText(usuarioCreateDto.getEmail()) ||
-      !StringUtils.hasText(usuarioCreateDto.getName()) ||
-      !StringUtils.hasText(usuarioCreateDto.getLastname())
-    ) {
-      throw new CustomException(
-        "Error al registrar el usuario, verifica los campos obligatorios.",
-        400,
-        ErrorCodes.USER_UPDATE_FAILED
-      );
+  public UsuarioDto saveWithRoleUser(
+    @jakarta.validation.Valid UsuarioCreateDto usuarioCreateDto
+  ) {
+    if (usuarioCreateDto == null) {
+      throw new CustomException("DTO nulo", 400, ErrorCodes.USER_UPDATE_FAILED);
     }
     if (usuarioRepository.existsByUsername(usuarioCreateDto.getUsername())) {
       throw new CustomException(
@@ -214,8 +194,13 @@ public class UsuarioServiceImpl implements UsuarioService {
    */
   @Override
   @Transactional
-  public UsuarioDto update(Long id, UsuarioCreateDto usuarioCreateDto) {
-    validarDatosUsuario(usuarioCreateDto);
+  public UsuarioDto update(
+    Long id,
+    @jakarta.validation.Valid UsuarioUpdateDto usuarioUpdateDto
+  ) {
+    if (usuarioUpdateDto == null) {
+      throw new CustomException("DTO nulo", 400, ErrorCodes.USER_UPDATE_FAILED);
+    }
     Usuario usuario = usuarioRepository
       .findById(id)
       .orElseThrow(() ->
@@ -225,29 +210,23 @@ public class UsuarioServiceImpl implements UsuarioService {
           ErrorCodes.USER_NOT_FOUND
         )
       );
-
-    // Validar si el username está cambiando y ya existe en otro usuario
+    // Username
     if (
-      !usuario.getUsername().equals(usuarioCreateDto.getUsername()) &&
-      usuarioRepository.existsByUsername(usuarioCreateDto.getUsername())
+      usuarioUpdateDto.getUsername() != null &&
+      !usuario.getUsername().equals(usuarioUpdateDto.getUsername()) &&
+      usuarioRepository.existsByUsername(usuarioUpdateDto.getUsername())
     ) {
       throw new CustomException(
-        "El usuario ya existe con ese nombre de usuario o correo electrónico.",
+        "El usuario ya existe con ese nombre de usuario.",
         409,
         ErrorCodes.USER_ALREADY_EXISTS
       );
     }
-    // Validar si el email está cambiando y ya existe en otro usuario
+    // Email
     if (
-      !usuario.getEmail().equals(usuarioCreateDto.getEmail()) &&
-      usuarioRepository
-        .findAll()
-        .stream()
-        .anyMatch(
-          u ->
-            u.getEmail().equals(usuarioCreateDto.getEmail()) &&
-            !u.getId().equals(id)
-        )
+      usuarioUpdateDto.getEmail() != null &&
+      !usuario.getEmail().equals(usuarioUpdateDto.getEmail()) &&
+      usuarioRepository.existsByEmailAndIdNot(usuarioUpdateDto.getEmail(), id)
     ) {
       throw new CustomException(
         "El email ingresado ya está registrado.",
@@ -256,22 +235,27 @@ public class UsuarioServiceImpl implements UsuarioService {
       );
     }
 
-    // Actualizar campos permitidos
-    usuario.updateName(usuarioCreateDto.getName());
-    usuario.updateLastname(usuarioCreateDto.getLastname());
-    usuario.updateUsername(usuarioCreateDto.getUsername());
-    usuario.updateEmail(usuarioCreateDto.getEmail());
-    // Solo actualizar password si viene un valor no vacío
-    if (StringUtils.hasText(usuarioCreateDto.getPassword())) {
+    // Campos simples usando métodos de dominio
+    if (usuarioUpdateDto.getName() != null) {
+      usuario.updateName(usuarioUpdateDto.getName());
+    }
+    if (usuarioUpdateDto.getLastname() != null) {
+      usuario.updateLastname(usuarioUpdateDto.getLastname());
+    }
+    if (usuarioUpdateDto.getUsername() != null) {
+      usuario.updateUsername(usuarioUpdateDto.getUsername());
+    }
+    if (usuarioUpdateDto.getEmail() != null) {
+      usuario.updateEmail(usuarioUpdateDto.getEmail());
+    }
+    if (StringUtils.hasText(usuarioUpdateDto.getPassword())) {
       usuario.updatePassword(
-        passwordEncoder.encode(usuarioCreateDto.getPassword())
+        passwordEncoder.encode(usuarioUpdateDto.getPassword())
       );
     }
-
-    // Actualizar roles si vienen en el DTO
-    if (usuarioCreateDto.getRolesIds() != null) {
+    if (usuarioUpdateDto.getRolesIds() != null) {
       usuario.getRoles().clear();
-      for (Long rolId : usuarioCreateDto.getRolesIds()) {
+      for (Long rolId : usuarioUpdateDto.getRolesIds()) {
         Rol rol = rolRepository
           .findById(rolId)
           .orElseThrow(() ->
@@ -284,9 +268,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuario.addRol(rol);
       }
     }
-
-    Usuario updated = usuarioRepository.save(usuario);
-    return usuarioMapper.toDto(updated);
+    return usuarioMapper.toDto(usuarioRepository.save(usuario));
   }
 
   /**
@@ -294,37 +276,7 @@ public class UsuarioServiceImpl implements UsuarioService {
    * @param usuario datos a validar
    * @throws UsuarioServiceException si algún dato es inválido
    */
-  private void validarDatosUsuario(UsuarioCreateDto usuario) {
-    if (
-      usuario == null ||
-      !StringUtils.hasText(usuario.getUsername()) ||
-      !StringUtils.hasText(usuario.getEmail()) ||
-      !StringUtils.hasText(usuario.getName()) ||
-      !StringUtils.hasText(usuario.getLastname())
-    ) {
-      throw new CustomException(
-        "Error al actualizar los datos del usuario, verifica los campos obligatorios.",
-        400,
-        ErrorCodes.USER_UPDATE_FAILED
-      );
-    }
-    // Email formato básico
-    if (!usuario.getEmail().contains("@") || usuario.getEmail().length() < 5) {
-      throw new CustomException(
-        "El email ingresado ya está registrado.",
-        409,
-        ErrorCodes.EMAIL_ALREADY_REGISTERED
-      );
-    }
-    // Username mínimo 4 caracteres
-    if (usuario.getUsername().length() < 4) {
-      throw new CustomException(
-        "El usuario ya existe con ese nombre de usuario o correo electrónico.",
-        409,
-        ErrorCodes.USER_ALREADY_EXISTS
-      );
-    }
-  }
+  // Método de validación manual eliminado: se delega a Bean Validation (@Valid) y reglas específicas (unicidad, roles requeridos).
 
   /**
    * Elimina un usuario por su ID. Lanza excepción si no existe.
@@ -353,41 +305,6 @@ public class UsuarioServiceImpl implements UsuarioService {
    * @return true si la contraseña fue cambiada correctamente
    * @throws UsuarioServiceException si el token es inválido o datos incompletos
    */
-  @Override
-  @Transactional
-  public boolean resetPassword(String token, String newPassword) {
-    if (!StringUtils.hasText(token) || !StringUtils.hasText(newPassword)) {
-      throw new CustomException(
-        "La contraseña no cumple con los requisitos de seguridad.",
-        400,
-        ErrorCodes.INVALID_PASSWORD
-      );
-    }
-    Usuario usuario = usuarioRepository
-      .findByResetToken(token)
-      .orElseThrow(() ->
-        new CustomException(
-          "Token de recuperación inválido.",
-          404,
-          ErrorCodes.USER_NOT_FOUND
-        )
-      );
-    if (
-      usuario.getResetTokenExpiry() == null ||
-      usuario.getResetTokenExpiry().isBefore(LocalDateTime.now())
-    ) {
-      throw new CustomException(
-        "El token de recuperación ha expirado.",
-        400,
-        ErrorCodes.INVALID_PASSWORD
-      );
-    }
-    usuario.updatePassword(passwordEncoder.encode(newPassword));
-    usuario.setResetToken(null);
-    usuario.setResetTokenExpiry(null);
-    usuarioRepository.save(usuario);
-    return true;
-  }
 
   /**
    * Busca un usuario por su username y lo retorna como DTO. Lanza excepción si no existe.
@@ -443,63 +360,16 @@ public class UsuarioServiceImpl implements UsuarioService {
     return usuarioRepository.existsByUsername(username);
   }
 
-  @Value("${app.reset-password.expiry-minutes:30}")
-  private int resetTokenExpiryMinutes;
-
   public UsuarioServiceImpl(
     UsuarioRepository usuarioRepository,
     RolRepository rolRepository,
     PasswordEncoder passwordEncoder,
-    UsuarioMapper usuarioMapper,
-    EmailService emailService
+    UsuarioMapper usuarioMapper
   ) {
     this.usuarioRepository = usuarioRepository;
     this.rolRepository = rolRepository;
     this.passwordEncoder = passwordEncoder;
     this.usuarioMapper = usuarioMapper;
-    this.emailService = emailService;
   }
-
-  @Override
-  @Transactional
-  public void sendPasswordResetToken(String email) {
-    Usuario usuario = usuarioRepository
-      .findByEmail(email)
-      .orElseThrow(() ->
-        new CustomException(
-          "No se encontró el usuario con ese email.",
-          404,
-          ErrorCodes.USER_NOT_FOUND
-        )
-      );
-    String token = UUID.randomUUID().toString();
-    usuario.setResetToken(token);
-    usuario.setResetTokenExpiry(
-      LocalDateTime.now().plusMinutes(resetTokenExpiryMinutes)
-    );
-    usuarioRepository.save(usuario);
-    try {
-      emailService.sendPasswordResetToken(
-        usuario.getEmail(),
-        token,
-        resetTokenExpiryMinutes
-      );
-      log.info(
-        "[UsuarioService] Token de recuperación enviado a {}",
-        usuario.getEmail()
-      );
-    } catch (Exception e) {
-      log.error(
-        "[UsuarioService] Error enviando token de recuperación a {}: {}",
-        usuario.getEmail(),
-        e.getMessage(),
-        e
-      );
-      throw new CustomException(
-        "No se pudo enviar el email de recuperación. Intenta más tarde.",
-        500,
-        ErrorCodes.EMAIL_SEND_ERROR
-      );
-    }
-  }
+  // Métodos legacy de recuperación de contraseña eliminados. Ahora se usa PasswordRecoveryService.
 }

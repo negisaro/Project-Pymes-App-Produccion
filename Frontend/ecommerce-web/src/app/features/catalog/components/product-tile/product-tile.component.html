@@ -1,0 +1,14 @@
+<article class="p-tile" [routerLink]="['/producto', product.id]" (keydown.enter)="view.emit(product)" tabindex="0">
+  <div class="p-tile__media">
+    <img *ngIf="product.image; else ph" [src]="product.image" [alt]="product.name" loading="lazy" />
+    <ng-template #ph>
+      <div class="p-tile__ph" aria-hidden="true"></div>
+    </ng-template>
+    <span *ngIf="product.badge" class="p-tile__badge">{{ product.badge }}</span>
+  </div>
+  <div class="p-tile__body">
+    <h3 class="p-tile__title">{{ product.name }}</h3>
+    <div class="p-tile__price">{{ product.price | currency:'USD' }}</div>
+    <button type="button" class="btn btn--sm" (click)="$event.stopPropagation(); add();">Añadir</button>
+  </div>
+</article>

@@ -3,11 +3,13 @@ services:
   eureka-server:
     build: ./backend/eureka-server
     container_name: eureka-server
+    env_file: .env
     ports:
       - "8761:8761"
     environment:
-      EUREKA_DASHBOARD_PASSWORD: ${EUREKA_DASHBOARD_PASSWORD}
+      # SPRING_PROFILES_ACTIVE ya viene de .env; permitir override si se necesita
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      EUREKA_DASHBOARD_PASSWORD: ${EUREKA_DASHBOARD_PASSWORD}
     healthcheck:
       test: ["CMD", "curl", "-kf", "http://localhost:8761/actuator/health"]
       interval: 30s
@@ -17,15 +19,10 @@ services:
   gateway:
     build: ./backend/gateway
     container_name: gateway
+    env_file: .env
     ports:
       - "8080:8080"
-    environment:
-      GATEWAY_DASHBOARD_PASSWORD: ${GATEWAY_DASHBOARD_PASSWORD}
-      GATEWAY_JWT_SECRET: ${GATEWAY_JWT_SECRET}
-      REDIS_HOST: ${REDIS_HOST}
-      REDIS_PORT: ${REDIS_PORT}
-      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+    # Notas: Variables JWT (GATEWAY_JWT_SECRET, expiración, issuer, audience) se inyectan desde .env
     depends_on:
       - eureka-server
       - redis
@@ -40,6 +37,7 @@ services:
   redis:
     image: redis:7.2-alpine
     container_name: redis
+    env_file: .env
     ports:
       - "6379:6379"
     healthcheck:
@@ -51,6 +49,7 @@ services:
   db:
     image: mysql:8.0
     container_name: db
+    env_file: .env
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -69,23 +68,12 @@ services:
   usuario:
     build: ./backend/msvc-usuario
     container_name: msvc-usuario
+    env_file: .env
     ports:
       - "8081:8081"
     environment:
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_HOST: ${MYSQL_HOST}
-      MYSQL_PORT: ${MYSQL_PORT}
-      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
-      GATEWAY_JWT_SECRET: ${GATEWAY_JWT_SECRET}
-      MAIL_HOST: ${MAIL_HOST}
-      MAIL_PORT: ${MAIL_PORT}
-      MAIL_USERNAME: ${MAIL_USERNAME}
-      MAIL_PASSWORD: ${MAIL_PASSWORD}
-      MAIL_DEBUG: ${MAIL_DEBUG}
-      FRONTEND_URL: ${FRONTEND_URL}
+      # Override host de DB al nombre del servicio interno
+      MYSQL_HOST: db
     depends_on:
       db:
         condition: service_healthy
@@ -100,17 +88,11 @@ services:
   carrito:
     build: ./backend/msvc-carrito
     container_name: msvc-carrito
+    env_file: .env
     ports:
       - "8082:8082"
     environment:
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_HOST: ${MYSQL_HOST}
-      MYSQL_PORT: ${MYSQL_PORT}
-      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
-      GATEWAY_JWT_SECRET: ${GATEWAY_JWT_SECRET}
+      MYSQL_HOST: db
     depends_on:
       db:
         condition: service_healthy
@@ -125,17 +107,11 @@ services:
   categoria:
     build: ./backend/msvc-categoria
     container_name: msvc-categoria
+    env_file: .env
     ports:
       - "8083:8083"
     environment:
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_HOST: ${MYSQL_HOST}
-      MYSQL_PORT: ${MYSQL_PORT}
-      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
-      GATEWAY_JWT_SECRET: ${GATEWAY_JWT_SECRET}
+      MYSQL_HOST: db
     depends_on:
       db:
         condition: service_healthy
@@ -150,17 +126,11 @@ services:
   proveedor:
     build: ./backend/msvc-proveedor
     container_name: msvc-proveedor
+    env_file: .env
     ports:
       - "8084:8084"
     environment:
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_HOST: ${MYSQL_HOST}
-      MYSQL_PORT: ${MYSQL_PORT}
-      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
-      GATEWAY_JWT_SECRET: ${GATEWAY_JWT_SECRET}
+      MYSQL_HOST: db
     depends_on:
       db:
         condition: service_healthy
@@ -175,17 +145,11 @@ services:
   producto:
     build: ./backend/msvc-producto
     container_name: msvc-producto
+    env_file: .env
     ports:
       - "8085:8085"
     environment:
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_HOST: ${MYSQL_HOST}
-      MYSQL_PORT: ${MYSQL_PORT}
-      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
-      GATEWAY_JWT_SECRET: ${GATEWAY_JWT_SECRET}
+      MYSQL_HOST: db
     volumes:
       - ./backend/msvc-producto/uploads:/app/uploads
     depends_on:
@@ -202,17 +166,11 @@ services:
   orden:
     build: ./backend/msvc-orden
     container_name: msvc-orden
+    env_file: .env
     ports:
       - "8086:8086"
     environment:
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_HOST: ${MYSQL_HOST}
-      MYSQL_PORT: ${MYSQL_PORT}
-      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
-      GATEWAY_JWT_SECRET: ${GATEWAY_JWT_SECRET}
+      MYSQL_HOST: db
     depends_on:
       db:
         condition: service_healthy
@@ -227,6 +185,7 @@ services:
   frontend:
     build: ./frontend/ecommerce-web
     container_name: ecommerce-web
+    env_file: .env
     ports:
       - "4200:80"
     depends_on:

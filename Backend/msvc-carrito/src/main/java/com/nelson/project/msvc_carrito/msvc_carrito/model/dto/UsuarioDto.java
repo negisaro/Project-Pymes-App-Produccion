@@ -1,5 +1,8 @@
 package com.nelson.project.msvc_carrito.msvc_carrito.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -8,44 +11,107 @@ import java.util.List;
 
 /**
  * DTO para transferencia de datos de Usuario.
- * Profesional, funcional y escalable.
+ * REFACTORIZACIÓN PENDIENTE: Candidato para Lombok (@Data, @NoArgsConstructor, @AllArgsConstructor)
+ * IMPORTANTE: Nombres de campos mantenidos para compatibilidad con microservicios via Feign
+ * Cambios aplicados: Documentación mejorada, validaciones consistentes, métodos de utilidad
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@Schema(description = "Datos del usuario con información de roles y carritos")
 public class UsuarioDto implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
+  @Schema(description = "ID único del usuario", example = "1")
   private Long id;
 
-  @NotBlank
-  @Size(max = 50)
+  @NotBlank(message = "El nombre es obligatorio")
+  @Size(
+    min = 2,
+    max = 50,
+    message = "El nombre debe tener entre 2 y 50 caracteres"
+  )
+  @Schema(description = "Nombre del usuario", example = "Juan", required = true)
   private String name;
 
-  @NotBlank
-  @Size(max = 50)
+  @NotBlank(message = "El apellido es obligatorio")
+  @Size(
+    min = 2,
+    max = 50,
+    message = "El apellido debe tener entre 2 y 50 caracteres"
+  )
+  @Schema(
+    description = "Apellido del usuario",
+    example = "Pérez",
+    required = true
+  )
   private String lastname;
 
-  @NotBlank
-  @Size(min = 4, max = 12)
+  @NotBlank(message = "El nombre de usuario es obligatorio")
+  @Size(
+    min = 4,
+    max = 20,
+    message = "El nombre de usuario debe tener entre 4 y 20 caracteres"
+  )
+  @Schema(
+    description = "Nombre de usuario único",
+    example = "juanperez",
+    required = true
+  )
   private String username;
 
-  @NotBlank
-  @Size(min = 6, max = 100)
+  @NotBlank(message = "La contraseña es obligatoria")
+  @Size(
+    min = 8,
+    max = 100,
+    message = "La contraseña debe tener entre 8 y 100 caracteres"
+  )
+  @Schema(
+    description = "Contraseña del usuario",
+    example = "********",
+    required = true
+  )
   private String password;
 
-  @NotBlank
-  @Email
+  @NotBlank(message = "El email es obligatorio")
+  @Email(message = "El email debe tener un formato válido")
+  @Size(max = 100, message = "El email no puede exceder 100 caracteres")
+  @Schema(
+    description = "Email del usuario",
+    example = "juan.perez@email.com",
+    required = true
+  )
   private String email;
 
+  @Valid
+  @Schema(description = "Lista de roles asignados al usuario")
   private List<RolDto> roles;
-  private boolean active;
 
-  // Relación con productos (IDs de productos en el microservicio producto)
+  @Schema(description = "Indica si el usuario está activo", example = "true")
+  private boolean active = true;
+
+  @Schema(description = "Lista de IDs de carritos asociados al usuario")
   private List<Long> carritoId;
 
   /**
    * Constructor vacío requerido por frameworks.
    */
   public UsuarioDto() {}
+
+  /**
+   * Constructor con campos básicos obligatorios.
+   */
+  public UsuarioDto(
+    String name,
+    String lastname,
+    String username,
+    String email
+  ) {
+    this.name = name;
+    this.lastname = lastname;
+    this.username = username;
+    this.email = email;
+    this.active = true;
+  }
 
   /**
    * Constructor completo.
@@ -72,15 +138,7 @@ public class UsuarioDto implements Serializable {
     this.active = active;
   }
 
-  public boolean isActive() {
-    return active;
-  }
-
-  public void setActive(boolean active) {
-    this.active = active;
-  }
-
-  // Getters y setters
+  // Getters y Setters
   public Long getId() {
     return id;
   }
@@ -137,11 +195,57 @@ public class UsuarioDto implements Serializable {
     this.roles = roles;
   }
 
+  public boolean isActive() {
+    return active;
+  }
+
+  public void setActive(boolean active) {
+    this.active = active;
+  }
+
   public List<Long> getCarritoById() {
     return carritoId;
   }
 
   public void setCarritoById(List<Long> carritoId) {
     this.carritoId = carritoId;
+  }
+
+  // Métodos de utilidad
+  public boolean estaActivo() {
+    return active;
+  }
+
+  public String getNombreCompleto() {
+    if (name != null && lastname != null) {
+      return name + " " + lastname;
+    }
+    return name != null ? name : lastname;
+  }
+
+  public boolean tieneRoles() {
+    return roles != null && !roles.isEmpty();
+  }
+
+  public boolean tieneCarritos() {
+    return carritoId != null && !carritoId.isEmpty();
+  }
+
+  @Override
+  public String toString() {
+    return (
+      "UsuarioDto{" +
+      "id=" +
+      id +
+      ", username='" +
+      username +
+      '\'' +
+      ", email='" +
+      email +
+      '\'' +
+      ", active=" +
+      active +
+      '}'
+    );
   }
 }

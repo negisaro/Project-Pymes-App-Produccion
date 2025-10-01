@@ -34,12 +34,12 @@ public class UsuarioCreateDto implements Serializable {
 
   /** Nombre de usuario */
   @NotBlank
-  @Size(min = 4, max = 12)
+  @Size(min = 4, max = 20)
   private String username;
 
   /** Contraseña del usuario */
   @NotBlank
-  @Size(min = 6, max = 100)
+  @Size(min = 8, max = 100)
   private String password;
 
   /** Correo electrónico del usuario */

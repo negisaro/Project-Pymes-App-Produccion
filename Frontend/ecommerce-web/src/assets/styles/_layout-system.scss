@@ -1,0 +1,105 @@
+// Layout System
+// Escalable, consistente y desacoplado para layouts principales.
+// Incluye breakpoints, mixins y clases utilitarias.
+
+// -----------------------------
+// Breakpoints (mobile-first)
+// -----------------------------
+$bp-xs: 360px; // micro
+$bp-sm: 600px; // small devices / portrait tablets
+$bp-md: 900px; // tablets / small laptops
+$bp-lg: 1200px; // desktops
+$bp-xl: 1536px; // large wide screens
+
+@mixin respond-max($width) {
+  @media (max-width: $width) { @content; }
+}
+
+// -----------------------------
+// CSS Vars (puente a foundation)
+// -----------------------------
+:root {
+  --layout-content-padding: 2rem;
+  --layout-content-padding-sm: 1.25rem;
+  --layout-content-padding-xs: 1rem;
+  --layout-sidebar-width: 250px;
+  --layout-sidebar-width-collapsed: 72px;
+  --layout-topbar-height: 56px;
+  --layout-z-sidebar: 100;
+  --layout-z-topbar: 110;
+  --layout-bg-surface: var(--color-surface, #ffffff);
+  --layout-bg-app: var(--color-app-bg, #f8f9fa);
+}
+
+// Dark theme overrides (si data-theme ya se usa)
+[data-theme='dark'] {
+  --layout-bg-app: var(--color-app-bg, #0f1115);
+  --layout-bg-surface: var(--color-surface, #181b20);
+}
+
+// -----------------------------
+// Shells base
+// -----------------------------
+.app-shell { // main-layout content wrapper
+  min-height: 100%;
+  width: 100%;
+  padding: var(--layout-content-padding);
+  background: var(--layout-bg-app);
+  @include respond-max($bp-sm) { padding: var(--layout-content-padding-sm); }
+  @include respond-max($bp-xs) { padding: var(--layout-content-padding-xs); }
+}
+
+.layout { // Admin style base
+  display: flex;
+  min-height: 100vh;
+  background: var(--layout-bg-app);
+  &__sidebar {
+    width: var(--layout-sidebar-width);
+    flex: 0 0 var(--layout-sidebar-width);
+    background: var(--layout-bg-surface);
+    border-right: 1px solid var(--color-border, #e2e5e9);
+    position: sticky;
+    top: 0;
+    max-height: 100vh;
+    overflow-y: auto;
+    z-index: var(--layout-z-sidebar);
+    transition: width .25s ease;
+    &.is-collapsed { width: var(--layout-sidebar-width-collapsed); flex-basis: var(--layout-sidebar-width-collapsed); }
+  }
+  &__main { flex: 1 1 auto; display: flex; flex-direction: column; min-width: 0; }
+  &__topbar { height: var(--layout-topbar-height); background: var(--layout-bg-surface); border-bottom: 1px solid var(--color-border, #e2e5e9); display:flex; align-items:center; padding: 0 1rem; position: sticky; top:0; z-index: var(--layout-z-topbar); }
+  &__content { flex:1 1 auto; padding: var(--layout-content-padding); min-width:0; overflow-x:auto; background: var(--layout-bg-surface); @include respond-max($bp-sm){ padding: var(--layout-content-padding-sm); } @include respond-max($bp-xs){ padding: var(--layout-content-padding-xs); } }
+}
+
+// Auth shell
+.auth-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  background: linear-gradient(135deg, var(--color-auth-gradient-start, #f5f7fa), var(--color-auth-gradient-end, #c3cfe2));
+  &__brand { padding: 1rem 1.5rem; }
+  &__card { width: 100%; max-width: 420px; margin: 0 auto; padding: 2rem 2.2rem; background: var(--layout-bg-surface); border-radius: 1rem; box-shadow: 0 4px 24px -6px rgba(0,0,0,.1); display:flex; flex-direction:column; justify-content:center; }
+  &__footer { padding: 1rem; text-align: center; opacity:.85; }
+  @include respond-max($bp-sm) { &__card { padding:1.5rem 1.25rem; max-width: 380px; } }
+  @include respond-max($bp-xs) { &__card { padding:1.25rem 1rem; max-width: 100%; border-radius: .75rem; } }
+}
+
+// Cliente layout (alias modernizado)
+.cliente-layout { display:flex; flex-direction:column; min-height:100vh; background:var(--layout-bg-app); }
+.cliente-main { display:flex; flex:1 1 auto; min-height:0; }
+.cliente-content { flex:1 1 auto; padding: var(--layout-content-padding); background: var(--layout-bg-surface); @include respond-max($bp-sm){ padding: var(--layout-content-padding-sm);} @include respond-max($bp-xs){ padding: var(--layout-content-padding-xs);} }
+.cliente-footer { margin-top:auto; }
+
+// Utilities
+.u-scroll-y { overflow-y:auto; }
+.u-scroll-x { overflow-x:auto; }
+.u-hide-scrollbar { scrollbar-width: none; &::-webkit-scrollbar { display:none; } }
+.u-flex-center { display:flex; align-items:center; justify-content:center; }
+.u-sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); border:0; }
+
+// Responsive helpers
+.hide-md { @media (max-width: $bp-md) { display:none !important; } }
+.show-md { display:none; @media (max-width: $bp-md) { display:initial !important; } }
+
+// Optional future: grid system / spacing scale
+// TODO spacing scale tokens -> var(--space-1) ... var(--space-6)

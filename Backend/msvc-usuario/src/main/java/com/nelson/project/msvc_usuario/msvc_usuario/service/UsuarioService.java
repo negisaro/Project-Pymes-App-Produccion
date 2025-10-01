@@ -1,8 +1,9 @@
-
 package com.nelson.project.msvc_usuario.msvc_usuario.service;
 
 import com.nelson.project.msvc_usuario.msvc_usuario.model.dto.UsuarioCreateDto;
 import com.nelson.project.msvc_usuario.msvc_usuario.model.dto.UsuarioDto;
+import com.nelson.project.msvc_usuario.msvc_usuario.model.dto.UsuarioUpdateDto;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
@@ -38,14 +39,14 @@ public interface UsuarioService {
    * @param usuarioDto usuario DTO a guardar
    * @return usuario DTO guardado
    */
-  UsuarioDto save(UsuarioCreateDto usuarioCreateDto);
+  UsuarioDto save(@Valid UsuarioCreateDto usuarioCreateDto);
 
   /**
    * Actualiza un usuario (DTO).
    * @param usuarioCreateDto usuario DTO a actualizar
    * @return usuario DTO actualizado
    */
-  UsuarioDto update(Long id, UsuarioCreateDto usuarioCreateDto);
+  UsuarioDto update(Long id, @Valid UsuarioUpdateDto usuarioUpdateDto);
 
   /**
    * Elimina un usuario por ID.
@@ -84,19 +85,5 @@ public interface UsuarioService {
    * @param usuarioCreateDto usuario DTO a guardar
    * @return usuario DTO guardado
    */
-  UsuarioDto saveWithRoleUser(UsuarioCreateDto usuarioCreateDto);
-
-  /**
-   * Restablece la contraseña usando un token y la nueva contraseña.
-   * @param token Token de recuperación
-   * @param newPassword Nueva contraseña
-   * @return true si la contraseña fue cambiada correctamente
-   */
-  boolean resetPassword(String token, String newPassword);
-
-    /**
-   * Envía un token de recuperación de contraseña al email del usuario.
-   * @param email Email del usuario
-   */
-  void sendPasswordResetToken(String email);
+  UsuarioDto saveWithRoleUser(@Valid UsuarioCreateDto usuarioCreateDto);
 }

@@ -1,0 +1,21 @@
+// Raw color palette tokens
+$blue-50: #eff6ff;
+$blue-600: #2563eb;
+$blue-700: #1d4ed8;
+$indigo-500: #6366f1;
+$violet-500: #8b5cf6;
+$slate-800: #1e293b;
+$slate-900: #0f172a;
+$gray-100: #f5f7fa;
+$gray-300: #e2e8f0;
+$gray-500: #64748b;
+$gray-700: #334155;
+$gray-900: #0f1115;
+$emerald-500: #10b981;
+$rose-500: #f43f5e;
+$amber-500: #f59e0b;
+$white: #ffffff;
+$black: #000000;
+
+$gradient-primary: linear-gradient(90deg, $blue-600, $indigo-500 55%, $violet-500);
+$gradient-accent: linear-gradient(120deg, $amber-500, $rose-500);

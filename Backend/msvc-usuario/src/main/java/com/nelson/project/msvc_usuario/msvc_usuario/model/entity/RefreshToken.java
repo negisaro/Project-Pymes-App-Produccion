@@ -4,6 +4,10 @@ import jakarta.persistence.*;
 import java.time.Instant;
 
 @Entity
+@Table(
+  name = "refresh_token",
+  indexes = { @Index(name = "idx_refresh_username", columnList = "username") }
+)
 public class RefreshToken {
 
   @Id
@@ -18,6 +22,17 @@ public class RefreshToken {
 
   @Column(nullable = false)
   private Instant expiryDate;
+
+  @Column(nullable = false)
+  private boolean revoked = false;
+
+  @Column(nullable = false, updatable = false)
+  private Instant createdAt;
+
+  @PrePersist
+  void prePersist() {
+    if (createdAt == null) createdAt = Instant.now();
+  }
 
   // Getters y setters
   public Long getId() {
@@ -50,5 +65,21 @@ public class RefreshToken {
 
   public void setExpiryDate(Instant expiryDate) {
     this.expiryDate = expiryDate;
+  }
+
+  public boolean isRevoked() {
+    return revoked;
+  }
+
+  public void setRevoked(boolean revoked) {
+    this.revoked = revoked;
+  }
+
+  public Instant getCreatedAt() {
+    return createdAt;
+  }
+
+  public void setCreatedAt(Instant createdAt) {
+    this.createdAt = createdAt;
   }
 }

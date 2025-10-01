@@ -31,6 +31,8 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
    */
   boolean existsByUsername(String username);
 
+  boolean existsByEmailAndIdNot(String email, Long id);
+
   /**
    * Cuenta la cantidad de usuarios que tienen un rol específico por nombre de rol.
    * @param rolName nombre del rol
@@ -40,11 +42,4 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     "SELECT COUNT(u) FROM Usuario u JOIN u.roles r WHERE r.name = :rolName"
   )
   long countByRolName(String rolName);
-
-  /**
-   * Busca un usuario por su token de recuperación de contraseña.
-   * @param resetToken token de recuperación
-   * @return usuario encontrado o vacío
-   */
-  Optional<Usuario> findByResetToken(String resetToken);
 }

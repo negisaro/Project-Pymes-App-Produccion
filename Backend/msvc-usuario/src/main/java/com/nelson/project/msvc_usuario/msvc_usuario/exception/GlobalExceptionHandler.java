@@ -65,7 +65,7 @@ public class GlobalExceptionHandler {
           "status",
           400,
           "error",
-          "VALIDATION_ERROR",
+          ErrorCodes.VALIDATION_ERROR,
           "message",
           "Error de validación en uno o más campos.",
           "validationErrors",

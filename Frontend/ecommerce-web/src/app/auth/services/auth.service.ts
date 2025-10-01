@@ -113,41 +113,76 @@ export class AuthService {
   login(username: string, password: string): Observable<boolean> {
     const url = `${this.baseUrl}/api/public/auth/login`;
     const body = { username, password };
-    return this.http.post<any>(url, body).pipe(
-      map((res) => {
-        const usuario = res.usuario || res;
-        const token = res.token || res.token;
-        if (!usuario || !token) {
+    return this.http.post<any>(url, body, { observe: 'response' }).pipe(
+      map((httpRes) => {
+        const res = httpRes.body || {};
+        console.debug('[AUTH][LOGIN][HTTP_STATUS]', httpRes.status);
+        console.debug('[AUTH][LOGIN][HEADERS]', this.headersToObject(httpRes.headers));
+        console.debug('[AUTH][LOGIN][RAW_BODY]', res);
+
+        const headerAuth = httpRes.headers.get('Authorization');
+        let tokenFromHeader = headerAuth && /Bearer\s+/i.test(headerAuth) ? headerAuth.replace(/Bearer\s+/i,'').trim() : null;
+        // Nuevo formato: accessToken en body
+        const token = res?.accessToken || res?.token || tokenFromHeader || null;
+        if (!token) {
+          console.warn('[AUTH][LOGIN] No token presente ni en body ni en header Authorization');
+        } else {
+          const payload = this.decodeJwt(token);
+          console.debug('[AUTH][LOGIN][JWT_PAYLOAD]', payload);
+          console.debug('[AUTH][LOGIN][JWT_PAYLOAD.roles]', payload?.roles || payload?.authorities);
+        }
+        // Nuevo formato: roles y username top-level
+        const baseUser = res?.usuario || res?.user || {
+          username: res?.username,
+          roles: res?.roles,
+          email: res?.email,
+          name: res?.name,
+          lastname: res?.lastname,
+          active: res?.active,
+          id: res?.id
+        };
+        console.debug('[AUTH][LOGIN][USUARIO_RESUELTO]', baseUser);
+        console.debug('[AUTH][LOGIN][USUARIO_RESUELTO.roles]', baseUser?.roles);
+        if (!baseUser || !token) {
           return false;
         }
-        const roles: Role[] = Array.isArray(usuario.roles)
-          ? usuario.roles.map((r: any) => {
+
+        const rawRoles = baseUser.roles || baseUser.authorities || [];
+        const roles: Role[] = Array.isArray(rawRoles)
+          ? rawRoles.map((r: any) => {
               if (typeof r === 'string') {
                 const arr = toRoleArray([r]);
                 return arr.length > 0 ? arr[0] : undefined;
               } else {
                 return {
-                  id: Number(r.id),
-                  name: r.name,
-                  active: r.active ?? true
-                };
+                  id: Number(r.id) || 0,
+                  name: r.name || r.authority || '',
+                  active: (r.active ?? true)
+                } as Role;
               }
             }).filter((r: unknown): r is Role => r !== undefined)
           : [];
         const user: User = {
-          id: Number(usuario.id),
-          name: usuario.name,
-          lastname: usuario.lastname,
-          email: usuario.email || '',
-          username: usuario.username,
+          id: Number(baseUser.id) || 0,
+          name: baseUser.name || '',
+          lastname: baseUser.lastname || '',
+          email: baseUser.email || '',
+            username: baseUser.username || username,
           password: '',
-          active: usuario.active ?? true,
+          active: baseUser.active ?? true,
           roles
         };
         return this.setAuthentication(user, token);
       }),
       catchError((err) => this.handleError(err, 'Error de autenticación'))
     );
+  }
+
+  /** Convierte HttpHeaders a objeto plano para log */
+  private headersToObject(headers: HttpHeaders): Record<string,string> {
+    const obj: Record<string,string> = {};
+    headers.keys().forEach(k => { obj[k] = headers.get(k)!; });
+    return obj;
   }
 
   /** Verifica el estado de autenticación usando el token almacenado */
@@ -164,31 +199,48 @@ export class AuthService {
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     return this.http.get<any>(url, { headers }).pipe(
       map((res) => {
-        const usuario = res.usuario;
-        const newToken = res.token || token;
+        console.debug('[AUTH][CHECK_AUTH][RAW_RESPONSE]', res);
+        const newToken = res.accessToken || res.token || token;
+        const usuario = res.usuario || res.user || {
+          username: res?.username,
+          roles: res?.roles,
+          email: res?.email,
+          name: res?.name,
+          lastname: res?.lastname,
+          active: res?.active,
+          id: res?.id
+        };
+        console.debug('[AUTH][CHECK_AUTH][USUARIO_RESUELTO]', usuario);
+        console.debug('[AUTH][CHECK_AUTH][USUARIO_RESUELTO.roles]', usuario?.roles);
+        if (newToken) {
+          const payload = this.decodeJwt(newToken);
+          console.debug('[AUTH][CHECK_AUTH][JWT_PAYLOAD]', payload);
+          console.debug('[AUTH][CHECK_AUTH][JWT_PAYLOAD.roles]', payload?.roles || payload?.authorities);
+        }
         if (!usuario || !newToken) {
           this.logout();
           this._authStatus$.next(AuthStatus.notAuthenticated);
           return false;
         }
-        const roles: Role[] = Array.isArray(usuario.roles)
-          ? usuario.roles.map((r: any) => {
+        const rawRoles = usuario.roles || usuario.authorities || [];
+        const roles: Role[] = Array.isArray(rawRoles)
+          ? rawRoles.map((r: any) => {
               if (typeof r === 'string') {
                 const arr = toRoleArray([r]);
                 return arr.length > 0 ? arr[0] : undefined;
               } else {
                 return {
-                  id: Number(r.id),
-                  name: r.name,
+                  id: Number(r.id) || 0,
+                  name: r.name || r.authority || '',
                   active: r.active ?? true
-                };
+                } as Role;
               }
             }).filter((r: unknown): r is Role => r !== undefined)
           : [];
         const user: User = {
-          id: Number(usuario.id),
-          name: usuario.name,
-          lastname: usuario.lastname,
+          id: Number(usuario.id) || 0,
+          name: usuario.name || '',
+          lastname: usuario.lastname || '',
           email: usuario.email || '',
           username: usuario.username,
           password: '',
@@ -280,6 +332,13 @@ export class AuthService {
    */
   getToken(): string | null {
     return this.storage.get<string>('token');
+  }
+
+  /** Actualiza el token en memoria + storage y reprograma el refresh (usado por interceptor) */
+  updateToken(newToken: string): void {
+    if (!newToken) return;
+    this.storage.set('token', newToken);
+    this.scheduleTokenRefresh(newToken);
   }
 
   /** Obtiene los roles disponibles desde el backend */
