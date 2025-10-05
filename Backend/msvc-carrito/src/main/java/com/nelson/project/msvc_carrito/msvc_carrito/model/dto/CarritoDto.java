@@ -3,25 +3,54 @@ package com.nelson.project.msvc_carrito.msvc_carrito.model.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.nelson.project.msvc_carrito.msvc_carrito.model.entity.EstadoCarrito;
+import com.nelson.project.msvc_carrito.msvc_carrito.validation.ValidationGroups;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * DTO completo para transferencia de datos del carrito de compras
  * Incluye validaciones, documentación y campos calculados
+ * MIGRADO A LOMBOK: Implementa Validation Groups para contextos específicos
  */
+@Data
+@Builder(toBuilder = true)
+@NoArgsConstructor
+@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(description = "Datos completos del carrito de compras")
 public class CarritoDto {
 
+  @Null(
+    groups = ValidationGroups.OnCreate.class,
+    message = "El ID debe ser nulo al crear"
+  )
+  @NotNull(
+    groups = {
+      ValidationGroups.OnUpdate.class,
+      ValidationGroups.OnDelete.class,
+      ValidationGroups.OnPayment.class,
+    },
+    message = "El ID es obligatorio para esta operación"
+  )
   @Schema(description = "ID único del carrito", example = "1")
   private Long id;
 
-  @NotNull(message = "El ID del usuario es obligatorio")
+  @NotNull(
+    groups = {
+      ValidationGroups.OnCreate.class,
+      ValidationGroups.OnUpdate.class,
+      ValidationGroups.OnPayment.class,
+    },
+    message = "El ID del usuario es obligatorio"
+  )
   @Positive(message = "El ID del usuario debe ser positivo")
   @Schema(
     description = "ID del usuario propietario del carrito",
@@ -30,11 +59,22 @@ public class CarritoDto {
   )
   private Long usuarioId;
 
-  @NotNull(message = "El estado del carrito es obligatorio")
+  @NotNull(
+    groups = {
+      ValidationGroups.OnCreate.class,
+      ValidationGroups.OnUpdate.class,
+      ValidationGroups.OnCartOperation.class,
+    },
+    message = "El estado del carrito es obligatorio"
+  )
   @Schema(description = "Estado actual del carrito", required = true)
   private EstadoCarrito estado;
 
   @Valid
+  @NotEmpty(
+    groups = ValidationGroups.OnPayment.class,
+    message = "El carrito debe tener items para proceder al pago"
+  )
   @Schema(description = "Lista de items en el carrito")
   private List<ItemCarritoDto> items;
 
@@ -42,6 +82,11 @@ public class CarritoDto {
     value = "0.0",
     inclusive = true,
     message = "El subtotal no puede ser negativo"
+  )
+  @DecimalMin(
+    value = "0.01",
+    groups = ValidationGroups.OnPayment.class,
+    message = "El carrito debe tener un subtotal mayor a 0 para proceder al pago"
   )
   @Digits(
     integer = 10,
@@ -85,6 +130,11 @@ public class CarritoDto {
     inclusive = true,
     message = "El total no puede ser negativo"
   )
+  @DecimalMin(
+    value = "0.01",
+    groups = ValidationGroups.OnPayment.class,
+    message = "El total debe ser mayor a 0 para proceder al pago"
+  )
   @Digits(
     integer = 10,
     fraction = 2,
@@ -94,6 +144,11 @@ public class CarritoDto {
   private BigDecimal total;
 
   @Min(value = 0, message = "La cantidad de items no puede ser negativa")
+  @Min(
+    value = 1,
+    groups = ValidationGroups.OnPayment.class,
+    message = "Debe haber al menos 1 item para proceder al pago"
+  )
   @Schema(description = "Cantidad total de items en el carrito", example = "3")
   private Integer cantidadItems;
 
@@ -141,195 +196,70 @@ public class CarritoDto {
   )
   private Long version;
 
-  // Constructores
-  public CarritoDto() {}
+  // ================================
+  // MÉTODOS DE LÓGICA DE NEGOCIO
+  // ================================
 
-  public CarritoDto(Long usuarioId, EstadoCarrito estado) {
-    this.usuarioId = usuarioId;
-    this.estado = estado;
-  }
-
-  // Getters y Setters
-  public Long getId() {
-    return id;
-  }
-
-  public void setId(Long id) {
-    this.id = id;
-  }
-
-  public Long getUsuarioId() {
-    return usuarioId;
-  }
-
-  public void setUsuarioId(Long usuarioId) {
-    this.usuarioId = usuarioId;
-  }
-
-  public EstadoCarrito getEstado() {
-    return estado;
-  }
-
-  public void setEstado(EstadoCarrito estado) {
-    this.estado = estado;
-  }
-
-  public List<ItemCarritoDto> getItems() {
-    return items;
-  }
-
-  public void setItems(List<ItemCarritoDto> items) {
-    this.items = items;
-  }
-
-  public BigDecimal getSubtotal() {
-    return subtotal;
-  }
-
-  public void setSubtotal(BigDecimal subtotal) {
-    this.subtotal = subtotal;
-  }
-
-  public BigDecimal getTotalDescuentos() {
-    return totalDescuentos;
-  }
-
-  public void setTotalDescuentos(BigDecimal totalDescuentos) {
-    this.totalDescuentos = totalDescuentos;
-  }
-
-  public BigDecimal getTotalImpuestos() {
-    return totalImpuestos;
-  }
-
-  public void setTotalImpuestos(BigDecimal totalImpuestos) {
-    this.totalImpuestos = totalImpuestos;
-  }
-
-  public BigDecimal getTotal() {
-    return total;
-  }
-
-  public void setTotal(BigDecimal total) {
-    this.total = total;
-  }
-
-  public Integer getCantidadItems() {
-    return cantidadItems;
-  }
-
-  public void setCantidadItems(Integer cantidadItems) {
-    this.cantidadItems = cantidadItems;
-  }
-
-  public LocalDateTime getFechaCreacion() {
-    return fechaCreacion;
-  }
-
-  public void setFechaCreacion(LocalDateTime fechaCreacion) {
-    this.fechaCreacion = fechaCreacion;
-  }
-
-  public LocalDateTime getFechaModificacion() {
-    return fechaModificacion;
-  }
-
-  public void setFechaModificacion(LocalDateTime fechaModificacion) {
-    this.fechaModificacion = fechaModificacion;
-  }
-
-  public LocalDateTime getFechaExpiracion() {
-    return fechaExpiracion;
-  }
-
-  public void setFechaExpiracion(LocalDateTime fechaExpiracion) {
-    this.fechaExpiracion = fechaExpiracion;
-  }
-
-  public String getNotas() {
-    return notas;
-  }
-
-  public void setNotas(String notas) {
-    this.notas = notas;
-  }
-
-  public String getCodigoCupon() {
-    return codigoCupon;
-  }
-
-  public void setCodigoCupon(String codigoCupon) {
-    this.codigoCupon = codigoCupon;
-  }
-
-  public String getMoneda() {
-    return moneda;
-  }
-
-  public void setMoneda(String moneda) {
-    this.moneda = moneda;
-  }
-
-  public Long getVersion() {
-    return version;
-  }
-
-  public void setVersion(Long version) {
-    this.version = version;
-  }
-
-  // Métodos de utilidad
+  /**
+   * Verifica si el carrito tiene items
+   */
   public boolean tieneItems() {
     return items != null && !items.isEmpty();
   }
 
+  /**
+   * Verifica si el carrito está vacío
+   */
   public boolean estaVacio() {
     return !tieneItems();
   }
 
+  /**
+   * Verifica si el carrito está activo
+   */
   public boolean estaActivo() {
     return estado == EstadoCarrito.ACTIVO;
   }
 
+  /**
+   * Verifica si el carrito puede ser modificado
+   */
   public boolean puedeModificarse() {
     return estado != null && estado.esModificable();
   }
 
+  /**
+   * Verifica si el carrito está en estado final
+   */
   public boolean estaEnEstadoFinal() {
     return estado != null && estado.esFinal();
   }
 
+  /**
+   * Verifica si el carrito está abandonado
+   */
   public boolean estaAbandonado() {
     return estado == EstadoCarrito.ABANDONADO;
   }
 
+  /**
+   * Verifica si el carrito está procesado
+   */
   public boolean estaProcesado() {
     return estado == EstadoCarrito.PROCESADO;
   }
 
+  /**
+   * Verifica si el carrito está expirado
+   */
   public boolean estaExpirado() {
     return estado == EstadoCarrito.EXPIRADO;
   }
 
+  /**
+   * Verifica si el carrito está bloqueado
+   */
   public boolean estaBloqueado() {
     return estado == EstadoCarrito.BLOQUEADO;
-  }
-
-  @Override
-  public String toString() {
-    return (
-      "CarritoDto{" +
-      "id=" +
-      id +
-      ", usuarioId=" +
-      usuarioId +
-      ", estado=" +
-      estado +
-      ", cantidadItems=" +
-      cantidadItems +
-      ", total=" +
-      total +
-      '}'
-    );
   }
 }

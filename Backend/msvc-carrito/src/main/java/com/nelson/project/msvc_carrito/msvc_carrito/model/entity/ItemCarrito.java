@@ -432,6 +432,14 @@ public class ItemCarrito extends BaseEntityCorrected {
     return subtotal;
   }
 
+  /**
+   * Setter directo para subtotal (para casos especiales de MapStruct)
+   * NOTA: Normalmente se calcula automáticamente
+   */
+  public void setSubtotal(BigDecimal subtotal) {
+    this.subtotal = subtotal != null ? subtotal : BigDecimal.ZERO;
+  }
+
   public BigDecimal getPrecioOriginal() {
     return precioOriginal;
   }
@@ -517,6 +525,27 @@ public class ItemCarrito extends BaseEntityCorrected {
    */
   public void setActualizadoEn(LocalDateTime actualizadoEn) {
     this.actualizadoEn = actualizadoEn;
+  }
+
+  /**
+   * Método de conveniencia para compatibilidad con otros sistemas
+   */
+  public LocalDateTime getFechaCreacion() {
+    return getAgregadoEn();
+  }
+
+  /**
+   * Método de conveniencia para compatibilidad con otros sistemas
+   */
+  public void setFechaCreacion(LocalDateTime fechaCreacion) {
+    setAgregadoEn(fechaCreacion);
+  }
+
+  /**
+   * Método de conveniencia para compatibilidad con otros sistemas
+   */
+  public void setFechaModificacion(LocalDateTime fechaModificacion) {
+    setActualizadoEn(fechaModificacion);
   }
 
   public String getNotas() {

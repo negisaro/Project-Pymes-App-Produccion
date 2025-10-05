@@ -8,13 +8,20 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * DTO para transferencia de datos de Usuario.
- * REFACTORIZACIÓN PENDIENTE: Candidato para Lombok (@Data, @NoArgsConstructor, @AllArgsConstructor)
+ * MIGRADO A LOMBOK: Eliminado código boilerplate, mantenidos métodos de lógica de negocio
  * IMPORTANTE: Nombres de campos mantenidos para compatibilidad con microservicios via Feign
- * Cambios aplicados: Documentación mejorada, validaciones consistentes, métodos de utilidad
  */
+@Data
+@Builder(toBuilder = true)
+@NoArgsConstructor
+@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(description = "Datos del usuario con información de roles y carritos")
 public class UsuarioDto implements Serializable {
@@ -87,135 +94,26 @@ public class UsuarioDto implements Serializable {
   private List<RolDto> roles;
 
   @Schema(description = "Indica si el usuario está activo", example = "true")
-  private boolean active = true;
+  @Builder.Default
+  private boolean activo = true;
 
   @Schema(description = "Lista de IDs de carritos asociados al usuario")
   private List<Long> carritoId;
 
-  /**
-   * Constructor vacío requerido por frameworks.
-   */
-  public UsuarioDto() {}
+  // ================================
+  // MÉTODOS DE LÓGICA DE NEGOCIO
+  // ================================
 
   /**
-   * Constructor con campos básicos obligatorios.
+   * Verifica si el usuario está activo
    */
-  public UsuarioDto(
-    String name,
-    String lastname,
-    String username,
-    String email
-  ) {
-    this.name = name;
-    this.lastname = lastname;
-    this.username = username;
-    this.email = email;
-    this.active = true;
-  }
-
-  /**
-   * Constructor completo.
-   */
-  public UsuarioDto(
-    Long id,
-    String name,
-    String lastname,
-    String username,
-    String password,
-    String email,
-    List<RolDto> roles,
-    List<Long> carritoId,
-    boolean active
-  ) {
-    this.id = id;
-    this.name = name;
-    this.lastname = lastname;
-    this.username = username;
-    this.password = password;
-    this.email = email;
-    this.roles = roles;
-    this.carritoId = carritoId;
-    this.active = active;
-  }
-
-  // Getters y Setters
-  public Long getId() {
-    return id;
-  }
-
-  public void setId(Long id) {
-    this.id = id;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public String getLastname() {
-    return lastname;
-  }
-
-  public void setLastname(String lastname) {
-    this.lastname = lastname;
-  }
-
-  public String getUsername() {
-    return username;
-  }
-
-  public void setUsername(String username) {
-    this.username = username;
-  }
-
-  public String getPassword() {
-    return password;
-  }
-
-  public void setPassword(String password) {
-    this.password = password;
-  }
-
-  public String getEmail() {
-    return email;
-  }
-
-  public void setEmail(String email) {
-    this.email = email;
-  }
-
-  public List<RolDto> getRoles() {
-    return roles;
-  }
-
-  public void setRoles(List<RolDto> roles) {
-    this.roles = roles;
-  }
-
   public boolean isActive() {
-    return active;
+    return activo;
   }
 
-  public void setActive(boolean active) {
-    this.active = active;
-  }
-
-  public List<Long> getCarritoById() {
-    return carritoId;
-  }
-
-  public void setCarritoById(List<Long> carritoId) {
-    this.carritoId = carritoId;
-  }
-
-  // Métodos de utilidad
-  public boolean estaActivo() {
-    return active;
-  }
-
+  /**
+   * Obtiene el nombre completo del usuario
+   */
   public String getNombreCompleto() {
     if (name != null && lastname != null) {
       return name + " " + lastname;
@@ -223,29 +121,17 @@ public class UsuarioDto implements Serializable {
     return name != null ? name : lastname;
   }
 
+  /**
+   * Verifica si el usuario tiene roles asignados
+   */
   public boolean tieneRoles() {
     return roles != null && !roles.isEmpty();
   }
 
+  /**
+   * Verifica si el usuario tiene carritos asociados
+   */
   public boolean tieneCarritos() {
     return carritoId != null && !carritoId.isEmpty();
-  }
-
-  @Override
-  public String toString() {
-    return (
-      "UsuarioDto{" +
-      "id=" +
-      id +
-      ", username='" +
-      username +
-      '\'' +
-      ", email='" +
-      email +
-      '\'' +
-      ", active=" +
-      active +
-      '}'
-    );
   }
 }

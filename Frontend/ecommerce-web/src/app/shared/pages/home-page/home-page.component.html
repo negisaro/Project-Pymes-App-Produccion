@@ -2,7 +2,6 @@
 <div class="home-bg-animated">
   <canvas id="bg-particles"></canvas>
 </div>
-<shared-navbar></shared-navbar>
 
 <!-- HERO GLASSMORPHISM -->
 <section class="home-hero-glass d-flex flex-column flex-md-row align-items-center justify-content-between mb-5 animate-fade-in">
@@ -62,10 +61,10 @@
               <h5 class="card-title gradient-text fw-bold">{{ product.nombre }}</h5>
               <p class="mb-1 text-light-50 small">{{ product.descripcion }}</p>
               <span class="badge bg-gradient bg-primary mb-2">{{ categoria.nombre }}</span>
-              <product-sparkline [data]="product.stockHistory || [product.stock]" [color]="'#0d6efd'" [type]="'line'"></product-sparkline>
+              <!-- <product-sparkline [data]="product.stockHistory || [product.stock]" [color]="'#0d6efd'" [type]="'line'"></product-sparkline> -->
             </div>
             <div class="d-flex justify-content-between align-items-center mt-3">
-              <span class="fw-bold gradient-text fs-5">{{ product.precio | currency:'COP':'symbol':'1.0-0':'es-CO' }}</span>
+              <span class="fw-bold gradient-text fs-5">${{ product.precio.toLocaleString('es-CO') }}</span>
               <button class="btn btn-gradient btn-sm d-flex align-items-center gap-2 animate__animated animate__pulse" (click)="addToCart(product)" [disabled]="product.stock === 0 || !product.estado">
                 <i class="bi bi-cart-plus-fill fs-5"></i>
                 <span>Agregar</span>
@@ -74,7 +73,7 @@
             <div class="mt-2">
               <span *ngIf="product.stock === 0" class="badge bg-danger">Agotado</span>
               <span *ngIf="product.stock > 0 && product.stock < 5" class="badge bg-warning text-dark">¡Pocos!</span>
-              <span *ngIf="product.estado === false" class="badge bg-secondary">Inactivo</span>
+              <span *ngIf="product.estado === 'INACTIVO'" class="badge bg-secondary">Inactivo</span>
             </div>
           </div>
         </div>
@@ -85,5 +84,3 @@
     </div>
   </div>
 </section>
-
-<shared-footer></shared-footer>

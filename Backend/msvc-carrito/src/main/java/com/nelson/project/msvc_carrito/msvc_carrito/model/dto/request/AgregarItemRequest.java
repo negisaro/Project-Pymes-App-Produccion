@@ -1,17 +1,31 @@
 package com.nelson.project.msvc_carrito.msvc_carrito.model.dto.request;
 
+import com.nelson.project.msvc_carrito.msvc_carrito.validation.ValidationGroups;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * DTO para la solicitud de agregar un item al carrito
- * REFACTORIZACIÓN PENDIENTE: Candidato ideal para Lombok (@Data, @NoArgsConstructor, @AllArgsConstructor)
- * Cambios aplicados: Nombres uniformizados, documentación mejorada
+ * MIGRADO A LOMBOK: Eliminado código boilerplate, agregados factory methods
+ * IMPLEMENTA: Validation Groups y validaciones mejoradas
  */
+@Data
+@Builder(toBuilder = true)
+@NoArgsConstructor
+@AllArgsConstructor
 @Schema(description = "Solicitud para agregar un item al carrito")
 public class AgregarItemRequest {
 
-  @NotNull(message = "El ID del producto es obligatorio")
+  @NotNull(
+    groups = {
+      ValidationGroups.OnCreate.class, ValidationGroups.OnCartOperation.class,
+    },
+    message = "El ID del producto es obligatorio"
+  )
   @Positive(message = "El ID del producto debe ser positivo")
   @Schema(
     description = "ID del producto a agregar",
@@ -20,9 +34,19 @@ public class AgregarItemRequest {
   )
   private Long productoId;
 
-  @NotNull(message = "La cantidad es obligatoria")
+  @NotNull(
+    groups = {
+      ValidationGroups.OnCreate.class, ValidationGroups.OnCartOperation.class,
+    },
+    message = "La cantidad es obligatoria"
+  )
   @Min(value = 1, message = "La cantidad debe ser al menos 1")
   @Max(value = 1000, message = "La cantidad no puede exceder 1000 unidades")
+  @Max(
+    value = 50,
+    groups = ValidationGroups.OnInventoryCheck.class,
+    message = "La cantidad no puede exceder 50 unidades para verificación de inventario"
+  )
   @Schema(
     description = "Cantidad del producto a agregar",
     example = "2",
@@ -37,57 +61,70 @@ public class AgregarItemRequest {
   )
   private String notas;
 
-  // Constructores
-  public AgregarItemRequest() {}
+  // ================================
+  // FACTORY METHODS
+  // ================================
 
-  public AgregarItemRequest(Long productoId, Integer cantidad) {
-    this.productoId = productoId;
-    this.cantidad = cantidad;
+  /**
+   * Crea una solicitud simple con producto y cantidad
+   */
+  public static AgregarItemRequest simple(Long productoId, Integer cantidad) {
+    return AgregarItemRequest.builder()
+      .productoId(productoId)
+      .cantidad(cantidad)
+      .build();
   }
 
-  public AgregarItemRequest(Long productoId, Integer cantidad, String notas) {
-    this.productoId = productoId;
-    this.cantidad = cantidad;
-    this.notas = notas;
+  /**
+   * Crea una solicitud con notas adicionales
+   */
+  public static AgregarItemRequest conNotas(
+    Long productoId,
+    Integer cantidad,
+    String notas
+  ) {
+    return AgregarItemRequest.builder()
+      .productoId(productoId)
+      .cantidad(cantidad)
+      .notas(notas)
+      .build();
   }
 
-  // Getters y Setters
-  public Long getProductoId() {
-    return productoId;
+  /**
+   * Crea una solicitud para una unidad del producto
+   */
+  public static AgregarItemRequest unidad(Long productoId) {
+    return AgregarItemRequest.builder()
+      .productoId(productoId)
+      .cantidad(1)
+      .build();
   }
 
-  public void setProductoId(Long productoId) {
-    this.productoId = productoId;
+  /**
+   * Crea una solicitud para múltiples unidades
+   */
+  public static AgregarItemRequest multiples(
+    Long productoId,
+    Integer cantidad
+  ) {
+    return AgregarItemRequest.builder()
+      .productoId(productoId)
+      .cantidad(cantidad)
+      .build();
   }
 
-  public Integer getCantidad() {
-    return cantidad;
-  }
-
-  public void setCantidad(Integer cantidad) {
-    this.cantidad = cantidad;
-  }
-
-  public String getNotas() {
-    return notas;
-  }
-
-  public void setNotas(String notas) {
-    this.notas = notas;
-  }
-
-  @Override
-  public String toString() {
-    return (
-      "AgregarItemRequest{" +
-      "productoId=" +
-      productoId +
-      ", cantidad=" +
-      cantidad +
-      ", notas='" +
-      notas +
-      '\'' +
-      '}'
-    );
+  /**
+   * Crea una solicitud para regalo con notas especiales
+   */
+  public static AgregarItemRequest regalo(
+    Long productoId,
+    Integer cantidad,
+    String notasRegalo
+  ) {
+    return AgregarItemRequest.builder()
+      .productoId(productoId)
+      .cantidad(cantidad)
+      .notas("REGALO: " + notasRegalo)
+      .build();
   }
 }

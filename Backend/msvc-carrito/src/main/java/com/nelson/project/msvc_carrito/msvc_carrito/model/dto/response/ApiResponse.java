@@ -4,12 +4,20 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * DTO base para todas las respuestas de la API
- * REFACTORIZACIÓN PENDIENTE: Candidato para Lombok (@Data) manteniendo métodos factory
- * Cambios aplicados: Nombres uniformizados, documentación mejorada, constructores optimizados
+ * MIGRADO A LOMBOK: Eliminado código boilerplate, mantenidos factory methods
+ * IMPLEMENTA: Builder pattern y factory methods optimizados
  */
+@Data
+@Builder(toBuilder = true)
+@NoArgsConstructor
+@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(description = "Respuesta base de la API")
 public class ApiResponse<T> {
@@ -32,12 +40,13 @@ public class ApiResponse<T> {
   @Schema(description = "Datos de respuesta")
   private T datos;
 
+  @Builder.Default
   @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
   @Schema(
     description = "Timestamp de la respuesta",
     example = "2024-01-15T10:30:00"
   )
-  private LocalDateTime timestamp;
+  private LocalDateTime timestamp = LocalDateTime.now();
 
   @Schema(
     description = "ID de seguimiento de la operación",
@@ -45,110 +54,70 @@ public class ApiResponse<T> {
   )
   private String traceId;
 
-  // Constructores
-  public ApiResponse() {
-    this.timestamp = LocalDateTime.now();
-  }
+  // ================================
+  // FACTORY METHODS OPTIMIZADOS
+  // ================================
 
-  public ApiResponse(boolean exitoso, String mensaje) {
-    this.exitoso = exitoso;
-    this.mensaje = mensaje;
-    this.timestamp = LocalDateTime.now();
-  }
-
-  public ApiResponse(boolean exitoso, String mensaje, T datos) {
-    this.exitoso = exitoso;
-    this.mensaje = mensaje;
-    this.datos = datos;
-    this.timestamp = LocalDateTime.now();
-  }
-
-  // Métodos estáticos para facilitar la creación
+  /**
+   * Crea una respuesta exitosa con datos
+   */
   public static <T> ApiResponse<T> exitoso(T datos) {
-    return new ApiResponse<>(true, "Operación exitosa", datos);
+    return ApiResponse.<T>builder()
+      .exitoso(true)
+      .mensaje("Operación exitosa")
+      .datos(datos)
+      .build();
   }
 
+  /**
+   * Crea una respuesta exitosa con mensaje personalizado y datos
+   */
   public static <T> ApiResponse<T> exitoso(String mensaje, T datos) {
-    return new ApiResponse<>(true, mensaje, datos);
+    return ApiResponse.<T>builder()
+      .exitoso(true)
+      .mensaje(mensaje)
+      .datos(datos)
+      .build();
   }
 
+  /**
+   * Crea una respuesta de error con mensaje
+   */
   public static <T> ApiResponse<T> error(String mensaje) {
-    return new ApiResponse<>(false, mensaje);
+    return ApiResponse.<T>builder().exitoso(false).mensaje(mensaje).build();
   }
 
+  /**
+   * Crea una respuesta de error con mensaje y código de error
+   */
   public static <T> ApiResponse<T> error(String mensaje, String codigoError) {
-    ApiResponse<T> response = new ApiResponse<>(false, mensaje);
-    response.setCodigoError(codigoError);
-    return response;
+    return ApiResponse.<T>builder()
+      .exitoso(false)
+      .mensaje(mensaje)
+      .codigoError(codigoError)
+      .build();
   }
 
-  // Getters y Setters
-  public boolean isExitoso() {
-    return exitoso;
+  /**
+   * Crea una respuesta de error con mensaje, código y traceId
+   */
+  public static <T> ApiResponse<T> errorConTrace(
+    String mensaje,
+    String codigoError,
+    String traceId
+  ) {
+    return ApiResponse.<T>builder()
+      .exitoso(false)
+      .mensaje(mensaje)
+      .codigoError(codigoError)
+      .traceId(traceId)
+      .build();
   }
 
-  public void setExitoso(boolean exitoso) {
-    this.exitoso = exitoso;
-  }
-
-  public String getMensaje() {
-    return mensaje;
-  }
-
-  public void setMensaje(String mensaje) {
-    this.mensaje = mensaje;
-  }
-
-  public String getCodigoError() {
-    return codigoError;
-  }
-
-  public void setCodigoError(String codigoError) {
-    this.codigoError = codigoError;
-  }
-
-  public T getDatos() {
-    return datos;
-  }
-
-  public void setDatos(T datos) {
-    this.datos = datos;
-  }
-
-  public LocalDateTime getTimestamp() {
-    return timestamp;
-  }
-
-  public void setTimestamp(LocalDateTime timestamp) {
-    this.timestamp = timestamp;
-  }
-
-  public String getTraceId() {
-    return traceId;
-  }
-
-  public void setTraceId(String traceId) {
-    this.traceId = traceId;
-  }
-
-  @Override
-  public String toString() {
-    return (
-      "ApiResponse{" +
-      "exitoso=" +
-      exitoso +
-      ", mensaje='" +
-      mensaje +
-      '\'' +
-      ", codigoError='" +
-      codigoError +
-      '\'' +
-      ", timestamp=" +
-      timestamp +
-      ", traceId='" +
-      traceId +
-      '\'' +
-      '}'
-    );
+  /**
+   * Crea una respuesta exitosa sin datos
+   */
+  public static <T> ApiResponse<T> exitosoSinDatos(String mensaje) {
+    return ApiResponse.<T>builder().exitoso(true).mensaje(mensaje).build();
   }
 }

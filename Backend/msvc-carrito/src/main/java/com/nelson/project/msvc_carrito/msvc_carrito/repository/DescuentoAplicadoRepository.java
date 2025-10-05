@@ -162,14 +162,18 @@ public interface DescuentoAplicadoRepository
   /**
    * Obtiene descuentos aplicados hoy
    */
+  /**
+   * Obtiene descuentos aplicados hoy (rango de fecha)
+   * @param start inicio del día (LocalDateTime)
+   * @param end fin del día (LocalDateTime)
+   */
   @Query(
-    """
-    SELECT d FROM DescuentoAplicado d
-    WHERE DATE(d.aplicadoEn) = CURRENT_DATE
-    ORDER BY d.aplicadoEn DESC
-    """
+    "SELECT d FROM DescuentoAplicado d WHERE d.aplicadoEn >= :start AND d.aplicadoEn < :end ORDER BY d.aplicadoEn DESC"
   )
-  List<DescuentoAplicado> findDescuentosDeHoy();
+  List<DescuentoAplicado> findDescuentosDeHoy(
+    @Param("start") LocalDateTime start,
+    @Param("end") LocalDateTime end
+  );
 
   /**
    * Obtiene descuentos que expiran pronto

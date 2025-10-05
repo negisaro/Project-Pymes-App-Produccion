@@ -5,13 +5,20 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.io.Serializable;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * DTO para transferencia de datos de Rol.
- * REFACTORIZACIÓN PENDIENTE: Candidato ideal para Lombok (@Data, @NoArgsConstructor, @AllArgsConstructor)
+ * MIGRADO A LOMBOK: Eliminado código boilerplate, mantenidos métodos de lógica de negocio
  * IMPORTANTE: Nombres de campos mantenidos para compatibilidad con microservicios via Feign
- * Cambios aplicados: Documentación mejorada, validaciones agregadas, métodos de utilidad
  */
+@Data
+@Builder(toBuilder = true)
+@NoArgsConstructor
+@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(description = "Información del rol de usuario")
 public class RolDto implements Serializable {
@@ -31,60 +38,23 @@ public class RolDto implements Serializable {
   private String name;
 
   @Schema(description = "Indica si el rol está activo", example = "true")
+  @Builder.Default
   private boolean activo = true;
 
-  /**
-   * Constructor vacío requerido por frameworks.
-   */
-  public RolDto() {}
+  // ================================
+  // MÉTODOS DE LÓGICA DE NEGOCIO
+  // ================================
 
   /**
-   * Constructor con nombre del rol.
+   * Verifica si el rol está activo
    */
-  public RolDto(String name) {
-    this.name = name;
-    this.activo = true;
-  }
-
-  /**
-   * Constructor completo.
-   */
-  public RolDto(Long id, String name, boolean activo) {
-    this.id = id;
-    this.name = name;
-    this.activo = activo;
-  }
-
-  // Getters y Setters
-  public Long getId() {
-    return id;
-  }
-
-  public void setId(Long id) {
-    this.id = id;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public boolean isActivo() {
-    return activo;
-  }
-
-  public void setActivo(boolean activo) {
-    this.activo = activo;
-  }
-
-  // Métodos de utilidad
   public boolean estaActivo() {
     return activo;
   }
 
+  /**
+   * Verifica si es un rol de administrador
+   */
   public boolean esAdministrador() {
     return (
       name != null &&
@@ -92,39 +62,17 @@ public class RolDto implements Serializable {
     );
   }
 
+  /**
+   * Verifica si es un rol de usuario normal
+   */
   public boolean esUsuario() {
     return name != null && name.equalsIgnoreCase("USER");
   }
 
+  /**
+   * Verifica si es un rol de moderador
+   */
   public boolean esModerador() {
     return name != null && name.equalsIgnoreCase("MODERATOR");
-  }
-
-  @Override
-  public String toString() {
-    return (
-      "RolDto{" +
-      "id=" +
-      id +
-      ", name='" +
-      name +
-      '\'' +
-      ", activo=" +
-      activo +
-      '}'
-    );
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) return true;
-    if (obj == null || getClass() != obj.getClass()) return false;
-    RolDto rolDto = (RolDto) obj;
-    return id != null && id.equals(rolDto.id);
-  }
-
-  @Override
-  public int hashCode() {
-    return id != null ? id.hashCode() : 0;
   }
 }

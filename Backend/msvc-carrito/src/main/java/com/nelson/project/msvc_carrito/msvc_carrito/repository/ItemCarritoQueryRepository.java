@@ -282,7 +282,7 @@ public interface ItemCarritoQueryRepository
     WHERE i.agregadoEn BETWEEN :fechaInicio AND :fechaFin
     GROUP BY i.productoId, i.nombreProducto, pp.precioGlobalPromedio
     HAVING ABS(AVG(i.precioUnitario) - pp.precioGlobalPromedio) > :tolerancia
-    ORDER BY ABS(diferencia) DESC
+    ORDER BY ABS(AVG(i.precioUnitario) - pp.precioGlobalPromedio) DESC
     """
   )
   List<Object[]> findProductosConPreciosAnomalos(

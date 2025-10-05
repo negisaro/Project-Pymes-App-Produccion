@@ -1,0 +1,129 @@
+<div class="container my-4">
+  <div class="card shadow">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+      <h2 class="mb-0">
+        <i class="fas fa-boxes me-2"></i> Products Management
+      </h2>
+      <div>
+        <button class="btn btn-success me-2" (click)="addProduct()" *ngIf="canAddProduct()">
+          <i class="fas fa-plus me-1"></i> Add Product
+        </button>
+        <button class="btn btn-outline-light btn-sm" (click)="reload()" title="Reload list">
+          <i class="fas fa-sync-alt"></i> Reload
+        </button>
+      </div>
+    </div>
+    <div class="card-body">
+      <div *ngIf="loading" class="alert alert-info">
+        <i class="fas fa-spinner fa-spin me-2"></i>Loading products...
+      </div>
+      <div *ngIf="error" class="alert alert-danger">{{ errorMsg }}</div>
+      <div *ngIf="!loading && products.length === 0" class="alert alert-warning">
+        <i class="fas fa-info-circle me-2"></i>No products available.
+      </div>
+
+      <!-- Filter by category -->
+      <div *ngIf="categorias.length > 0" class="mb-3">
+        <label for="filtroCategoria" class="form-label">Filter by category:</label>
+        <select id="filtroCategoria" class="form-select w-auto d-inline-block ms-2" style="min-width:200px;">
+          <option value="">All</option>
+          <option *ngFor="let cat of categorias" [value]="cat.id">{{ cat.nombre }}</option>
+        </select>
+      </div>
+
+      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" *ngIf="!loading && products.length > 0">
+        <div class="col" *ngFor="let product of products">
+          <div class="card h-100 shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center bg-light">
+              <span class="fw-bold">
+                <i class="fas fa-box me-1"></i>{{ product.nombre }}
+              </span>
+              <span class="badge bg-secondary">#{{ product.id }}</span>
+            </div>
+            <div class="card-body">
+              <p class="mb-2">
+                <strong>Description:</strong> 
+                <span class="text-muted">{{ product.descripcion || 'No description' }}</span>
+              </p>
+              <p class="mb-2">
+                <strong>Price:</strong> 
+                <span class="text-success fw-bold">{{ formatPrice(product.precio) }}</span>
+              </p>
+              <p class="mb-2">
+                <strong>Stock:</strong> 
+                <span class="badge" [ngClass]="product.stock > 0 ? 'bg-success' : 'bg-danger'">
+                  {{ product.stock }}
+                </span>
+              </p>
+              <p class="mb-2">
+                <strong>Category:</strong> 
+                <span class="text-primary">{{ getCategoryName(product.categoriaId) }}</span>
+              </p>
+              <p class="mb-2">
+                <strong>Supplier:</strong> 
+                <span class="text-info">{{ getSupplierName(product.proveedorId) }}</span>
+              </p>
+              <div class="mb-2" *ngIf="product.imagenes && product.imagenes.length > 0">
+                <strong>Images:</strong>
+                <div class="d-flex flex-wrap gap-2 mt-1">
+                  <img 
+                    *ngFor="let img of product.imagenes" 
+                    [src]="getImageUrl([img])" 
+                    width="60" 
+                    height="60" 
+                    class="rounded border img-thumbnail" 
+                    alt="Product image"
+                    loading="lazy">
+                </div>
+              </div>
+              <p class="mb-2">
+                <strong>Status:</strong>
+                <span class="badge" [ngClass]="product.estado ? 'bg-success' : 'bg-danger'">
+                  {{ product.estado ? 'Active' : 'Inactive' }}
+                </span>
+              </p>
+              <div class="row">
+                <div class="col-6">
+                  <small class="text-muted">
+                    <strong>Created:</strong><br>
+                    {{ product.fechaCreacion | date:'short' }}
+                  </small>
+                </div>
+                <div class="col-6">
+                  <small class="text-muted">
+                    <strong>Updated:</strong><br>
+                    {{ product.fechaActualizacion | date:'short' }}
+                  </small>
+                </div>
+              </div>
+            </div>
+            <div class="card-footer bg-light" *ngIf="canAddProduct()">
+              <div class="btn-group w-100" role="group">
+                <button type="button" class="btn btn-outline-primary btn-sm" (click)="editProduct(product)" title="Edit product">
+                  <i class="fas fa-edit me-1"></i>Edit
+                </button>
+                <button type="button" class="btn btn-outline-danger btn-sm" (click)="deleteProduct(product.id)" title="Delete product">
+                  <i class="fas fa-trash-alt me-1"></i>Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="d-flex justify-content-between align-items-center mt-4" *ngIf="!loading && products.length > 0">
+        <button class="btn btn-outline-secondary btn-sm" (click)="previousPage()" [disabled]="page === 0">
+          <i class="fas fa-chevron-left me-1"></i> Previous
+        </button>
+        <span class="pagination-info">
+          Page <strong>{{ page + 1 }}</strong> of <strong>{{ totalPages }}</strong>
+          &nbsp;|&nbsp; Total: <strong>{{ totalElements }}</strong> products
+        </span>
+        <button class="btn btn-outline-secondary btn-sm" (click)="nextPage()" [disabled]="page >= totalPages - 1">
+          Next <i class="fas fa-chevron-right ms-1"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

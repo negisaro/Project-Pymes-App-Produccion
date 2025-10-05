@@ -99,11 +99,24 @@ public interface CarritoRepository extends JpaRepository<Carrito, Long> {
   @Query(
     """
     SELECT c FROM Carrito c
-    WHERE DATE(c.creadoEn) = CURRENT_DATE
+    WHERE c.creadoEn >= :inicioDia AND c.creadoEn < :finDia
     ORDER BY c.creadoEn DESC
     """
   )
-  List<Carrito> findCarritosCreadosHoy();
+  List<Carrito> findCarritosCreadosHoy(
+    @Param("inicioDia") LocalDateTime inicioDia,
+    @Param("finDia") LocalDateTime finDia
+  );
+
+  /**
+   * Método de conveniencia por defecto para obtener carritos de hoy sin repetir lógica de rango.
+   */
+  default List<Carrito> findCarritosCreadosHoyConvenience() {
+    LocalDateTime now = LocalDateTime.now();
+    LocalDateTime start = now.toLocalDate().atStartOfDay();
+    LocalDateTime end = start.plusDays(1);
+    return findCarritosCreadosHoy(start, end);
+  }
 
   /**
    * Obtiene carritos modificados recientemente

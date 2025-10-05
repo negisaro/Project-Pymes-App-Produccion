@@ -1,0 +1,80 @@
+.admin-sb{display:flex;flex-direction:column;width:240px;min-height:100%;background:var(--color-bg-elevated);border-right:1px solid var(--color-border);transition:width .25s;}
+.admin-sb.is-collapsed{width:70px;}
+.admin-sb__header{display:flex;align-items:center;justify-content:space-between;padding:var(--space-4) var(--space-5);font-weight:600;}
+.admin-sb__brand{font-size:1rem;}
+.admin-sb__nav{flex:1;overflow:auto;padding:var(--space-3) 0;}
+.admin-sb__nav ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px;}
+.admin-sb__nav a{display:block;padding:var(--space-3) var(--space-6);text-decoration:none;color:var(--color-text);font-size:.8rem;border-left:3px solid transparent;}
+.admin-sb__nav a.is-active{background:var(--color-bg-subtle);border-left-color:var(--color-primary);color:var(--color-primary);}
+.admin-sb__footer{
+  padding:var(--space-4) var(--space-5);
+  font-size:.65rem;
+  color:var(--color-text-soft);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.home-link{
+  color:var(--color-text-soft);
+  text-decoration:none;
+  display: flex;
+  align-items: center;
+  padding: var(--space-2) 0;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.home-link:hover{
+  color:var(--color-primary);
+}
+
+.logout-btn {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-soft);
+  padding: var(--space-2) var(--space-3);
+  border-radius: 6px;
+  font-size: 0.65rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  transition: all 0.2s ease;
+  margin-top: var(--space-1);
+}
+
+.logout-btn:hover {
+  background: #dc3545;
+  border-color: #dc3545;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.logout-btn:active {
+  transform: translateY(0);
+}
+
+// Estilos cuando el sidebar está colapsado
+.admin-sb.is-collapsed {
+  .admin-sb__footer {
+    padding: var(--space-2);
+  }
+
+  .home-link,
+  .logout-btn {
+    padding: var(--space-2);
+    justify-content: center;
+  }
+
+  .home-link i,
+  .logout-btn i {
+    margin: 0;
+  }
+
+  .home-link span,
+  .logout-btn span {
+    display: none;
+  }
+}
+@media (max-width: 920px){.admin-sb{position:fixed;z-index:100;inset:0 auto 0 0;max-width:260px;transform:translateX(0);} }

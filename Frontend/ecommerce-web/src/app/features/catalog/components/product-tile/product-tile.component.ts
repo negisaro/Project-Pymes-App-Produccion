@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
-import { CartStore } from '../../../../state/cart.store';
+import { CartStore } from '../../../../core/state/cart.store';
 
 export interface ProductTileModel {
   id: string;

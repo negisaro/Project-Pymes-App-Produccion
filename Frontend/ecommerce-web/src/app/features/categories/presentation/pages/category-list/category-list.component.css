@@ -1,0 +1,45 @@
+.category-list-page {
+  padding: 0;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+/* Hero section customization */
+.category-list-page app-hero-section {
+  margin-bottom: 1.5rem;
+}
+
+/* Filters panel customization */
+.category-list-page app-filters-panel {
+  margin-bottom: 1.5rem;
+}
+
+/* Data table customization */
+.category-list-page app-data-table {
+  background: white;
+  border-radius: 0.375rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  margin-bottom: 1.5rem;
+}
+
+/* Pagination customization */
+.category-list-page app-pagination {
+  background: white;
+  border-radius: 0.375rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  padding: 1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .category-list-page {
+    padding: 0.5rem;
+  }
+
+  .category-list-page app-hero-section,
+  .category-list-page app-filters-panel,
+  .category-list-page app-data-table,
+  .category-list-page app-pagination {
+    margin-bottom: 1rem;
+  }
+}

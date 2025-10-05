@@ -1,0 +1,116 @@
+<!-- Hero Section Template -->
+<div [class]="getContainerClasses()" [style]="getGradientStyles()">
+
+  <!-- Loading Overlay -->
+  <div *ngIf="loading" class="hero-loading-overlay">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+
+    <!-- Breadcrumbs -->
+    <nav *ngIf="config.breadcrumbs && config.breadcrumbs.length > 0" aria-label="breadcrumb" class="hero-breadcrumbs">
+      <ol class="breadcrumb">
+        <li *ngFor="let breadcrumb of config.breadcrumbs; let last = last"
+            class="breadcrumb-item"
+            [class.active]="breadcrumb.active || last">
+
+          <!-- Breadcrumb con link -->
+          <a *ngIf="breadcrumb.route && !breadcrumb.active && !last"
+             [routerLink]="breadcrumb.route"
+             class="breadcrumb-link">
+            <i *ngIf="breadcrumb.icon" [class]="breadcrumb.icon" class="me-1"></i>
+            {{ breadcrumb.label }}
+          </a>
+
+          <!-- Breadcrumb activo -->
+          <span *ngIf="breadcrumb.active || last">
+            <i *ngIf="breadcrumb.icon" [class]="breadcrumb.icon" class="me-1"></i>
+            {{ breadcrumb.label }}
+          </span>
+        </li>
+      </ol>
+    </nav>
+
+    <div class="row align-items-center">
+
+      <!-- Contenido Principal -->
+      <div class="col-lg-8">
+        <div class="hero-content">
+
+          <!-- Título Principal -->
+          <h1 class="hero-title">
+            <i *ngIf="config.icon" [class]="config.icon" class="hero-icon me-2"></i>
+            {{ config.title }}
+          </h1>
+
+          <!-- Subtítulo -->
+          <h2 *ngIf="config.subtitle" class="hero-subtitle">
+            {{ config.subtitle }}
+          </h2>
+
+          <!-- Descripción -->
+          <p *ngIf="config.description" class="hero-description">
+            {{ config.description }}
+          </p>
+
+          <!-- Acciones -->
+          <div *ngIf="config.actions && config.actions.length > 0" class="hero-actions">
+            <ng-container *ngFor="let action of config.actions">
+              <button *ngIf="isActionVisible(action)"
+                      type="button"
+                      [class]="'btn btn-' + (action.variant || 'primary') + (action.size ? ' btn-' + action.size : '')"
+                      [disabled]="isActionDisabled(action)"
+                      [title]="action.label"
+                      (click)="onActionClick(action)">
+                <i *ngIf="action.icon" [class]="action.icon" class="me-1"></i>
+                {{ action.label }}
+              </button>
+            </ng-container>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Imagen o Estadísticas -->
+      <div *ngIf="config.image || (config.stats && config.stats.length > 0)" class="col-lg-4">
+
+        <!-- Imagen Hero -->
+        <div *ngIf="config.image" class="hero-image">
+          <img [src]="config.image" [alt]="config.title" class="img-fluid rounded">
+        </div>
+
+        <!-- Tarjetas de Estadísticas -->
+        <div *ngIf="config.stats && config.stats.length > 0" class="hero-stats">
+          <div class="row g-3">
+            <div *ngFor="let stat of config.stats" class="col-6">
+              <div class="stat-card" [style.border-left-color]="stat.color">
+
+                <!-- Valor -->
+                <div class="stat-value">{{ stat.value }}</div>
+
+                <!-- Label -->
+                <div class="stat-label">
+                  <i *ngIf="stat.icon" [class]="stat.icon" class="me-1"></i>
+                  {{ stat.label }}
+                </div>
+
+                <!-- Trending -->
+                <div *ngIf="stat.trend" [class]="getTrendClasses(stat.trend)">
+                  <i [class]="getTrendIcon(stat.trend.direction)" class="me-1"></i>
+                  {{ stat.trend.value }}%
+                  <span *ngIf="stat.trend.label" class="trend-label">{{ stat.trend.label }}</span>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>

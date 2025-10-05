@@ -1,0 +1,40 @@
+<div class="category-list-page">
+  <!-- Hero Section -->
+  <app-hero-section
+    [config]="heroConfig">
+  </app-hero-section>
+
+  <!-- Filters Panel -->
+  <app-filters-panel
+    [config]="filterConfig"
+    [loading]="dataState.loading"
+    (filtersChange)="events.onFilter?.($event)">
+  </app-filters-panel>
+
+  <!-- Data Table -->
+  <app-data-table
+    [config]="tableConfig"
+    [data]="dataState.items"
+    [selectedItems]="dataState.selectedItems"
+    [loading]="dataState.loading"
+    [error]="dataState.error"
+    [sortCriteria]="dataState.sorting"
+    (itemSelect)="events.onItemSelect?.($event)"
+    (itemsSelect)="events.onItemsSelect?.($event)"
+    (itemAction)="events.onItemAction?.($event.action, $event.item)"
+    (bulkAction)="events.onBulkAction?.($event.action, $event.items)"
+    (sort)="events.onSort?.($event)"
+    (refresh)="events.onRefresh?.()">
+  </app-data-table>
+
+  <!-- Pagination -->
+  <app-pagination
+    [currentPage]="dataState.pagination.number"
+    [totalPages]="dataState.pagination.totalPages"
+    [totalItems]="dataState.pagination.totalElements"
+    [pageSize]="dataState.pagination.size"
+    [loading]="dataState.loading"
+    (pageChange)="events.onPageChange?.($event)"
+    (pageSizeChange)="events.onPageSizeChange?.($event)">
+  </app-pagination>
+</div>

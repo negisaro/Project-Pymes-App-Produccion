@@ -1,0 +1,281 @@
+<!-- Data Table Template -->
+<div class="data-table-container">
+
+  <!-- Header con Búsqueda y Acciones -->
+  <div *ngIf="config.searchable || config.exportable" class="data-table-header">
+    <div class="row align-items-center">
+
+      <!-- Búsqueda -->
+      <div *ngIf="config.searchable" class="col-md-6">
+        <div class="input-group">
+          <span class="input-group-text">
+            <i class="bi bi-search"></i>
+          </span>
+          <input type="text"
+                 class="form-control"
+                 placeholder="Buscar..."
+                 [value]="searchTerm"
+                 (input)="onSearch($event)">
+        </div>
+      </div>
+
+      <!-- Acciones Globales -->
+      <div class="col-md-6 text-end" *ngIf="config.exportable">
+        <div class="btn-group">
+          <button type="button"
+                  class="btn btn-outline-secondary btn-sm"
+                  (click)="onRefresh()"
+                  title="Actualizar">
+            <i class="bi bi-arrow-clockwise"></i>
+          </button>
+
+          <div class="btn-group" ngbDropdown role="group">
+            <button type="button"
+                    class="btn btn-outline-secondary btn-sm dropdown-toggle"
+                    ngbDropdownToggle>
+              <i class="bi bi-download me-1"></i>
+              Exportar
+            </button>
+            <div class="dropdown-menu">
+              <button class="dropdown-item" (click)="onExport('excel')">
+                <i class="bi bi-file-earmark-excel text-success me-2"></i>
+                Excel
+              </button>
+              <button class="dropdown-item" (click)="onExport('csv')">
+                <i class="bi bi-file-earmark-text text-info me-2"></i>
+                CSV
+              </button>
+              <button class="dropdown-item" (click)="onExport('pdf')">
+                <i class="bi bi-file-earmark-pdf text-danger me-2"></i>
+                PDF
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Información de Selección -->
+  <div *ngIf="config.selectable && selectedItems.length > 0" class="selection-info">
+    <div class="alert alert-info d-flex align-items-center justify-content-between mb-3">
+      <div>
+        <i class="bi bi-check-circle me-2"></i>
+        <strong>{{ selectedItems.length }}</strong> elemento(s) seleccionado(s)
+      </div>
+      <div class="btn-group btn-group-sm">
+        <!-- Aquí irían acciones bulk si las hubiera -->
+        <button type="button"
+                class="btn btn-outline-secondary"
+                (click)="selectedItems = []; itemsSelect.emit([])">
+          <i class="bi bi-x-circle me-1"></i>
+          Deseleccionar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div *ngIf="loading" class="table-loading-overlay">
+    <div class="d-flex align-items-center justify-content-center">
+      <div class="spinner-border text-primary me-3" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <span>Cargando datos...</span>
+    </div>
+  </div>
+
+  <!-- Tabla Principal -->
+  <div class="table-responsive">
+    <table [class]="getTableClasses()">
+
+      <!-- Header -->
+      <thead class="table-light">
+        <tr>
+
+          <!-- Checkbox de selección general -->
+          <th *ngIf="config.selectable" class="select-column">
+            <div class="form-check">
+              <input type="checkbox"
+                     class="form-check-input"
+                     [checked]="allSelected"
+                     [indeterminate]="indeterminate"
+                     (change)="onSelectAll()">
+            </div>
+          </th>
+
+          <!-- Números de fila -->
+          <th *ngIf="config.showRowNumbers" class="row-number-column">
+            #
+          </th>
+
+          <!-- Columnas de datos -->
+          <th *ngFor="let column of visibleColumns; trackBy: trackByFn"
+              [class]="getHeaderClasses(column)"
+              [style.width]="column.width"
+              [style.min-width]="column.minWidth">
+
+            <div class="header-content"
+                 [class.sortable]="column.sortable && config.sortable"
+                 (click)="onSort(column)">
+
+              <!-- Título de columna -->
+              <span class="header-text">{{ column.label }}</span>
+
+              <!-- Icono de ordenamiento -->
+              <i *ngIf="column.sortable && config.sortable"
+                 [class]="getSortIcon(column)"
+                 class="sort-icon ms-1"></i>
+            </div>
+          </th>
+
+          <!-- Columna de acciones -->
+          <th *ngIf="config.actions && config.actions.length > 0" class="actions-column">
+            Acciones
+          </th>
+
+        </tr>
+      </thead>
+
+      <!-- Body -->
+      <tbody>
+
+        <!-- Fila vacía si no hay datos -->
+        <tr *ngIf="!loading && data.length === 0">
+          <td [attr.colspan]="getColspan()" class="text-center py-4 text-muted">
+            <i class="bi bi-inbox display-6 d-block mb-2"></i>
+            No hay datos disponibles
+          </td>
+        </tr>
+
+        <!-- Filas de datos -->
+        <tr *ngFor="let item of data; let i = index; trackBy: trackByItemFn"
+            [class.table-active]="isItemSelected(item)">
+
+          <!-- Checkbox de selección -->
+          <td *ngIf="config.selectable" class="select-column">
+            <div class="form-check">
+              <input type="checkbox"
+                     class="form-check-input"
+                     [checked]="isItemSelected(item)"
+                     (change)="onSelectItem(item, $event)">
+            </div>
+          </td>
+
+          <!-- Número de fila -->
+          <td *ngIf="config.showRowNumbers" class="row-number-column">
+            {{ (currentPage * pageSize) + i + 1 }}
+          </td>
+
+          <!-- Celdas de datos -->
+          <td *ngFor="let column of visibleColumns"
+              [class]="getColumnClasses(column)">
+
+            <!-- Contenido según tipo de columna -->
+            <ng-container [ngSwitch]="column.type">
+
+              <!-- Imagen -->
+              <div *ngSwitchCase="ColumnType.IMAGE" class="image-cell">
+                <img [src]="getItemValue(item, column.key)"
+                     [alt]="column.label"
+                     class="table-image"
+                     onerror="this.src='assets/images/placeholder.png'">
+              </div>
+
+              <!-- Badge -->
+              <span *ngSwitchCase="ColumnType.BADGE"
+                    class="badge bg-primary">
+                {{ formatCellValue(getItemValue(item, column.key), column, item) }}
+              </span>
+
+              <!-- Link -->
+                            <!-- Link -->
+              <a *ngSwitchCase="ColumnType.LINK"
+                 href="#"
+                 class="text-decoration-none"
+                 (click)="onItemAction('view', item)">
+                {{ formatCellValue(getItemValue(item, column.key), column, item) }}
+              </a>
+
+              <!-- Boolean con iconos -->
+                            <!-- Boolean con íconos -->
+              <div *ngSwitchCase="ColumnType.BOOLEAN" class="text-center">
+                <i *ngIf="getItemValue(item, column.key)" class="bi bi-check-circle text-success"></i>
+                <i *ngIf="!getItemValue(item, column.key)" class="bi bi-x-circle text-danger"></i>
+                <span class="ms-1">{{ formatCellValue(getItemValue(item, column.key), column, item) }}</span>
+              </div>
+
+              <!-- Contenido por defecto -->
+              <span *ngSwitchDefault>
+                {{ formatCellValue(getItemValue(item, column.key), column, item) }}
+              </span>
+
+            </ng-container>
+          </td>
+
+          <!-- Acciones -->
+          <td *ngIf="config.actions && config.actions.length > 0" class="actions-column">
+            <div class="btn-group btn-group-sm">
+
+              <!-- Acciones individuales -->
+              <ng-container *ngFor="let action of config.actions">
+                <button *ngIf="isActionVisible(action, item) && action.type !== ActionType.DROPDOWN"
+                        type="button"
+                        [class]="'btn btn-' + (action.variant || 'outline-secondary')"
+                        [disabled]="isActionDisabled(action, item)"
+                        [title]="action.tooltip || action.label"
+                        (click)="onActionClick(action, item)">
+                  <i *ngIf="action.icon" [class]="action.icon"></i>
+                  <span *ngIf="action.type !== ActionType.ICON" class="ms-1">{{ action.label }}</span>
+                </button>
+              </ng-container>
+
+              <!-- Dropdown de acciones -->
+              <div *ngIf="hasDropdownActions"
+                   class="btn-group"
+                   ngbDropdown>
+                <button type="button"
+                        class="btn btn-outline-secondary dropdown-toggle"
+                        ngbDropdownToggle>
+                  <i class="bi bi-three-dots-vertical"></i>
+                </button>
+                <div class="dropdown-menu">
+                  <ng-container *ngFor="let action of config.actions">
+                    <button *ngIf="action.type === ActionType.DROPDOWN && isActionVisible(action, item)"
+                            class="dropdown-item"
+                            [class.disabled]="isActionDisabled(action, item)"
+                            (click)="onActionClick(action, item)">
+                      <i *ngIf="action.icon" [class]="action.icon" class="me-2"></i>
+                      {{ action.label }}
+                    </button>
+                  </ng-container>
+                </div>
+              </div>
+
+            </div>
+          </td>
+
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Footer con información -->
+  <div *ngIf="totalItems > 0" class="data-table-footer">
+    <div class="row align-items-center">
+      <div class="col-md-6">
+        <small class="text-muted">
+          Mostrando {{ data.length }} de {{ totalItems }} registros
+        </small>
+      </div>
+      <div class="col-md-6 text-end">
+        <!-- Aquí iría el componente de paginación -->
+        <small class="text-muted">
+          Página {{ currentPage + 1 }}
+        </small>
+      </div>
+    </div>
+  </div>
+
+</div>

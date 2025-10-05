@@ -6,14 +6,16 @@ registerLocaleData(localeEsCO);
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ToastrModule } from 'ngx-toastr';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 
 import { AppRoutingModule } from './app-routing.module';
-// AdminDashboardModule removido para cargarlo lazy mediante routing.
 import { CoreModule } from './core/core.module';
-import { AppComponent } from './app.component';
-import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
-import { TokenInterceptor } from './auth/interceptors/token.interceptor';
+import { LayoutsModule } from './layouts/layouts.module';
 import { SharedModule } from './shared/shared.module';
+import { CartModule } from './features/cart/cart.module';
+
+import { AppComponent } from './app.component';
+import { TokenInterceptor } from './core/interceptors/token.interceptor';
 
 @NgModule({
   declarations: [
@@ -32,7 +34,9 @@ import { SharedModule } from './shared/shared.module';
     AppRoutingModule,
     SharedModule,
     HttpClientModule,
-    CoreModule
+    CoreModule,
+    LayoutsModule,
+    CartModule
   ],
   providers: [
     {

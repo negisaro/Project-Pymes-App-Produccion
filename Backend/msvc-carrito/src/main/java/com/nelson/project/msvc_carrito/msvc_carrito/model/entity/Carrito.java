@@ -77,6 +77,15 @@ public class Carrito extends BaseEntityCorrected {
   @Column(name = "notas", length = 500)
   private String notas;
 
+  @Column(name = "fecha_abandonado")
+  private LocalDateTime fechaAbandonado;
+
+  @Column(name = "ultima_actividad")
+  private LocalDateTime ultimaActividad;
+
+  @Column(name = "total_items")
+  private Integer totalItems = 0;
+
   @OneToMany(
     mappedBy = "carrito",
     cascade = CascadeType.ALL,
@@ -89,6 +98,7 @@ public class Carrito extends BaseEntityCorrected {
   public Carrito() {
     super();
     this.expiraEn = LocalDateTime.now().plusDays(7); // Expira en 7 días por defecto
+    this.ultimaActividad = LocalDateTime.now(); // Inicializar última actividad
   }
 
   public Carrito(Long usuarioId) {
@@ -211,6 +221,7 @@ public class Carrito extends BaseEntityCorrected {
   public void marcarComoAbandonado() {
     if (estado == EstadoCarrito.ACTIVO) {
       this.estado = EstadoCarrito.ABANDONADO;
+      this.fechaAbandonado = LocalDateTime.now();
     }
   }
 
@@ -260,6 +271,7 @@ public class Carrito extends BaseEntityCorrected {
   private void actualizarExpiracion() {
     if (estado == EstadoCarrito.ACTIVO) {
       this.expiraEn = LocalDateTime.now().plusDays(7);
+      this.ultimaActividad = LocalDateTime.now();
     }
   }
 
@@ -273,13 +285,6 @@ public class Carrito extends BaseEntityCorrected {
       .stream()
       .filter(item -> item.getProductoId().equals(productoId))
       .findFirst();
-  }
-
-  /**
-   * Obtiene el número total de items en el carrito
-   */
-  public int getTotalItems() {
-    return items.stream().mapToInt(ItemCarrito::getCantidad).sum();
   }
 
   /**
@@ -354,12 +359,28 @@ public class Carrito extends BaseEntityCorrected {
     return subtotal;
   }
 
+  /**
+   * Setter directo para subtotal (para casos especiales de MapStruct)
+   * NOTA: Normalmente se calcula automáticamente
+   */
+  public void setSubtotal(BigDecimal subtotal) {
+    this.subtotal = subtotal != null ? subtotal : BigDecimal.ZERO;
+  }
+
   public BigDecimal getDescuento() {
     return descuento;
   }
 
   public BigDecimal getTotal() {
     return total;
+  }
+
+  /**
+   * Setter directo para total (para casos especiales de MapStruct)
+   * NOTA: Normalmente se calcula automáticamente
+   */
+  public void setTotal(BigDecimal total) {
+    this.total = total != null ? total : BigDecimal.ZERO;
   }
 
   public String getCodigoDescuento() {
@@ -388,6 +409,37 @@ public class Carrito extends BaseEntityCorrected {
 
   public void setNotas(String notas) {
     this.notas = notas;
+  }
+
+  public LocalDateTime getFechaAbandonado() {
+    return fechaAbandonado;
+  }
+
+  public void setFechaAbandonado(LocalDateTime fechaAbandonado) {
+    this.fechaAbandonado = fechaAbandonado;
+  }
+
+  public LocalDateTime getUltimaActividad() {
+    return ultimaActividad;
+  }
+
+  public void setUltimaActividad(LocalDateTime ultimaActividad) {
+    this.ultimaActividad = ultimaActividad;
+  }
+
+  public Integer getTotalItems() {
+    return totalItems;
+  }
+
+  public void setTotalItems(Integer totalItems) {
+    this.totalItems = totalItems != null ? totalItems : 0;
+  }
+
+  /**
+   * Método de conveniencia para compatibilidad con otros sistemas
+   */
+  public void setFechaModificacion(LocalDateTime fechaModificacion) {
+    setActualizadoEn(fechaModificacion);
   }
 
   public List<ItemCarrito> getItems() {

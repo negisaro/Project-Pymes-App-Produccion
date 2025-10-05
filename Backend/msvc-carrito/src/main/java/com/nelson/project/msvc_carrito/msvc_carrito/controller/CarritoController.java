@@ -16,7 +16,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -46,15 +47,18 @@ import org.springframework.web.bind.annotation.*;
  * @since 2024
  */
 @RestController
-@RequestMapping("/api/v1/carrito")
+@RequestMapping("/carrito")
 @Tag(
   name = "Carrito de Compras",
   description = "API para gestión empresarial del carrito de compras"
 )
 @RequiredArgsConstructor
 @Validated
-@Slf4j
 public class CarritoController {
+
+  private static final Logger log = LoggerFactory.getLogger(
+    CarritoController.class
+  );
 
   private final CarritoService carritoService;
 
@@ -133,7 +137,7 @@ public class CarritoController {
   )
   @PostMapping("/crear/{usuarioId}")
   @PreAuthorize(
-    "hasRole('USER') and (#usuarioId == authentication.principal.id or hasRole('ADMIN'))"
+    "hasRole('CLIENT') and (#usuarioId == authentication.principal.id or hasRole('ADMIN'))"
   )
   public ResponseEntity<CarritoDto> crearCarrito(
     @Parameter(

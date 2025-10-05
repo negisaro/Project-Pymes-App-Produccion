@@ -27,12 +27,12 @@ eureka:
     service-url:
       defaultZone: ${EUREKA_SERVER_URL}
 
+jwt:
+  secret:
+    jwt-secret: ${GATEWAY_JWT_SECRET}
+
 management:
   endpoints:
     web:
       exposure:
         include: health,info
-
-jwt:
-  secret:
-    jwt-secret: ${GATEWAY_JWT_SECRET}

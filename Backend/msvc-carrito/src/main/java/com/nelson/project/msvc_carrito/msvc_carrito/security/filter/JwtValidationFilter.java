@@ -1,0 +1,93 @@
+package com.nelson.project.msvc_carrito.msvc_carrito.security.filter;
+
+import com.nelson.project.msvc_carrito.msvc_carrito.security.SecurityPaths;
+import com.nelson.project.msvc_carrito.msvc_carrito.security.service.JwtService;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.*;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+public class JwtValidationFilter extends OncePerRequestFilter {
+
+  private final JwtService jwtService;
+  private final UserDetailsService userDetailsService;
+
+  public JwtValidationFilter(
+    JwtService jwtService,
+    UserDetailsService userDetailsService
+  ) {
+    this.jwtService = jwtService;
+    this.userDetailsService = userDetailsService;
+  }
+
+  @Override
+  protected void doFilterInternal(
+    HttpServletRequest request,
+    HttpServletResponse response,
+    FilterChain filterChain
+  ) throws ServletException, IOException {
+    final String authHeader = request.getHeader("Authorization");
+    final String jwt;
+    final String username;
+
+    String path = request.getServletPath();
+    for (String publicPath : SecurityPaths.PUBLIC_GET) {
+      if (path.matches(publicPath.replace("**", ".*"))) {
+        filterChain.doFilter(request, response);
+        return;
+      }
+    }
+    for (String publicPath : SecurityPaths.PUBLIC_POST) {
+      if (path.matches(publicPath.replace("**", ".*"))) {
+        filterChain.doFilter(request, response);
+        return;
+      }
+    }
+
+    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+      filterChain.doFilter(request, response);
+      return;
+    }
+
+    try {
+      jwt = authHeader.substring(7);
+      username = jwtService.extractUsername(jwt);
+
+      if (
+        username != null &&
+        SecurityContextHolder.getContext().getAuthentication() == null
+      ) {
+        List<String> roles = jwtService.extractRoles(jwt);
+        UserDetails userDetails = userDetailsService.loadUserByUsername(
+          username
+        );
+
+        UsernamePasswordAuthenticationToken authToken =
+          new UsernamePasswordAuthenticationToken(
+            userDetails,
+            null,
+            roles
+              .stream()
+              .map(SimpleGrantedAuthority::new)
+              .collect(Collectors.toList())
+          );
+        authToken.setDetails(
+          new WebAuthenticationDetailsSource().buildDetails(request)
+        );
+        SecurityContextHolder.getContext().setAuthentication(authToken);
+      }
+      filterChain.doFilter(request, response);
+    } catch (io.jsonwebtoken.JwtException ex) {
+      throw ex;
+    }
+  }
+}

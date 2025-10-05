@@ -1,0 +1,51 @@
+<div class="auth-shell">
+  <main class="auth-panel">
+    <div class="panel-header">
+      <h2>Bienvenido de nuevo</h2>
+      <p class="subtitle">Accede con tus credenciales para continuar.</p>
+      <button type="button" class="btn-primary-modern" style="margin-top:.5rem; align-self:flex-start; padding:.45rem .9rem; font-size:.7rem;" (click)="toggleTheme()">
+        <span *ngIf="theme==='dark'">☀️ Modo claro</span>
+        <span *ngIf="theme==='light'">🌙 Modo oscuro</span>
+      </button>
+    </div>
+
+    <form class="auth-form" [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate aria-live="polite">
+      <div class="field" [class.field--error]="loginForm.get('username')?.invalid && loginForm.get('username')?.touched">
+        <label for="username">Usuario o Email</label>
+        <div class="input-wrapper">
+          <i class="bi bi-person"></i>
+          <input id="username" type="text" formControlName="username" placeholder="tu_usuario" autocomplete="username" />
+        </div>
+        <p class="field-msg" *ngIf="loginForm.get('username')?.invalid && loginForm.get('username')?.touched">Campo obligatorio</p>
+      </div>
+
+      <div class="field" [class.field--error]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+        <label for="password">Contraseña</label>
+        <div class="input-wrapper password-wrapper">
+          <i class="bi bi-lock"></i>
+          <input id="password" type="password" formControlName="password" placeholder="••••••••" autocomplete="current-password" />
+        </div>
+        <p class="field-msg" *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">Campo obligatorio</p>
+      </div>
+
+      <div class="form-meta">
+        <label class="remember">
+          <input type="checkbox" /> <span>Recordarme</span>
+        </label>
+        <a routerLink="/auth/forgot-password" class="muted-link">¿Olvidaste tu contraseña?</a>
+      </div>
+
+      <button type="submit" class="btn-primary-modern" [disabled]="loginForm.invalid || loading">
+        <span *ngIf="!loading">Ingresar</span>
+        <span *ngIf="loading" class="loading-inline"><span class="spinner"></span> Validando...</span>
+      </button>
+
+      <div class="form-message error" *ngIf="errorMsg"><i class="bi bi-exclamation-triangle"></i> {{ errorMsg }}</div>
+    </form>
+
+    <div class="panel-footer">
+      ¿No tienes cuenta?
+      <a routerLink="/auth/register" class="link-bold">Crear cuenta</a>
+    </div>
+  </main>
+</div>

@@ -4,13 +4,15 @@ import {
   IsNotAuthenticatedGuard,
   IsAuthenticatedGuard,
   RoleGuard,
-} from './auth/guards';
+} from './core/guards';
 
 import { HomePageComponent } from './shared/pages/home-page/home-page.component';
 import { AboutPageComponent } from './shared/pages/about-page/about-page.component';
-import { MainLayoutComponent } from './core/layout/main-layout/main-layout.component';
-import { AdminLayoutComponent } from './core/layout/admin-layout/admin-layout.component';
-import { AuthLayoutComponent } from './core/layout/auth-layout/auth-layout.component';
+import { MainLayoutComponent } from './layouts/main-layout/main-layout.component';
+import { AdminLayoutComponent } from './layouts/admin-layout/admin-layout.component';
+import { AuthLayoutComponent } from './layouts/auth-layout/auth-layout.component';
+import { ClientLayoutComponent } from './layouts/client-layout/cliente-layout.component';
+
 import { PreloadSelectedModulesStrategy } from './core/routing/preload-selected-modules.strategy';
 
 const routes: Routes = [
@@ -23,7 +25,7 @@ const routes: Routes = [
       { path: 'about', component: AboutPageComponent },
       {
         path: 'buscar',
-        loadChildren: () => import('./search/search.module').then(m => m.SearchModule),
+        loadChildren: () => import('./features/search/search.module').then(m => m.SearchModule),
         data: { preload: true }
       },
       // Más rutas públicas aquí (ej: categorías, landing)
@@ -36,7 +38,7 @@ const routes: Routes = [
       {
         path: '',
         canActivate: [IsNotAuthenticatedGuard],
-        loadChildren: () => import('./auth/auth.module').then(m => m.AuthModule),
+        loadChildren: () => import('./features/auth/auth.module').then(m => m.AuthModule),
         data: { preload: true }
       }
     ]
@@ -50,17 +52,23 @@ const routes: Routes = [
         path: 'dashboard-admin',
         canActivate: [IsAuthenticatedGuard, RoleGuard],
         data: { roles: ['ROLE_ADMIN'] },
-        loadChildren: () => import('./admin-dashboard/admin-dashboard.module').then(m => m.AdminDashboardModule)
-      },
+        loadChildren: () => import('./features/admin-dashboard/admin-dashboard.module').then(m => m.AdminDashboardModule)
+      }
     ]
   },
   // Nuevo segmento dedicado para cliente (antes estaba en /admin/dashboard-cliente)
   {
     path: 'cliente',
+    component: ClientLayoutComponent,
     canActivate: [IsAuthenticatedGuard, RoleGuard],
     // Ampliamos espectro de roles equivalentes: ROLE_CLIENT / CLIENT / CLIENTE / ROLE_CLIENTE / USER
     data: { roles: ['ROLE_CLIENT','CLIENT','CLIENTE','ROLE_CLIENTE','ROLE_USER','USER'] },
-    loadChildren: () => import('./cliente-dashboard/cliente-dashboard.module').then(m => m.ClienteDashboardModule)
+    children: [
+      {
+        path: '',
+        loadChildren: () => import('./features/client-dashboard/cliente-dashboard.module').then(m => m.ClienteDashboardModule)
+      }
+    ]
   },
   // Redirección legacy para mantener compatibilidad con enlaces antiguos
   { path: 'admin/dashboard-cliente', redirectTo: '/cliente', pathMatch: 'full' },

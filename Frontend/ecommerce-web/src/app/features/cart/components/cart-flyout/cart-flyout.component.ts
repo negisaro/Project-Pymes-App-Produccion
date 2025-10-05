@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, ElementRef, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output } from '@angular/core';
-import { CartStore } from '../../../../state/cart.store';
+import { CartStore } from '../../../../core/state/cart.store';
 
 @Component({
   selector: 'app-cart-flyout',

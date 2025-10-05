@@ -2,32 +2,71 @@ package com.nelson.project.msvc_carrito.msvc_carrito.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.nelson.project.msvc_carrito.msvc_carrito.validation.ValidationGroups;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * DTO completo para transferencia de datos de items del carrito
  * Incluye validaciones, documentación y campos desnormalizados del producto
+ * MIGRADO A LOMBOK: Implementa Validation Groups para contextos específicos
  */
+@Data
+@Builder(toBuilder = true)
+@NoArgsConstructor
+@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(
   description = "Item del carrito de compras con información desnormalizada del producto"
 )
 public class ItemCarritoDto {
 
+  @Null(
+    groups = ValidationGroups.OnCreate.class,
+    message = "El ID debe ser nulo al crear el item"
+  )
+  @NotNull(
+    groups = {
+      ValidationGroups.OnUpdate.class, ValidationGroups.OnDelete.class,
+    },
+    message = "El ID del item es obligatorio para esta operación"
+  )
   @Schema(description = "ID único del item en el carrito", example = "1")
   private Long id;
 
-  @NotNull(message = "El ID del producto es obligatorio")
+  @NotNull(
+    groups = {
+      ValidationGroups.OnCreate.class,
+      ValidationGroups.OnUpdate.class,
+      ValidationGroups.OnInventoryCheck.class,
+    },
+    message = "El ID del producto es obligatorio"
+  )
   @Positive(message = "El ID del producto debe ser positivo")
   @Schema(description = "ID del producto", example = "456", required = true)
   private Long productoId;
 
-  @NotNull(message = "La cantidad es obligatoria")
+  @NotNull(
+    groups = {
+      ValidationGroups.OnCreate.class,
+      ValidationGroups.OnUpdate.class,
+      ValidationGroups.OnCartOperation.class,
+    },
+    message = "La cantidad es obligatoria"
+  )
   @Min(value = 1, message = "La cantidad debe ser al menos 1")
   @Max(value = 1000, message = "La cantidad no puede exceder 1000 unidades")
+  @Max(
+    value = 50,
+    groups = ValidationGroups.OnPayment.class,
+    message = "La cantidad no puede exceder 50 unidades para el pago"
+  )
   @Schema(
     description = "Cantidad del producto en el carrito",
     example = "2",
@@ -35,7 +74,14 @@ public class ItemCarritoDto {
   )
   private Integer cantidad;
 
-  @NotNull(message = "El precio unitario es obligatorio")
+  @NotNull(
+    groups = {
+      ValidationGroups.OnCreate.class,
+      ValidationGroups.OnUpdate.class,
+      ValidationGroups.OnPayment.class,
+    },
+    message = "El precio unitario es obligatorio"
+  )
   @DecimalMin(value = "0.01", message = "El precio unitario debe ser mayor a 0")
   @Digits(
     integer = 10,
@@ -162,181 +208,27 @@ public class ItemCarritoDto {
   )
   private Long version;
 
-  // Constructores
-  public ItemCarritoDto() {}
+  // ================================
+  // MÉTODOS DE LÓGICA DE NEGOCIO
+  // ================================
 
-  public ItemCarritoDto(
-    Long productoId,
-    Integer cantidad,
-    BigDecimal precioUnitario
-  ) {
-    this.productoId = productoId;
-    this.cantidad = cantidad;
-    this.precioUnitario = precioUnitario;
-  }
-
-  // Getters y Setters
-  public Long getId() {
-    return id;
-  }
-
-  public void setId(Long id) {
-    this.id = id;
-  }
-
-  public Long getProductoId() {
-    return productoId;
-  }
-
-  public void setProductoId(Long productoId) {
-    this.productoId = productoId;
-  }
-
-  public Integer getCantidad() {
-    return cantidad;
-  }
-
-  public void setCantidad(Integer cantidad) {
-    this.cantidad = cantidad;
-  }
-
-  public BigDecimal getPrecioUnitario() {
-    return precioUnitario;
-  }
-
-  public void setPrecioUnitario(BigDecimal precioUnitario) {
-    this.precioUnitario = precioUnitario;
-  }
-
-  public BigDecimal getDescuentoAplicado() {
-    return descuentoAplicado;
-  }
-
-  public void setDescuentoAplicado(BigDecimal descuentoAplicado) {
-    this.descuentoAplicado = descuentoAplicado;
-  }
-
-  public BigDecimal getSubtotal() {
-    return subtotal;
-  }
-
-  public void setSubtotal(BigDecimal subtotal) {
-    this.subtotal = subtotal;
-  }
-
-  public String getNombreProducto() {
-    return nombreProducto;
-  }
-
-  public void setNombreProducto(String nombreProducto) {
-    this.nombreProducto = nombreProducto;
-  }
-
-  public String getDescripcionProducto() {
-    return descripcionProducto;
-  }
-
-  public void setDescripcionProducto(String descripcionProducto) {
-    this.descripcionProducto = descripcionProducto;
-  }
-
-  public String getSkuProducto() {
-    return skuProducto;
-  }
-
-  public void setSkuProducto(String skuProducto) {
-    this.skuProducto = skuProducto;
-  }
-
-  public String getImagenProducto() {
-    return imagenProducto;
-  }
-
-  public void setImagenProducto(String imagenProducto) {
-    this.imagenProducto = imagenProducto;
-  }
-
-  public String getCategoriaProducto() {
-    return categoriaProducto;
-  }
-
-  public void setCategoriaProducto(String categoriaProducto) {
-    this.categoriaProducto = categoriaProducto;
-  }
-
-  public String getMarcaProducto() {
-    return marcaProducto;
-  }
-
-  public void setMarcaProducto(String marcaProducto) {
-    this.marcaProducto = marcaProducto;
-  }
-
-  public BigDecimal getPesoProducto() {
-    return pesoProducto;
-  }
-
-  public void setPesoProducto(BigDecimal pesoProducto) {
-    this.pesoProducto = pesoProducto;
-  }
-
-  public String getDimensionesProducto() {
-    return dimensionesProducto;
-  }
-
-  public void setDimensionesProducto(String dimensionesProducto) {
-    this.dimensionesProducto = dimensionesProducto;
-  }
-
-  public Boolean getDisponible() {
-    return disponible;
-  }
-
-  public void setDisponible(Boolean disponible) {
-    this.disponible = disponible;
-  }
-
-  public Integer getStockDisponible() {
-    return stockDisponible;
-  }
-
-  public void setStockDisponible(Integer stockDisponible) {
-    this.stockDisponible = stockDisponible;
-  }
-
-  public LocalDateTime getFechaAgregado() {
-    return fechaAgregado;
-  }
-
-  public void setFechaAgregado(LocalDateTime fechaAgregado) {
-    this.fechaAgregado = fechaAgregado;
-  }
-
-  public LocalDateTime getFechaModificacion() {
-    return fechaModificacion;
-  }
-
-  public void setFechaModificacion(LocalDateTime fechaModificacion) {
-    this.fechaModificacion = fechaModificacion;
-  }
-
-  public Long getVersion() {
-    return version;
-  }
-
-  public void setVersion(Long version) {
-    this.version = version;
-  }
-
-  // Métodos de utilidad
+  /**
+   * Verifica si el producto está disponible
+   */
   public boolean estaDisponible() {
     return disponible != null && disponible;
   }
 
+  /**
+   * Verifica si hay stock suficiente para la cantidad requerida
+   */
   public boolean tieneStock(Integer cantidadRequerida) {
     return stockDisponible != null && stockDisponible >= cantidadRequerida;
   }
 
+  /**
+   * Calcula el total del item considerando cantidad, precio y descuentos
+   */
   public BigDecimal calcularTotal() {
     if (subtotal != null) {
       return subtotal;
@@ -349,26 +241,5 @@ public class ItemCarritoDto {
       return total;
     }
     return BigDecimal.ZERO;
-  }
-
-  @Override
-  public String toString() {
-    return (
-      "ItemCarritoDto{" +
-      "id=" +
-      id +
-      ", productoId=" +
-      productoId +
-      ", nombreProducto='" +
-      nombreProducto +
-      '\'' +
-      ", cantidad=" +
-      cantidad +
-      ", precioUnitario=" +
-      precioUnitario +
-      ", subtotal=" +
-      subtotal +
-      '}'
-    );
   }
 }

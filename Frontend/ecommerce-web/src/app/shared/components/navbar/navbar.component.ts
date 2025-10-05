@@ -4,7 +4,7 @@ import { BehaviorSubject } from 'rxjs';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
-import { AuthService } from '../../../auth/services/auth.service';
+import { AuthService } from '../../../features/auth/services/auth.service';
 
 @Component({
   selector: 'shared-navbar',

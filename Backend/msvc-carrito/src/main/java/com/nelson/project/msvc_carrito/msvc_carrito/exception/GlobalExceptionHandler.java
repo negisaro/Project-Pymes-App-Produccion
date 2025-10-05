@@ -11,7 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -44,8 +45,11 @@ import org.springframework.web.servlet.NoHandlerFoundException;
  * @since 2024
  */
 @RestControllerAdvice
-@Slf4j
 public class GlobalExceptionHandler {
+
+  private static final Logger log = LoggerFactory.getLogger(
+    GlobalExceptionHandler.class
+  );
 
   // ============================================
   // EXCEPCIONES DE NEGOCIO ESPECÍFICAS

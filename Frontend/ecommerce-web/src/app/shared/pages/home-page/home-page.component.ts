@@ -1,10 +1,9 @@
-
 import { Component, OnInit, AfterViewInit, ElementRef, ViewChildren, QueryList } from '@angular/core';
 import { environment } from '../../../../environments/environments';
-import { Producto as ProductoBase } from '../../../producto/interfaces/producto';
-import { ProductoPublicService } from '../../../producto/service/producto.service.public';
-import { Categoria } from '../../../categoria/interfaces/categoria';
-import { CategoriaPublicService } from '../../../categoria/service/categoria.service.public';
+import { Product as ProductoBase } from '../../interfaces/product-public.interface';
+import { ProductPublicService } from '../../services/product-public.service';
+import { CategorySummaryDto } from '../../../features/categories/core/models';
+import { CategoryPublicService } from '../../services/category-public.service';
 
 // Extiende Producto para incluir stockHistory opcional
 export interface ProductoWithHistory extends ProductoBase {
@@ -17,24 +16,24 @@ export interface ProductoWithHistory extends ProductoBase {
   styleUrls: ['./home-page.component.css'],
 })
 export class HomePageComponent implements OnInit, AfterViewInit {
-  categoriasConProductos: Array<Categoria & { productos: ProductoWithHistory[] }> = [];
+  categoriasConProductos: Array<CategorySummaryDto & { productos: ProductoWithHistory[] }> = [];
 
   @ViewChildren('carouselContainer') carouselContainers!: QueryList<ElementRef>;
 
   constructor(
-    private productoService: ProductoPublicService,
-    private categoriaService: CategoriaPublicService
+    private productoService: ProductPublicService,
+    private categoriaService: CategoryPublicService
   ) {}
 
   ngOnInit(): void {
     // Consultar categorías y productos en paralelo
     Promise.all([
-      this.categoriaService.getCategorias().toPromise(),
-      this.productoService.getProductos().toPromise()
+      this.categoriaService.getPublicCategories().toPromise(),
+      this.productoService.getProducts().toPromise()
     ]).then(([categorias, productos]) => {
       // Soportar respuesta paginada o array plano
-  const categoriasList = Array.isArray(categorias) ? categorias : (categorias as any)?.content || [];
-  const productosList = Array.isArray(productos) ? productos : (productos as any)?.content || [];
+      const categoriasList = categorias?.content || [];
+      const productosList = productos?.content || [];
       // Debug: mostrar cuántos productos y categorías llegan
       console.log('[DEBUG] Categorías recibidas:', categoriasList.length, categoriasList);
       console.log('[DEBUG] Productos recibidos:', productosList.length, productosList);
@@ -47,7 +46,7 @@ export class HomePageComponent implements OnInit, AfterViewInit {
           p.stockHistory = Array.from({ length: 7 }).map((_, i) => Math.max(0, base - Math.floor(Math.random() * 3) + i));
         }
       });
-      this.categoriasConProductos = (categoriasList || []).map((cat: Categoria) => ({
+      this.categoriasConProductos = (categoriasList || []).map((cat: CategorySummaryDto) => ({
         ...cat,
         productos: productosList.filter((p: ProductoWithHistory) => p.categoriaId === cat.id)
       })).filter((cat: any) => cat.productos.length > 0);
@@ -93,7 +92,6 @@ export class HomePageComponent implements OnInit, AfterViewInit {
     }
   }
 
-
   getImageUrl(imagePath: string): string {
     if (!imagePath) return 'https://via.placeholder.com/400x180?text=Sin+imagen';
     if (imagePath.startsWith('http')) return imagePath;
@@ -108,5 +106,14 @@ export class HomePageComponent implements OnInit, AfterViewInit {
 
   addToCart(product: ProductoWithHistory) {
     // Tu lógica de agregar al carrito
+  }
+
+  formatCurrency(amount: number): string {
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount);
   }
 }

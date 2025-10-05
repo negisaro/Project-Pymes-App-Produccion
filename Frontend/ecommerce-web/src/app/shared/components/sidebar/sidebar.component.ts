@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
-import { AuthService } from '../../../auth/services/auth.service';
+import { AuthService } from '../../../features/auth/services/auth.service';
 import { Observable } from 'rxjs';
 
 @Component({

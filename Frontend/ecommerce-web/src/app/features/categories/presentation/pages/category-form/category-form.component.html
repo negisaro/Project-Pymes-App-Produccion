@@ -1,0 +1,368 @@
+<div class="category-form-page">
+  <!-- Hero Section -->
+  <app-hero-section [config]="heroConfig"></app-hero-section>
+
+  <!-- Form Container -->
+  <div class="container-fluid">
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-10 col-xl-8">
+
+        <!-- Loading State -->
+        <div *ngIf="loading" class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+          <p class="mt-3 text-muted">Cargando categoría...</p>
+        </div>
+
+        <!-- Form Card -->
+        <div *ngIf="!loading" class="card shadow-sm">
+          <form [formGroup]="categoryForm" (ngSubmit)="onSubmit()" novalidate>
+
+            <!-- Basic Information Section -->
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">
+                <i class="bi bi-info-circle me-2"></i>
+                Información Básica
+              </h5>
+              <button type="button" class="btn btn-link text-white p-0"
+                      (click)="toggleSection('basic')">
+                <i class="bi" [class.bi-chevron-up]="expandedSections.basic"
+                   [class.bi-chevron-down]="!expandedSections.basic"></i>
+              </button>
+            </div>
+
+            <div class="card-body" [class.d-none]="!expandedSections.basic">
+              <div class="row g-3">
+                <!-- Nombre -->
+                <div class="col-md-6">
+                  <label for="nombre" class="form-label">
+                    Nombre <span class="text-danger">*</span>
+                  </label>
+                  <input type="text"
+                         id="nombre"
+                         class="form-control"
+                         formControlName="nombre"
+                         [class.is-invalid]="isFieldInvalid('nombre')"
+                         placeholder="Ingrese el nombre de la categoría">
+                  <div class="invalid-feedback">
+                    {{ getFieldError('nombre') }}
+                  </div>
+                </div>
+
+                <!-- Código -->
+                <div class="col-md-6">
+                  <label for="codigo" class="form-label">
+                    Código <span class="text-danger">*</span>
+                  </label>
+                  <div class="input-group">
+                    <input type="text"
+                           id="codigo"
+                           class="form-control"
+                           formControlName="codigo"
+                           [class.is-invalid]="isFieldInvalid('codigo') || !codeValidation.available"
+                           placeholder="CÓDIGO_CATEGORÍA">
+                    <span class="input-group-text">
+                      <span *ngIf="codeValidation.checking" class="spinner-border spinner-border-sm text-primary"></span>
+                      <i *ngIf="!codeValidation.checking && codeValidation.available" class="bi bi-check-circle text-success"></i>
+                      <i *ngIf="!codeValidation.checking && !codeValidation.available" class="bi bi-x-circle text-danger"></i>
+                    </span>
+                  </div>
+                  <div class="invalid-feedback d-block" *ngIf="isFieldInvalid('codigo') || !codeValidation.available">
+                    {{ getFieldError('codigo') || codeValidation.message }}
+                  </div>
+                  <small class="form-text text-muted">Solo letras mayúsculas, números, guiones y guiones bajos</small>
+                </div>
+
+                <!-- Descripción -->
+                <div class="col-12">
+                  <label for="descripcion" class="form-label">Descripción</label>
+                  <textarea id="descripcion"
+                            class="form-control"
+                            formControlName="descripcion"
+                            [class.is-invalid]="isFieldInvalid('descripcion')"
+                            rows="3"
+                            placeholder="Descripción detallada de la categoría"></textarea>
+                  <div class="invalid-feedback">
+                    {{ getFieldError('descripcion') }}
+                  </div>
+                </div>
+
+                <!-- Estado y Categoría Padre -->
+                <div class="col-md-6">
+                  <label for="categoriaPadreId" class="form-label">Categoría Padre</label>
+                  <select id="categoriaPadreId"
+                          class="form-select"
+                          formControlName="categoriaPadreId">
+                    <option value="">Sin categoría padre (raíz)</option>
+                    <option *ngFor="let parent of parentCategories" [value]="parent.id">
+                      {{ parent.nombre }}
+                    </option>
+                  </select>
+                </div>
+
+                <div class="col-md-6">
+                  <label for="tipo" class="form-label">Tipo</label>
+                  <select id="tipo"
+                          class="form-select"
+                          formControlName="tipo">
+                    <option *ngFor="let type of categoryTypes" [value]="type">
+                      {{ type }}
+                    </option>
+                  </select>
+                </div>
+
+                <!-- Estado Activo -->
+                <div class="col-12">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input"
+                           type="checkbox"
+                           id="activo"
+                           formControlName="activo">
+                    <label class="form-check-label" for="activo">
+                      <strong>Categoría Activa</strong>
+                      <small class="d-block text-muted">Las categorías inactivas no aparecerán en el frontend</small>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Visual Section -->
+            <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">
+                <i class="bi bi-palette me-2"></i>
+                Configuración Visual
+              </h5>
+              <button type="button" class="btn btn-link text-white p-0"
+                      (click)="toggleSection('visual')">
+                <i class="bi" [class.bi-chevron-up]="expandedSections.visual"
+                   [class.bi-chevron-down]="!expandedSections.visual"></i>
+              </button>
+            </div>
+
+            <div class="card-body" [class.d-none]="!expandedSections.visual">
+              <div class="row g-3">
+                <!-- Color -->
+                <div class="col-md-4">
+                  <label for="colorHex" class="form-label">Color</label>
+                  <div class="input-group">
+                    <input type="color"
+                           id="colorHex"
+                           class="form-control form-control-color"
+                           formControlName="colorHex">
+                    <input type="text"
+                           class="form-control"
+                           formControlName="colorHex"
+                           placeholder="#6f42c1">
+                  </div>
+                </div>
+
+                <!-- Icono -->
+                <div class="col-md-4">
+                  <label for="icono" class="form-label">Icono</label>
+                  <select id="icono"
+                          class="form-select"
+                          formControlName="icono">
+                    <option *ngFor="let icon of availableIcons" [value]="icon">
+                      {{ icon }}
+                    </option>
+                  </select>
+                  <small class="form-text text-muted">
+                    <i class="bi" [class]="f['icono'].value"></i> Vista previa
+                  </small>
+                </div>
+
+                <!-- Orden -->
+                <div class="col-md-4">
+                  <label for="ordenVisualizacion" class="form-label">Orden</label>
+                  <input type="number"
+                         id="ordenVisualizacion"
+                         class="form-control"
+                         formControlName="ordenVisualizacion"
+                         [class.is-invalid]="isFieldInvalid('ordenVisualizacion')"
+                         min="0"
+                         placeholder="0">
+                  <div class="invalid-feedback">
+                    {{ getFieldError('ordenVisualizacion') }}
+                  </div>
+                </div>
+
+                <!-- Imagen URL -->
+                <div class="col-12">
+                  <label for="imagenUrl" class="form-label">URL de Imagen</label>
+                  <input type="url"
+                         id="imagenUrl"
+                         class="form-control"
+                         formControlName="imagenUrl"
+                         placeholder="https://ejemplo.com/imagen.jpg">
+                </div>
+              </div>
+            </div>
+
+            <!-- SEO Section -->
+            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">
+                <i class="bi bi-search me-2"></i>
+                Configuración SEO
+              </h5>
+              <button type="button" class="btn btn-link text-white p-0"
+                      (click)="toggleSection('seo')">
+                <i class="bi" [class.bi-chevron-up]="expandedSections.seo"
+                   [class.bi-chevron-down]="!expandedSections.seo"></i>
+              </button>
+            </div>
+
+            <div class="card-body" [class.d-none]="!expandedSections.seo">
+              <div class="row g-3">
+                <!-- Meta Título -->
+                <div class="col-md-6">
+                  <label for="metaTitulo" class="form-label">Meta Título</label>
+                  <input type="text"
+                         id="metaTitulo"
+                         class="form-control"
+                         formControlName="metaTitulo"
+                         [class.is-invalid]="isFieldInvalid('metaTitulo')"
+                         placeholder="Título para motores de búsqueda">
+                  <div class="invalid-feedback">
+                    {{ getFieldError('metaTitulo') }}
+                  </div>
+                  <small class="form-text text-muted">Máximo 60 caracteres</small>
+                </div>
+
+                <!-- Palabras Clave -->
+                <div class="col-md-6">
+                  <label for="palabrasClave" class="form-label">Palabras Clave</label>
+                  <input type="text"
+                         id="palabrasClave"
+                         class="form-control"
+                         formControlName="palabrasClave"
+                         [class.is-invalid]="isFieldInvalid('palabrasClave')"
+                         placeholder="palabra1, palabra2, palabra3">
+                  <div class="invalid-feedback">
+                    {{ getFieldError('palabrasClave') }}
+                  </div>
+                  <small class="form-text text-muted">Separadas por comas</small>
+                </div>
+
+                <!-- Meta Descripción -->
+                <div class="col-12">
+                  <label for="metaDescripcion" class="form-label">Meta Descripción</label>
+                  <textarea id="metaDescripcion"
+                            class="form-control"
+                            formControlName="metaDescripcion"
+                            [class.is-invalid]="isFieldInvalid('metaDescripcion')"
+                            rows="2"
+                            placeholder="Descripción para motores de búsqueda"></textarea>
+                  <div class="invalid-feedback">
+                    {{ getFieldError('metaDescripcion') }}
+                  </div>
+                  <small class="form-text text-muted">Máximo 160 caracteres</small>
+                </div>
+              </div>
+            </div>
+
+            <!-- Business Section -->
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">
+                <i class="bi bi-briefcase me-2"></i>
+                Configuración de Negocio
+              </h5>
+              <button type="button" class="btn btn-link text-white p-0"
+                      (click)="toggleSection('business')">
+                <i class="bi" [class.bi-chevron-up]="expandedSections.business"
+                   [class.bi-chevron-down]="!expandedSections.business"></i>
+              </button>
+            </div>
+
+            <div class="card-body" [class.d-none]="!expandedSections.business">
+              <div class="row g-3">
+                <!-- Comisión -->
+                <div class="col-md-6">
+                  <label for="comisionDefecto" class="form-label">Comisión por Defecto (%)</label>
+                  <input type="number"
+                         id="comisionDefecto"
+                         class="form-control"
+                         formControlName="comisionDefecto"
+                         [class.is-invalid]="isFieldInvalid('comisionDefecto')"
+                         min="0"
+                         max="100"
+                         step="0.01"
+                         placeholder="0.00">
+                  <div class="invalid-feedback">
+                    {{ getFieldError('comisionDefecto') }}
+                  </div>
+                </div>
+
+                <!-- Switches de configuración -->
+                <div class="col-12">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="form-check form-switch">
+                        <input class="form-check-input"
+                               type="checkbox"
+                               id="permiteProductos"
+                               formControlName="permiteProductos">
+                        <label class="form-check-label" for="permiteProductos">
+                          <strong>Permite Productos</strong>
+                          <small class="d-block text-muted">Permite agregar productos directamente</small>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div class="col-md-6">
+                      <div class="form-check form-switch">
+                        <input class="form-check-input"
+                               type="checkbox"
+                               id="requiereAprobacion"
+                               formControlName="requiereAprobacion">
+                        <label class="form-check-label" for="requiereAprobacion">
+                          <strong>Requiere Aprobación</strong>
+                          <small class="d-block text-muted">Los productos necesitan aprobación</small>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="card-footer bg-light">
+              <div class="d-flex justify-content-between align-items-center">
+                <button type="button"
+                        class="btn btn-outline-secondary"
+                        (click)="onCancel()"
+                        [disabled]="saving">
+                  <i class="bi bi-x-lg me-1"></i>
+                  Cancelar
+                </button>
+
+                <div class="d-flex gap-2">
+                  <button type="button"
+                          class="btn btn-outline-primary"
+                          [disabled]="saving">
+                    <i class="bi bi-eye me-1"></i>
+                    Vista Previa
+                  </button>
+
+                  <button type="submit"
+                          class="btn btn-primary"
+                          [disabled]="categoryForm.invalid || saving || !codeValidation.available">
+                    <span *ngIf="saving" class="spinner-border spinner-border-sm me-2"></span>
+                    <i *ngIf="!saving" class="bi me-1"
+                       [class.bi-plus-lg]="!isEditMode"
+                       [class.bi-check-lg]="isEditMode"></i>
+                    {{ saving ? 'Guardando...' : (isEditMode ? 'Actualizar' : 'Crear') }} Categoría
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

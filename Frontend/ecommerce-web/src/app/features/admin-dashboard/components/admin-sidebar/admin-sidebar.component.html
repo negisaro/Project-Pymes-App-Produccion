@@ -1,0 +1,27 @@
+<aside class="admin-sb" [class.is-collapsed]="!sidebarOpen" aria-label="Menú administrador">
+  <div class="admin-sb__header">
+    <span class="admin-sb__brand">Admin</span>
+    <button type="button" (click)="toggleSidebar()" aria-label="Alternar sidebar">⟨⟩</button>
+  </div>
+  <nav class="admin-sb__nav" aria-label="Secciones">
+    <ul>
+      <li *ngFor="let i of items">
+        <a [routerLink]="i.path" routerLinkActive="is-active">{{ i.label }}</a>
+      </li>
+    </ul>
+  </nav>
+  <footer class="admin-sb__footer">
+    <a routerLink="/" class="home-link">
+      <i class="bi bi-house me-1"></i>
+      <span>Volver al sitio</span>
+    </a>
+    <button
+      type="button"
+      class="logout-btn"
+      (click)="logout()"
+      title="Cerrar sesión de administrador">
+      <i class="bi bi-box-arrow-right me-1"></i>
+      <span>Cerrar sesión</span>
+    </button>
+  </footer>
+</aside>

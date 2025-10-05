@@ -28,22 +28,24 @@ public interface CarritoAnalyticsRepository
    * Obtiene patrones de tiempo de sesión promedio por usuario
    */
   @Query(
-    """
-    SELECT c.usuarioId,
-           AVG(EXTRACT(EPOCH FROM (c.actualizadoEn - c.creadoEn))/60) as tiempoPromedioMinutos,
-           COUNT(c) as totalSesiones,
-           AVG(c.total) as valorPromedio
-    FROM Carrito c
-    WHERE c.creadoEn BETWEEN :fechaInicio AND :fechaFin
-    AND c.actualizadoEn > c.creadoEn
-    GROUP BY c.usuarioId
-    HAVING COUNT(c) >= :minimoSesiones
-    ORDER BY tiempoPromedioMinutos DESC
-    """
+    value = """
+      SELECT c.usuario_id,
+             AVG(TIMESTAMPDIFF(SECOND, c.creado_en, c.actualizado_en) / 60.0) as tiempoPromedioMinutos,
+             COUNT(*) as totalSesiones,
+             AVG(c.total) as valorPromedio
+      FROM carritos c
+      WHERE c.creado_en BETWEEN :fechaInicio AND :fechaFin
+        AND c.actualizado_en > c.creado_en
+        AND (SELECT COUNT(*) FROM items_carrito i WHERE i.carrito_id = c.id) > 0
+      GROUP BY c.usuario_id
+      HAVING COUNT(*) >= :minimoSesiones
+      ORDER BY tiempoPromedioMinutos DESC
+    """,
+    nativeQuery = true
   )
   List<Object[]> findPatronesTiempoSesion(
-    @Param("fechaInicio") LocalDateTime fechaInicio,
-    @Param("fechaFin") LocalDateTime fechaFin,
+    @Param("fechaInicio") java.sql.Timestamp fechaInicio,
+    @Param("fechaFin") java.sql.Timestamp fechaFin,
     @Param("minimoSesiones") Integer minimoSesiones
   );
 
@@ -75,29 +77,30 @@ public interface CarritoAnalyticsRepository
    * Segmentación de usuarios por valor de compra
    */
   @Query(
-    """
-    SELECT
-        CASE
-            WHEN SUM(c.total) >= :valorVIP THEN 'VIP'
-            WHEN SUM(c.total) >= :valorPremium THEN 'Premium'
-            WHEN SUM(c.total) >= :valorRegular THEN 'Regular'
-            ELSE 'Básico'
-        END as segmento,
-        COUNT(DISTINCT c.usuarioId) as cantidadUsuarios,
-        AVG(SUM(c.total)) as valorPromedioPorUsuario,
-        SUM(SUM(c.total)) as valorTotalSegmento
-    FROM Carrito c
-    WHERE c.estado = 'PROCESADO'
-    AND c.creadoEn BETWEEN :fechaInicio AND :fechaFin
-    GROUP BY c.usuarioId,
-        CASE
-            WHEN SUM(c.total) >= :valorVIP THEN 'VIP'
-            WHEN SUM(c.total) >= :valorPremium THEN 'Premium'
-            WHEN SUM(c.total) >= :valorRegular THEN 'Regular'
-            ELSE 'Básico'
-        END
+    value = """
+    /* Subconsulta: totales por usuario dentro del rango */
+    SELECT seg.segmento,
+           COUNT(*) AS cantidadUsuarios,
+           SUM(seg.total_usuario) AS valorTotalSegmento,
+           (SUM(seg.total_usuario) / NULLIF(COUNT(*),0)) AS valorPromedioPorUsuario
+    FROM (
+        SELECT c.usuario_id AS usuario_id,
+               SUM(c.total) AS total_usuario,
+               CASE
+                   WHEN SUM(c.total) >= :valorVIP THEN 'VIP'
+                   WHEN SUM(c.total) >= :valorPremium THEN 'Premium'
+                   WHEN SUM(c.total) >= :valorRegular THEN 'Regular'
+                   ELSE 'Básico'
+               END AS segmento
+        FROM carritos c
+        WHERE c.estado = 'PROCESADO'
+          AND c.creado_en BETWEEN :fechaInicio AND :fechaFin
+        GROUP BY c.usuario_id
+    ) seg
+    GROUP BY seg.segmento
     ORDER BY valorTotalSegmento DESC
-    """
+    """,
+    nativeQuery = true
   )
   List<Object[]> findSegmentacionUsuarios(
     @Param("fechaInicio") LocalDateTime fechaInicio,
@@ -191,14 +194,14 @@ public interface CarritoAnalyticsRepository
    */
   @Query(
     """
-    SELECT EXTRACT(DOW FROM c.creadoEn) as diaSemana,
+    SELECT FUNCTION('dayofweek', c.creadoEn) as diaSemana,
            COUNT(c) as totalCarritos,
            COUNT(CASE WHEN c.estado = 'PROCESADO' THEN 1 END) as procesados,
            AVG(c.total) as valorPromedio,
            SUM(CASE WHEN c.estado = 'PROCESADO' THEN c.total ELSE 0 END) as ventasTotales
     FROM Carrito c
     WHERE c.creadoEn BETWEEN :fechaInicio AND :fechaFin
-    GROUP BY EXTRACT(DOW FROM c.creadoEn)
+    GROUP BY FUNCTION('dayofweek', c.creadoEn)
     ORDER BY diaSemana
     """
   )
@@ -212,18 +215,18 @@ public interface CarritoAnalyticsRepository
    */
   @Query(
     """
-    SELECT EXTRACT(YEAR FROM c.creadoEn) as año,
-           EXTRACT(MONTH FROM c.creadoEn) as mes,
-           COUNT(c) as totalCarritos,
-           COUNT(CASE WHEN c.estado = 'PROCESADO' THEN 1 END) as procesados,
-           SUM(CASE WHEN c.estado = 'PROCESADO' THEN c.total ELSE 0 END) as ventasTotales,
-           COUNT(DISTINCT c.usuarioId) as usuariosUnicos,
-           AVG(c.total) as ticketPromedio
-    FROM Carrito c
-    WHERE c.creadoEn BETWEEN :fechaInicio AND :fechaFin
-    GROUP BY EXTRACT(YEAR FROM c.creadoEn), EXTRACT(MONTH FROM c.creadoEn)
-    ORDER BY año DESC, mes DESC
-    """
+    SELECT EXTRACT(YEAR FROM c.creadoEn) as anio,
+             EXTRACT(MONTH FROM c.creadoEn) as mes,
+             COUNT(c) as totalCarritos,
+             COUNT(CASE WHEN c.estado = 'PROCESADO' THEN 1 END) as procesados,
+             SUM(CASE WHEN c.estado = 'PROCESADO' THEN c.total ELSE 0 END) as ventasTotales,
+             COUNT(DISTINCT c.usuarioId) as usuariosUnicos,
+             AVG(c.total) as ticketPromedio
+      FROM Carrito c
+      WHERE c.creadoEn BETWEEN :fechaInicio AND :fechaFin
+      GROUP BY EXTRACT(YEAR FROM c.creadoEn), EXTRACT(MONTH FROM c.creadoEn)
+    ORDER BY anio DESC, mes DESC
+      """
   )
   List<Object[]> findTendenciasMensuales(
     @Param("fechaInicio") LocalDateTime fechaInicio,
@@ -261,29 +264,44 @@ public interface CarritoAnalyticsRepository
    * Métricas de retención de usuarios
    */
   @Query(
-    """
-    WITH PrimeraCompra AS (
-        SELECT usuarioId, MIN(creadoEn) as primeraCompra
-        FROM Carrito
-        WHERE estado = 'PROCESADO'
-        GROUP BY usuarioId
-    ),
-    UsuariosRecurrentes AS (
-        SELECT pc.usuarioId
-        FROM PrimeraCompra pc
-        JOIN Carrito c ON c.usuarioId = pc.usuarioId
+    value = """
+    /*
+      Retención inmediata de usuarios:
+      - usuariosNuevos: usuarios cuya primera compra (primer carrito PROCESADO) cae dentro del rango.
+      - usuariosRecurrentes: subconjunto de esos nuevos que realizan al menos una compra adicional en el mismo rango.
+      - tasaRetencion: (recurrentes / nuevos) * 100.
+      Notas:
+        * Se usa tabla física 'carritos' y columnas snake_case.
+        * Evitamos divisiones por cero con NULLIF.
+        * Se consideran solo carritos con estado PROCESADO.
+    */
+    WITH primera_compra AS (
+        SELECT c.usuario_id, MIN(c.creado_en) AS primera_compra
+        FROM carritos c
         WHERE c.estado = 'PROCESADO'
-        AND c.creadoEn > pc.primeraCompra
-        AND c.creadoEn BETWEEN :fechaInicio AND :fechaFin
+        GROUP BY c.usuario_id
+    ), nuevos AS (
+        SELECT pc.usuario_id, pc.primera_compra
+        FROM primera_compra pc
+        WHERE pc.primera_compra BETWEEN :fechaInicio AND :fechaFin
+    ), recurrentes AS (
+        SELECT DISTINCT c.usuario_id
+        FROM carritos c
+        JOIN nuevos n ON n.usuario_id = c.usuario_id
+        WHERE c.estado = 'PROCESADO'
+          AND c.creado_en > n.primera_compra
+          AND c.creado_en BETWEEN :fechaInicio AND :fechaFin
     )
     SELECT
-        COUNT(DISTINCT pc.usuarioId) as usuariosNuevos,
-        COUNT(DISTINCT ur.usuarioId) as usuariosRecurrentes,
-        (COUNT(DISTINCT ur.usuarioId) * 100.0 / NULLIF(COUNT(DISTINCT pc.usuarioId), 0)) as tasaRetencion
-    FROM PrimeraCompra pc
-    LEFT JOIN UsuariosRecurrentes ur ON pc.usuarioId = ur.usuarioId
-    WHERE pc.primeraCompra BETWEEN :fechaInicio AND :fechaFin
-    """
+        (SELECT COUNT(*) FROM nuevos) AS usuariosNuevos,
+        (SELECT COUNT(*) FROM recurrentes) AS usuariosRecurrentes,
+        (
+          CASE WHEN (SELECT COUNT(*) FROM nuevos) = 0 THEN 0
+               ELSE (SELECT COUNT(*) FROM recurrentes) * 100.0 / (SELECT COUNT(*) FROM nuevos)
+          END
+        ) AS tasaRetencion
+    """,
+    nativeQuery = true
   )
   Object[] findMetricasRetencion(
     @Param("fechaInicio") LocalDateTime fechaInicio,
@@ -296,27 +314,34 @@ public interface CarritoAnalyticsRepository
    * Análisis de cohortes por mes de primera compra
    */
   @Query(
-    """
-    WITH CohorteUsuarios AS (
-        SELECT usuarioId,
-               DATE_TRUNC('month', MIN(creadoEn)) as cohorte
-        FROM Carrito
-        WHERE estado = 'PROCESADO'
-        GROUP BY usuarioId
-    )
-    SELECT
-        cu.cohorte,
-        COUNT(DISTINCT cu.usuarioId) as usuariosCohorte,
-        COUNT(DISTINCT c.usuarioId) as usuariosActivos,
-        (COUNT(DISTINCT c.usuarioId) * 100.0 / COUNT(DISTINCT cu.usuarioId)) as retencionPorcentaje,
-        SUM(CASE WHEN c.estado = 'PROCESADO' THEN c.total ELSE 0 END) as ventasCohorte
-    FROM CohorteUsuarios cu
-    LEFT JOIN Carrito c ON cu.usuarioId = c.usuarioId
-        AND c.creadoEn BETWEEN :fechaInicio AND :fechaFin
-    WHERE cu.cohorte BETWEEN :cohorteInicio AND :cohorteFin
-    GROUP BY cu.cohorte
-    ORDER BY cu.cohorte
-    """
+    value = """
+       /* Cohorte: primer carrito procesado por usuario, normalizado al primer día del mes */
+     WITH primera_compra AS (
+       SELECT c.usuario_id,
+          MIN(c.creado_en) AS primera_fecha
+       FROM carritos c
+       WHERE c.estado = 'PROCESADO'
+       GROUP BY c.usuario_id
+     ), cohortes AS (
+       SELECT pc.usuario_id,
+          DATE_FORMAT(pc.primera_fecha, '%Y-%m-01 00:00:00') AS cohorte
+       FROM primera_compra pc
+     )
+       SELECT
+           coh.cohorte AS cohorte,
+           COUNT(DISTINCT coh.usuario_id) AS usuariosCohorte,
+           COUNT(DISTINCT act.usuario_id) AS usuariosActivos,
+           (COUNT(DISTINCT act.usuario_id) * 100.0 / NULLIF(COUNT(DISTINCT coh.usuario_id),0)) AS retencionPorcentaje,
+           SUM(CASE WHEN act.estado = 'PROCESADO' THEN act.total ELSE 0 END) AS ventasCohorte
+       FROM cohortes coh
+    LEFT JOIN carritos act ON act.usuario_id = coh.usuario_id
+       AND act.creado_en BETWEEN :fechaInicio AND :fechaFin
+       WHERE coh.cohorte BETWEEN DATE_FORMAT(:cohorteInicio, '%Y-%m-01 00:00:00')
+                             AND DATE_FORMAT(:cohorteFin, '%Y-%m-01 23:59:59')
+       GROUP BY coh.cohorte
+       ORDER BY coh.cohorte
+       """,
+    nativeQuery = true
   )
   List<Object[]> findAnalisisCohortes(
     @Param("cohorteInicio") LocalDateTime cohorteInicio,
@@ -356,25 +381,24 @@ public interface CarritoAnalyticsRepository
    * Detecta patrones anómalos en el comportamiento
    */
   @Query(
-    """
-    SELECT c.usuarioId,
-           COUNT(c) as carritosCreados,
-           AVG(EXTRACT(EPOCH FROM (c.actualizadoEn - c.creadoEn))/60) as tiempoPromedioMinutos,
-           AVG(c.total) as valorPromedio,
-           COUNT(CASE WHEN c.estado = 'ABANDONADO' THEN 1 END) as abandonos
-    FROM Carrito c
-    WHERE c.creadoEn BETWEEN :fechaInicio AND :fechaFin
-    GROUP BY c.usuarioId
-    HAVING COUNT(c) > :limiteCarritos
-        OR AVG(EXTRACT(EPOCH FROM (c.actualizadoEn - c.creadoEn))/60) < :limiteMinutosBajo
-        OR AVG(EXTRACT(EPOCH FROM (c.actualizadoEn - c.creadoEn))/60) > :limiteMinutosAlto
-        OR (COUNT(CASE WHEN c.estado = 'ABANDONADO' THEN 1 END) * 100.0 / COUNT(c)) > :limiteAbandonoPorcentaje
-    ORDER BY carritosCreados DESC, tiempoPromedioMinutos ASC
-    """
+    value = "SELECT c.usuario_id AS usuarioId, " +
+    "COUNT(c.id) AS carritosCreados, " +
+    "AVG(TIMESTAMPDIFF(SECOND, c.creado_en, c.actualizado_en) / 60.0) AS tiempoPromedioMinutos, " +
+    "AVG(c.total) AS valorPromedio, " +
+    "COUNT(CASE WHEN c.estado = 'ABANDONADO' THEN 1 END) AS abandonos " +
+    "FROM carritos c " +
+    "WHERE c.creado_en BETWEEN :fechaInicio AND :fechaFin " +
+    "GROUP BY c.usuario_id " +
+    "HAVING COUNT(c.id) > :limiteCarritos " +
+    "   OR AVG(TIMESTAMPDIFF(SECOND, c.creado_en, c.actualizado_en) / 60.0) < :limiteMinutosBajo " +
+    "   OR AVG(TIMESTAMPDIFF(SECOND, c.creado_en, c.actualizado_en) / 60.0) > :limiteMinutosAlto " +
+    "   OR (COUNT(CASE WHEN c.estado = 'ABANDONADO' THEN 1 END) * 100.0 / COUNT(c.id)) > :limiteAbandonoPorcentaje " +
+    "ORDER BY carritosCreados DESC, tiempoPromedioMinutos ASC",
+    nativeQuery = true
   )
   List<Object[]> findPatronesAnomalos(
-    @Param("fechaInicio") LocalDateTime fechaInicio,
-    @Param("fechaFin") LocalDateTime fechaFin,
+    @Param("fechaInicio") java.sql.Timestamp fechaInicio,
+    @Param("fechaFin") java.sql.Timestamp fechaFin,
     @Param("limiteCarritos") Integer limiteCarritos,
     @Param("limiteMinutosBajo") Double limiteMinutosBajo,
     @Param("limiteMinutosAlto") Double limiteMinutosAlto,
@@ -387,21 +411,22 @@ public interface CarritoAnalyticsRepository
    * Métricas de performance del sistema
    */
   @Query(
-    """
-    SELECT
-        COUNT(c) as totalOperaciones,
-        AVG(EXTRACT(EPOCH FROM (c.actualizadoEn - c.creadoEn))) as tiempoPromedioSegundos,
-        COUNT(CASE WHEN EXTRACT(EPOCH FROM (c.actualizadoEn - c.creadoEn)) > :limiteSegundos THEN 1 END) as operacionesLentas,
-        MAX(EXTRACT(EPOCH FROM (c.actualizadoEn - c.creadoEn))) as tiempoMaximoSegundos,
-        COUNT(CASE WHEN c.estado = 'ERROR' THEN 1 END) as errores
-    FROM Carrito c
-    WHERE c.creadoEn BETWEEN :fechaInicio AND :fechaFin
-    AND c.actualizadoEn IS NOT NULL
-    """
+    value = """
+        SELECT
+            COUNT(*) as totalOperaciones,
+            AVG(TIMESTAMPDIFF(SECOND, c.creado_en, c.actualizado_en)) as tiempoPromedioSegundos,
+            COUNT(CASE WHEN TIMESTAMPDIFF(SECOND, c.creado_en, c.actualizado_en) > :limiteSegundos THEN 1 END) as operacionesLentas,
+            MAX(TIMESTAMPDIFF(SECOND, c.creado_en, c.actualizado_en)) as tiempoMaximoSegundos,
+            COUNT(CASE WHEN c.estado = 'ERROR' THEN 1 END) as errores
+        FROM carritos c
+        WHERE c.creado_en BETWEEN :fechaInicio AND :fechaFin
+          AND c.actualizado_en IS NOT NULL
+    """,
+    nativeQuery = true
   )
   Object[] findMetricasPerformance(
-    @Param("fechaInicio") LocalDateTime fechaInicio,
-    @Param("fechaFin") LocalDateTime fechaFin,
+    @Param("fechaInicio") java.sql.Timestamp fechaInicio,
+    @Param("fechaFin") java.sql.Timestamp fechaFin,
     @Param("limiteSegundos") Double limiteSegundos
   );
 

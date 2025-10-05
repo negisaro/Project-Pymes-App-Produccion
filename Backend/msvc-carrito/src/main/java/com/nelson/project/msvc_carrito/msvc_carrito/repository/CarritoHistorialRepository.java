@@ -178,11 +178,23 @@ public interface CarritoHistorialRepository
   @Query(
     """
     SELECT h FROM CarritoHistorial h
-    WHERE DATE(h.fechaOperacion) = CURRENT_DATE
+    WHERE h.fechaOperacion >= :inicioDia AND h.fechaOperacion < :finDia
     ORDER BY h.fechaOperacion DESC
     """
   )
-  List<CarritoHistorial> findOperacionesDeHoy();
+  List<CarritoHistorial> findOperacionesDeHoy(
+    @Param("inicioDia") LocalDateTime inicioDia,
+    @Param("finDia") LocalDateTime finDia
+  );
+
+  /**
+   * Conveniencia: operaciones de hoy usando la zona del sistema.
+   */
+  default List<CarritoHistorial> findOperacionesDeHoy() {
+    LocalDateTime inicio = LocalDateTime.now().toLocalDate().atStartOfDay();
+    LocalDateTime fin = inicio.plusDays(1);
+    return findOperacionesDeHoy(inicio, fin);
+  }
 
   // ========== Análisis y Estadísticas ==========
 

@@ -1,0 +1,182 @@
+<!-- Multi-Select Template -->
+<div [class]="getContainerClasses()" (keydown)="onKeyDown($event)">
+
+  <!-- Control Principal -->
+  <div class="multi-select-control"
+       (click)="toggleDropdown()"
+       [attr.tabindex]="disabled || config.disabled ? -1 : 0">
+
+    <!-- Elementos Seleccionados -->
+    <div class="selected-items" *ngIf="hasSelection">
+      <span *ngFor="let item of selectedItems; let i = index"
+            class="selected-item">
+        <span class="selected-item-text">{{ getItemDisplay(item) }}</span>
+        <button type="button"
+                class="selected-item-remove"
+                [disabled]="disabled || config.disabled"
+                (click)="$event.stopPropagation(); removeItemByIndex(i)"
+                [title]="'Remover ' + getItemDisplay(item)">
+          <i class="bi bi-x"></i>
+        </button>
+      </span>
+    </div>
+
+    <!-- Placeholder -->
+    <div class="multi-select-placeholder"
+         *ngIf="!hasSelection">
+      {{ placeholderText }}
+    </div>
+
+    <!-- Iconos de Control -->
+    <div class="multi-select-actions">
+
+      <!-- Loading -->
+      <div *ngIf="config.loading" class="multi-select-loading">
+        <div class="spinner-border spinner-border-sm" role="status">
+          <span class="visually-hidden">Cargando...</span>
+        </div>
+      </div>
+
+      <!-- Clear All -->
+      <button *ngIf="canClear"
+              type="button"
+              class="multi-select-clear"
+              (click)="$event.stopPropagation(); clearAll()"
+              title="Limpiar selección">
+        <i class="bi bi-x-circle"></i>
+      </button>
+
+      <!-- Dropdown Arrow -->
+      <div class="multi-select-arrow"
+           [class.rotated]="isOpen">
+        <i class="bi bi-chevron-down"></i>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Dropdown Menu -->
+  <div class="multi-select-dropdown"
+       *ngIf="isOpen"
+       [class.show]="isOpen">
+
+    <!-- Search Input -->
+    <div class="dropdown-search"
+         *ngIf="config.searchable">
+      <div class="input-group input-group-sm">
+        <span class="input-group-text">
+          <i class="bi bi-search"></i>
+        </span>
+        <input #searchInput
+               type="text"
+               class="form-control"
+               [placeholder]="'Buscar...'"
+               [(ngModel)]="searchTerm"
+               (input)="onSearchChange($event)"
+               (click)="$event.stopPropagation()">
+        <button *ngIf="searchTerm"
+                type="button"
+                class="btn btn-outline-secondary"
+                (click)="onSearchClear()">
+          <i class="bi bi-x"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Max Selection Warning -->
+    <div *ngIf="hasMaxSelection" class="dropdown-warning">
+      <small class="text-warning">
+        <i class="bi bi-exclamation-triangle me-1"></i>
+        Máximo {{ config.maxSelectedItems }} elementos seleccionados
+      </small>
+    </div>
+
+    <!-- Items List -->
+    <div class="dropdown-items"
+         [style.max-height]="config.virtualScroll ? '200px' : 'auto'">
+
+      <!-- No Items Message -->
+      <div *ngIf="!hasFilteredItems" class="dropdown-empty">
+        <i class="bi bi-inbox display-6 d-block mb-2"></i>
+        <span>{{ config.emptyMessage || 'No hay elementos disponibles' }}</span>
+      </div>
+
+      <!-- Grouped Items -->
+      <ng-container *ngIf="hasGroups && hasFilteredItems">
+        <div *ngFor="let groupKey of groupKeys" class="dropdown-group">
+
+          <!-- Group Header -->
+          <div class="dropdown-group-header">
+            {{ groupKey }}
+          </div>
+
+          <!-- Group Items -->
+          <button *ngFor="let item of groupedItems[groupKey]"
+                  type="button"
+                  [class]="getItemClasses(item)"
+                  [disabled]="isItemDisabled(item) || (hasMaxSelection && !isItemSelected(item))"
+                  (click)="onItemClick(item)">
+
+            <!-- Checkbox -->
+            <div class="dropdown-item-check">
+              <i *ngIf="isItemSelected(item)" class="bi bi-check-square text-primary"></i>
+              <i *ngIf="!isItemSelected(item)" class="bi bi-square"></i>
+            </div>
+
+            <!-- Content -->
+            <div class="dropdown-item-content">
+              <span class="dropdown-item-text">{{ getItemDisplay(item) }}</span>
+            </div>
+
+          </button>
+        </div>
+      </ng-container>
+
+      <!-- Flat Items -->
+      <ng-container *ngIf="!hasGroups && hasFilteredItems">
+        <button *ngFor="let item of filteredItems"
+                type="button"
+                [class]="getItemClasses(item)"
+                [disabled]="isItemDisabled(item) || (hasMaxSelection && !isItemSelected(item))"
+                (click)="onItemClick(item)">
+
+          <!-- Checkbox -->
+          <div class="dropdown-item-check">
+            <i *ngIf="isItemSelected(item)" class="bi bi-check-square text-primary"></i>
+            <i *ngIf="!isItemSelected(item)" class="bi bi-square"></i>
+          </div>
+
+          <!-- Content -->
+          <div class="dropdown-item-content">
+            <span class="dropdown-item-text">{{ getItemDisplay(item) }}</span>
+          </div>
+
+        </button>
+      </ng-container>
+
+    </div>
+
+    <!-- Footer Actions -->
+    <div class="dropdown-footer"
+         *ngIf="hasSelection">
+      <div class="d-flex justify-content-between align-items-center">
+        <small class="text-muted">
+          {{ selectedItems.length }} elemento(s) seleccionado(s)
+        </small>
+        <button type="button"
+                class="btn btn-sm btn-outline-secondary"
+                (click)="clearAll()">
+          Limpiar todo
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Backdrop -->
+  <div class="multi-select-backdrop"
+       *ngIf="isOpen"
+       (click)="closeDropdown()">
+  </div>
+
+</div>

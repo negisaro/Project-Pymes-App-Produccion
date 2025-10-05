@@ -9,13 +9,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -48,9 +47,12 @@ import org.springframework.web.bind.annotation.*;
 )
 @RequiredArgsConstructor
 @Validated
-@Slf4j
 @PreAuthorize("hasRole('ADMIN')")
 public class CarritoAdminController {
+
+  private static final Logger log = LoggerFactory.getLogger(
+    CarritoAdminController.class
+  );
 
   private final CarritoService carritoService;
 

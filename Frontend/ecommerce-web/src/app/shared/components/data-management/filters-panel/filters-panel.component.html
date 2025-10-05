@@ -1,0 +1,198 @@
+<!-- Filters Panel Component Template -->
+<div class="filters-panel" [class.collapsed]="collapsed">
+  <div class="card border-0 shadow-sm">
+    <!-- Header -->
+    <div class="card-header bg-light border-bottom-0 py-2">
+      <div class="d-flex justify-content-between align-items-center">
+        <h6 class="mb-0 text-muted">
+          <i class="bi bi-funnel me-2"></i>
+          Filtros
+        </h6>
+        <div class="btn-group btn-group-sm">
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            [title]="collapsed ? 'Expandir filtros' : 'Contraer filtros'"
+            (click)="toggleCollapse()">
+            <i [class]="collapsed ? 'bi bi-chevron-down' : 'bi bi-chevron-up'"></i>
+          </button>
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            title="Limpiar filtros"
+            (click)="clearFilters()"
+            [disabled]="!hasActiveFilters">
+            <i class="bi bi-x-circle"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="card-body" [class.d-none]="collapsed" [ngClass]="{'p-0': collapsed}">
+      <form [formGroup]="filtersForm" *ngIf="!collapsed">
+        <div class="row g-3">
+          <!-- Dynamic Filter Fields -->
+          <ng-container *ngFor="let filter of config.filters">
+            <div [class]="getFieldClasses(filter)">
+              <!-- Text Filter -->
+              <div *ngIf="filter.type === FilterType.TEXT" class="form-group">
+                <label [for]="filter.key" class="form-label">{{ filter.label }}</label>
+                <input
+                  [id]="filter.key"
+                  type="text"
+                  class="form-control"
+                  [placeholder]="filter.placeholder || ''"
+                  [formControlName]="filter.key">
+              </div>
+
+              <!-- Number Filter -->
+              <div *ngIf="filter.type === FilterType.NUMBER" class="form-group">
+                <label [for]="filter.key" class="form-label">{{ filter.label }}</label>
+                <input
+                  [id]="filter.key"
+                  type="number"
+                  class="form-control"
+                  [placeholder]="filter.placeholder || ''"
+                  [formControlName]="filter.key">
+              </div>
+
+              <!-- Select Filter -->
+              <div *ngIf="filter.type === FilterType.SELECT" class="form-group">
+                <label [for]="filter.key" class="form-label">{{ filter.label }}</label>
+                <select [id]="filter.key" class="form-select" [formControlName]="filter.key">
+                  <option value="">{{ filter.placeholder || 'Seleccionar...' }}</option>
+                  <option
+                    *ngFor="let option of filter.options"
+                    [value]="option.value">
+                    {{ option.label }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- Multi-Select Filter -->
+              <div *ngIf="filter.type === FilterType.MULTISELECT" class="form-group">
+                <label class="form-label">{{ filter.label }}</label>
+                <div class="border rounded p-2" style="min-height: 38px;">
+                  <div *ngIf="getSelectedOptions(filter.key).length === 0" class="text-muted small">
+                    {{ filter.placeholder || 'Seleccionar opciones...' }}
+                  </div>
+                  <div class="d-flex flex-wrap gap-1">
+                    <span
+                      *ngFor="let selected of getSelectedOptions(filter.key)"
+                      class="badge bg-primary">
+                      {{ getLabelForValue(filter, selected) }}
+                      <button
+                        type="button"
+                        class="btn-close btn-close-white ms-1"
+                        style="font-size: 0.65rem;"
+                        (click)="removeMultiSelectValue(filter.key, selected)">
+                      </button>
+                    </span>
+                  </div>
+                </div>
+                <div class="dropdown w-100 mt-1">
+                  <button
+                    class="btn btn-outline-secondary btn-sm w-100 text-start"
+                    type="button"
+                    data-bs-toggle="dropdown">
+                    Agregar opción...
+                  </button>
+                  <ul class="dropdown-menu w-100">
+                    <li *ngFor="let option of getAvailableOptions(filter)">
+                      <a
+                        class="dropdown-item"
+                        href="#"
+                        (click)="addMultiSelectValue(filter.key, option.value); $event.preventDefault()">
+                        {{ option.label }}
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- Date Filter -->
+              <div *ngIf="filter.type === FilterType.DATE" class="form-group">
+                <label [for]="filter.key" class="form-label">{{ filter.label }}</label>
+                <input
+                  [id]="filter.key"
+                  type="date"
+                  class="form-control"
+                  [formControlName]="filter.key">
+              </div>
+
+              <!-- Date Range Filter -->
+              <div *ngIf="filter.type === FilterType.DATE_RANGE" class="form-group">
+                <label class="form-label">{{ filter.label }}</label>
+                <div class="row g-2">
+                  <div class="col">
+                    <input
+                      type="date"
+                      class="form-control"
+                      placeholder="Desde"
+                      [formControlName]="filter.key + '_from'">
+                  </div>
+                  <div class="col">
+                    <input
+                      type="date"
+                      class="form-control"
+                      placeholder="Hasta"
+                      [formControlName]="filter.key + '_to'">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Boolean Filter -->
+              <div *ngIf="filter.type === FilterType.BOOLEAN" class="form-group">
+                <label [for]="filter.key" class="form-label">{{ filter.label }}</label>
+                <select [id]="filter.key" class="form-select" [formControlName]="filter.key">
+                  <option value="">Todos</option>
+                  <option value="true">Sí</option>
+                  <option value="false">No</option>
+                </select>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-flex justify-content-end gap-2 mt-3 pt-3 border-top" *ngIf="config.showActionButtons !== false">
+          <button
+            type="button"
+            class="btn btn-outline-secondary btn-sm"
+            (click)="clearFilters()"
+            [disabled]="!hasActiveFilters">
+            <i class="bi bi-x-circle me-1"></i>
+            Limpiar
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary btn-sm"
+            (click)="applyFilters()"
+            [disabled]="loading">
+            <i class="bi bi-search me-1"></i>
+            <span *ngIf="loading">Aplicando...</span>
+            <span *ngIf="!loading">Aplicar Filtros</span>
+          </button>
+        </div>
+      </form>
+
+      <!-- Loading State -->
+      <div *ngIf="loading && !collapsed" class="text-center py-3">
+        <div class="spinner-border spinner-border-sm text-primary" role="status">
+          <span class="visually-hidden">Cargando...</span>
+        </div>
+        <small class="text-muted ms-2">Aplicando filtros...</small>
+      </div>
+    </div>
+
+    <!-- Filter Summary (when collapsed) -->
+    <div class="card-footer bg-light border-top-0 py-2" *ngIf="collapsed && hasActiveFilters">
+      <div class="d-flex flex-wrap gap-1">
+        <span class="badge bg-secondary" *ngFor="let summary of getActiveFiltersSummary()">
+          {{ summary }}
+        </span>
+      </div>
+    </div>
+  </div>
+</div>

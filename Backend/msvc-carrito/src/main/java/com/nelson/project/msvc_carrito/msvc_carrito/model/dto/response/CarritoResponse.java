@@ -5,10 +5,19 @@ import com.nelson.project.msvc_carrito.msvc_carrito.model.dto.CarritoDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * DTO de respuesta para operaciones del carrito con información adicional
+ * MIGRADO A LOMBOK: Eliminado código boilerplate, clases internas optimizadas
  */
+@Data
+@Builder(toBuilder = true)
+@NoArgsConstructor
+@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(
   description = "Respuesta completa del carrito con información de cálculos y validaciones"
@@ -30,57 +39,40 @@ public class CarritoResponse {
   @Schema(description = "Información de descuentos disponibles")
   private List<DescuentoDisponible> descuentosDisponibles;
 
-  // Constructores
-  public CarritoResponse() {}
+  // ================================
+  // FACTORY METHODS
+  // ================================
 
-  public CarritoResponse(CarritoDto carrito) {
-    this.carrito = carrito;
+  /**
+   * Crea una respuesta simple con solo el carrito
+   */
+  public static CarritoResponse simple(CarritoDto carrito) {
+    return CarritoResponse.builder().carrito(carrito).build();
   }
 
-  // Getters y Setters
-  public CarritoDto getCarrito() {
-    return carrito;
-  }
-
-  public void setCarrito(CarritoDto carrito) {
-    this.carrito = carrito;
-  }
-
-  public CalculosCarrito getCalculos() {
-    return calculos;
-  }
-
-  public void setCalculos(CalculosCarrito calculos) {
-    this.calculos = calculos;
-  }
-
-  public ValidacionCarrito getValidacion() {
-    return validacion;
-  }
-
-  public void setValidacion(ValidacionCarrito validacion) {
-    this.validacion = validacion;
-  }
-
-  public List<RecomendacionProducto> getRecomendaciones() {
-    return recomendaciones;
-  }
-
-  public void setRecomendaciones(List<RecomendacionProducto> recomendaciones) {
-    this.recomendaciones = recomendaciones;
-  }
-
-  public List<DescuentoDisponible> getDescuentosDisponibles() {
-    return descuentosDisponibles;
-  }
-
-  public void setDescuentosDisponibles(
-    List<DescuentoDisponible> descuentosDisponibles
+  /**
+   * Crea una respuesta completa con toda la información
+   */
+  public static CarritoResponse completa(
+    CarritoDto carrito,
+    CalculosCarrito calculos,
+    ValidacionCarrito validacion
   ) {
-    this.descuentosDisponibles = descuentosDisponibles;
+    return CarritoResponse.builder()
+      .carrito(carrito)
+      .calculos(calculos)
+      .validacion(validacion)
+      .build();
   }
 
-  // Clases internas para información adicional
+  // ================================
+  // CLASES INTERNAS OPTIMIZADAS
+  // ================================
+
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
   @Schema(description = "Cálculos detallados del carrito")
   public static class CalculosCarrito {
 
@@ -104,65 +96,12 @@ public class CarritoResponse {
 
     @Schema(description = "Peso total del carrito en kg", example = "2.5")
     private BigDecimal pesoTotal;
-
-    // Getters y Setters
-    public BigDecimal getSubtotalBruto() {
-      return subtotalBruto;
-    }
-
-    public void setSubtotalBruto(BigDecimal subtotalBruto) {
-      this.subtotalBruto = subtotalBruto;
-    }
-
-    public BigDecimal getTotalDescuentos() {
-      return totalDescuentos;
-    }
-
-    public void setTotalDescuentos(BigDecimal totalDescuentos) {
-      this.totalDescuentos = totalDescuentos;
-    }
-
-    public BigDecimal getSubtotalNeto() {
-      return subtotalNeto;
-    }
-
-    public void setSubtotalNeto(BigDecimal subtotalNeto) {
-      this.subtotalNeto = subtotalNeto;
-    }
-
-    public BigDecimal getTotalImpuestos() {
-      return totalImpuestos;
-    }
-
-    public void setTotalImpuestos(BigDecimal totalImpuestos) {
-      this.totalImpuestos = totalImpuestos;
-    }
-
-    public BigDecimal getCostoEnvio() {
-      return costoEnvio;
-    }
-
-    public void setCostoEnvio(BigDecimal costoEnvio) {
-      this.costoEnvio = costoEnvio;
-    }
-
-    public BigDecimal getTotalFinal() {
-      return totalFinal;
-    }
-
-    public void setTotalFinal(BigDecimal totalFinal) {
-      this.totalFinal = totalFinal;
-    }
-
-    public BigDecimal getPesoTotal() {
-      return pesoTotal;
-    }
-
-    public void setPesoTotal(BigDecimal pesoTotal) {
-      this.pesoTotal = pesoTotal;
-    }
   }
 
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
   @Schema(description = "Información de validación del carrito")
   public static class ValidacionCarrito {
 
@@ -183,41 +122,12 @@ public class CarritoResponse {
 
     @Schema(description = "Mensajes de advertencia")
     private List<String> advertencias;
-
-    // Getters y Setters
-    public boolean isTodosDisponibles() {
-      return todosDisponibles;
-    }
-
-    public void setTodosDisponibles(boolean todosDisponibles) {
-      this.todosDisponibles = todosDisponibles;
-    }
-
-    public boolean isSuficienteStock() {
-      return suficienteStock;
-    }
-
-    public void setSuficienteStock(boolean suficienteStock) {
-      this.suficienteStock = suficienteStock;
-    }
-
-    public List<String> getItemsConProblemas() {
-      return itemsConProblemas;
-    }
-
-    public void setItemsConProblemas(List<String> itemsConProblemas) {
-      this.itemsConProblemas = itemsConProblemas;
-    }
-
-    public List<String> getAdvertencias() {
-      return advertencias;
-    }
-
-    public void setAdvertencias(List<String> advertencias) {
-      this.advertencias = advertencias;
-    }
   }
 
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
   @Schema(description = "Recomendación de producto")
   public static class RecomendacionProducto {
 
@@ -238,41 +148,12 @@ public class CarritoResponse {
       example = "Frecuentemente comprado junto"
     )
     private String motivo;
-
-    // Getters y Setters
-    public Long getProductoId() {
-      return productoId;
-    }
-
-    public void setProductoId(Long productoId) {
-      this.productoId = productoId;
-    }
-
-    public String getNombre() {
-      return nombre;
-    }
-
-    public void setNombre(String nombre) {
-      this.nombre = nombre;
-    }
-
-    public BigDecimal getPrecio() {
-      return precio;
-    }
-
-    public void setPrecio(BigDecimal precio) {
-      this.precio = precio;
-    }
-
-    public String getMotivo() {
-      return motivo;
-    }
-
-    public void setMotivo(String motivo) {
-      this.motivo = motivo;
-    }
   }
 
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
   @Schema(description = "Descuento disponible")
   public static class DescuentoDisponible {
 
@@ -290,38 +171,5 @@ public class CarritoResponse {
 
     @Schema(description = "Monto mínimo requerido", example = "50.00")
     private BigDecimal montoMinimo;
-
-    // Getters y Setters
-    public String getCodigo() {
-      return codigo;
-    }
-
-    public void setCodigo(String codigo) {
-      this.codigo = codigo;
-    }
-
-    public String getDescripcion() {
-      return descripcion;
-    }
-
-    public void setDescripcion(String descripcion) {
-      this.descripcion = descripcion;
-    }
-
-    public BigDecimal getPorcentaje() {
-      return porcentaje;
-    }
-
-    public void setPorcentaje(BigDecimal porcentaje) {
-      this.porcentaje = porcentaje;
-    }
-
-    public BigDecimal getMontoMinimo() {
-      return montoMinimo;
-    }
-
-    public void setMontoMinimo(BigDecimal montoMinimo) {
-      this.montoMinimo = montoMinimo;
-    }
   }
 }

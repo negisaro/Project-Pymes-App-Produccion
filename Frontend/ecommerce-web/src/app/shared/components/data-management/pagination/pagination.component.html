@@ -1,0 +1,119 @@
+<!-- Pagination Template -->
+<div class="pagination-container" *ngIf="hasPages || showInfo">
+
+  <div class="row align-items-center">
+
+    <!-- Información de registros -->
+    <div class="col-md-6" *ngIf="showInfo">
+      <div class="pagination-info">
+        <span *ngIf="hasRecords" class="text-muted">
+          Mostrando <strong>{{ fromRecord }}</strong> a <strong>{{ toRecord }}</strong>
+          de <strong>{{ totalItems }}</strong> registros
+        </span>
+        <span *ngIf="!hasRecords" class="text-muted">
+          No hay registros
+        </span>
+      </div>
+    </div>
+
+    <!-- Controles de paginación -->
+    <div class="col-md-6" *ngIf="hasPages">
+      <div class="d-flex align-items-center justify-content-md-end justify-content-center">
+
+        <!-- Selector de tamaño de página -->
+        <div class="page-size-selector me-3" *ngIf="showSizeSelector">
+          <label class="form-label me-2 mb-0 text-muted">Mostrar:</label>
+          <select class="form-select form-select-sm"
+                  [value]="pageSize"
+                  [disabled]="loading"
+                  (change)="onPageSizeChange(+$any($event.target).value)">
+            <option *ngFor="let size of pageSizeOptions" [value]="size">
+              {{ size }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Navegación de páginas -->
+        <nav aria-label="Navegación de páginas">
+          <ul [class]="getPaginationClasses()">
+
+            <!-- Primera página -->
+            <li *ngIf="showFirstLast" [class]="getNavItemClasses(isFirstPage())">
+              <button class="page-link"
+                      [disabled]="isFirstPage() || loading"
+                      (click)="goToFirstPage()"
+                      title="Primera página">
+                <i class="bi bi-chevron-double-left"></i>
+              </button>
+            </li>
+
+            <!-- Página anterior -->
+            <li *ngIf="showPrevNext" [class]="getNavItemClasses(isFirstPage())">
+              <button class="page-link"
+                      [disabled]="isFirstPage() || loading"
+                      (click)="goToPreviousPage()"
+                      title="Página anterior">
+                <i class="bi bi-chevron-left"></i>
+              </button>
+            </li>
+
+            <!-- Elipsis inicial -->
+            <li class="page-item disabled" *ngIf="shouldShowEllipsisBefore()">
+              <span class="page-link">...</span>
+            </li>
+
+            <!-- Números de página -->
+            <ng-container *ngIf="showPageNumbers">
+              <li *ngFor="let page of visiblePages"
+                  [class]="getPageItemClasses(page)">
+                <button class="page-link"
+                        [disabled]="loading"
+                        (click)="goToPage(page)"
+                        [title]="'Página ' + (page + 1)">
+                  {{ page + 1 }}
+                </button>
+              </li>
+            </ng-container>
+
+            <!-- Elipsis final -->
+            <li class="page-item disabled" *ngIf="shouldShowEllipsisAfter()">
+              <span class="page-link">...</span>
+            </li>
+
+            <!-- Página siguiente -->
+            <li *ngIf="showPrevNext" [class]="getNavItemClasses(isLastPage())">
+              <button class="page-link"
+                      [disabled]="isLastPage() || loading"
+                      (click)="goToNextPage()"
+                      title="Página siguiente">
+                <i class="bi bi-chevron-right"></i>
+              </button>
+            </li>
+
+            <!-- Última página -->
+            <li *ngIf="showFirstLast" [class]="getNavItemClasses(isLastPage())">
+              <button class="page-link"
+                      [disabled]="isLastPage() || loading"
+                      (click)="goToLastPage()"
+                      title="Última página">
+                <i class="bi bi-chevron-double-right"></i>
+              </button>
+            </li>
+
+          </ul>
+        </nav>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Loading indicator -->
+  <div *ngIf="loading" class="pagination-loading">
+    <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+    <span class="text-muted">Actualizando...</span>
+  </div>
+
+</div>

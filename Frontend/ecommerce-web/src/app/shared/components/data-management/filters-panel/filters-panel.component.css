@@ -1,0 +1,261 @@
+/* ===== FILTERS PANEL COMPONENT ===== */
+
+.filters-panel {
+  --filter-transition: all 0.3s ease-in-out;
+  --filter-border-radius: 8px;
+  --filter-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.filters-panel .card {
+  border-radius: var(--filter-border-radius);
+  transition: var(--filter-transition);
+}
+
+.filters-panel .card:hover {
+  box-shadow: var(--filter-shadow);
+}
+
+/* ===== HEADER STYLING ===== */
+
+.filters-panel .card-header {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-bottom: 1px solid #dee2e6;
+  border-radius: var(--filter-border-radius) var(--filter-border-radius) 0 0;
+}
+
+.filters-panel .card-header h6 {
+  color: #495057;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.filters-panel .btn-group-sm .btn {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+/* ===== FORM STYLING ===== */
+
+.filters-panel .form-label {
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: #495057;
+  margin-bottom: 0.5rem;
+}
+
+.filters-panel .form-control,
+.filters-panel .form-select {
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  transition: var(--filter-transition);
+}
+
+.filters-panel .form-control:focus,
+.filters-panel .form-select:focus {
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* ===== MULTI-SELECT STYLING ===== */
+
+.filters-panel .border.rounded {
+  background-color: #f8f9fa;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  padding: 0.375rem 0.75rem;
+  border-radius: 6px !important;
+  transition: var(--filter-transition);
+}
+
+.filters-panel .border.rounded:focus-within {
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.filters-panel .badge {
+  font-size: 0.75rem;
+  padding: 0.35em 0.65em;
+  border-radius: 4px;
+}
+
+.filters-panel .btn-close-white {
+  filter: invert(1) grayscale(100%) brightness(2);
+  opacity: 0.7;
+}
+
+.filters-panel .btn-close-white:hover {
+  opacity: 1;
+}
+
+.filters-panel .dropdown-menu {
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+  box-shadow: var(--filter-shadow);
+  padding: 0.5rem;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.filters-panel .dropdown-item {
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  transition: var(--filter-transition);
+}
+
+.filters-panel .dropdown-item:hover {
+  background-color: #e9ecef;
+}
+
+/* ===== DATE RANGE STYLING ===== */
+
+.filters-panel .row.g-2 .col input[type="date"] {
+  border-radius: 6px;
+}
+
+/* ===== ACTION BUTTONS ===== */
+
+.filters-panel .btn-sm {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: var(--filter-transition);
+}
+
+.filters-panel .btn-outline-secondary:hover {
+  background-color: #6c757d;
+  border-color: #6c757d;
+  color: white;
+}
+
+.filters-panel .btn-primary {
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  border-color: #007bff;
+}
+
+.filters-panel .btn-primary:hover {
+  background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+  border-color: #0056b3;
+}
+
+/* ===== LOADING STATE ===== */
+
+.filters-panel .spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* ===== FOOTER STYLING ===== */
+
+.filters-panel .card-footer {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-top: 1px solid #dee2e6;
+  border-radius: 0 0 var(--filter-border-radius) var(--filter-border-radius);
+}
+
+.filters-panel .badge.bg-secondary {
+  background-color: #6c757d !important;
+  font-size: 0.75rem;
+}
+
+/* ===== COLLAPSED STATE ===== */
+
+.filters-panel.collapsed .card-body {
+  display: none !important;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+@media (max-width: 768px) {
+  .filters-panel .row.g-3 > .col-12:not(.col-md-6):not(.col-md-4):not(.col-md-3) {
+    margin-bottom: 1rem;
+  }
+
+  .filters-panel .btn-group-sm {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .filters-panel .btn-group-sm .btn {
+    border-radius: 6px;
+    margin-bottom: 0.25rem;
+  }
+}
+
+/* ===== ANIMATION ===== */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.filters-panel .card-body:not(.d-none) {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* ===== VALIDATION STYLING ===== */
+
+.filters-panel .form-control.is-invalid,
+.filters-panel .form-select.is-invalid {
+  border-color: #dc3545;
+}
+
+.filters-panel .form-control.is-valid,
+.filters-panel .form-select.is-valid {
+  border-color: #198754;
+}
+
+/* ===== ACCESSIBILITY ===== */
+
+.filters-panel .btn:focus,
+.filters-panel .form-control:focus,
+.filters-panel .form-select:focus {
+  outline: none;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.filters-panel .dropdown-item:focus {
+  background-color: #e9ecef;
+  outline: 2px solid #007bff;
+  outline-offset: -2px;
+}
+
+/* ===== DARK THEME SUPPORT ===== */
+
+@media (prefers-color-scheme: dark) {
+  .filters-panel .card-header {
+    background: linear-gradient(135deg, #343a40 0%, #495057 100%);
+    border-bottom-color: #495057;
+  }
+
+  .filters-panel .card-header h6 {
+    color: #f8f9fa;
+  }
+
+  .filters-panel .form-label {
+    color: #f8f9fa;
+  }
+
+  .filters-panel .form-control,
+  .filters-panel .form-select {
+    background-color: #495057;
+    border-color: #6c757d;
+    color: #f8f9fa;
+  }
+
+  .filters-panel .border.rounded {
+    background-color: #495057;
+    border-color: #6c757d;
+  }
+}

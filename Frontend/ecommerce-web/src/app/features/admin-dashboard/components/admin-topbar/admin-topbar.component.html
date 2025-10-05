@@ -1,0 +1,193 @@
+<!-- Admin Topbar -->
+<nav class="admin-topbar navbar navbar-expand bg-white shadow-sm border-bottom">
+  <div class="container-fluid px-4">
+
+    <!-- Left Section: Logo + Title -->
+    <div class="d-flex align-items-center">
+      <div class="admin-logo me-3">
+        <img src="assets/images/user.png" alt="Admin Logo" width="32" height="32" class="rounded-circle">
+      </div>
+      <h5 class="mb-0 text-dark fw-bold d-none d-md-block">Panel Administrativo</h5>
+      <h6 class="mb-0 text-dark fw-bold d-md-none">Admin</h6>
+    </div>
+
+    <!-- Right Section: Notifications + User Info -->
+    <div class="d-flex align-items-center ms-auto gap-3">
+
+      <!-- Notifications Bell -->
+      <div class="position-relative">
+        <button class="btn btn-outline-secondary btn-sm position-relative"
+                (click)="toggleNotifications($event)"
+                [class.active]="showNotifications">
+          <i class="bi bi-bell"></i>
+          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                *ngIf="notificationsCount > 0">
+            {{ notificationsCount }}
+          </span>
+        </button>
+
+        <!-- Notifications Dropdown -->
+        <div class="dropdown-menu dropdown-menu-end notifications-dropdown animate__animated animate__fadeIn"
+             [class.show]="showNotifications" *ngIf="showNotifications">
+          <div class="dropdown-header">
+            <h6 class="mb-0">Notificaciones</h6>
+            <small class="text-muted">{{ notificationsCount }} nuevas</small>
+          </div>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item d-flex align-items-start">
+            <div class="me-3">
+              <div class="bg-primary rounded-circle p-2">
+                <i class="bi bi-person-plus text-white"></i>
+              </div>
+            </div>
+            <div>
+              <div class="fw-semibold">Nuevo usuario registrado</div>
+              <small class="text-muted">Hace 5 minutos</small>
+            </div>
+          </a>
+          <a class="dropdown-item d-flex align-items-start">
+            <div class="me-3">
+              <div class="bg-success rounded-circle p-2">
+                <i class="bi bi-cart-check text-white"></i>
+              </div>
+            </div>
+            <div>
+              <div class="fw-semibold">Nueva orden recibida</div>
+              <small class="text-muted">Hace 10 minutos</small>
+            </div>
+          </a>
+          <a class="dropdown-item d-flex align-items-start">
+            <div class="me-3">
+              <div class="bg-warning rounded-circle p-2">
+                <i class="bi bi-exclamation-triangle text-white"></i>
+              </div>
+            </div>
+            <div>
+              <div class="fw-semibold">Stock bajo en productos</div>
+              <small class="text-muted">Hace 1 hora</small>
+            </div>
+          </a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item text-center text-primary fw-semibold">
+            Ver todas las notificaciones
+          </a>
+        </div>
+      </div>
+
+      <!-- Current Date/Time -->
+      <div class="d-none d-lg-block text-muted small">
+        <i class="bi bi-calendar3"></i>
+        {{ currentDate | date:'dd/MM/yyyy' }}
+      </div>
+
+      <!-- User Info Section -->
+      <ng-container *ngIf="user$ | async as user; else noUser">
+        <div class="d-flex align-items-center position-relative">
+
+          <!-- User Avatar + Info -->
+          <div class="d-flex align-items-center me-2 cursor-pointer user-info-section"
+               (click)="toggleUserDropdown($event)">
+            <div class="me-2">
+              <img src="assets/images/user.png" alt="Usuario" width="36" height="36"
+                   class="rounded-circle border border-2 border-primary">
+            </div>
+            <div class="d-none d-md-block">
+              <div class="fw-semibold text-dark user-name">{{ fullName }}</div>
+              <div class="d-flex align-items-center">
+                <span class="badge {{ roleColor }} badge-role">{{ userRole }}</span>
+                <small class="text-success ms-2" *ngIf="user.active">
+                  <i class="bi bi-circle-fill"></i> Activo
+                </small>
+              </div>
+            </div>
+            <i class="bi bi-chevron-down ms-2 text-muted dropdown-icon"
+               [class.rotated]="showUserDropdown"></i>
+          </div>
+
+          <!-- User Dropdown Menu -->
+          <div class="dropdown-menu dropdown-menu-end user-dropdown animate__animated animate__fadeIn"
+               [class.show]="showUserDropdown" *ngIf="showUserDropdown">
+
+            <!-- User Profile Header -->
+            <div class="dropdown-header bg-light rounded-top">
+              <div class="d-flex align-items-center">
+                <img src="assets/images/user.png" alt="Usuario" width="48" height="48"
+                     class="rounded-circle border border-2 border-primary me-3">
+                <div>
+                  <div class="fw-bold text-dark">{{ fullName }}</div>
+                  <div class="small text-muted">{{ user.email }}</div>
+                  <span class="badge {{ roleColor }} mt-1">{{ userRole }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="dropdown-divider"></div>
+
+            <!-- User Info Details -->
+            <div class="dropdown-item-text">
+              <div class="row g-2 small">
+                <div class="col-6">
+                  <div class="text-muted">Usuario:</div>
+                  <div class="fw-semibold">{{ user.username }}</div>
+                </div>
+                <div class="col-6">
+                  <div class="text-muted">ID:</div>
+                  <div class="fw-semibold">#{{ user.id }}</div>
+                </div>
+                <div class="col-12 mt-2">
+                  <div class="text-muted">Estado:</div>
+                  <span class="badge bg-success" *ngIf="user.active">
+                    <i class="bi bi-check-circle"></i> Cuenta Activa
+                  </span>
+                  <span class="badge bg-warning" *ngIf="!user.active">
+                    <i class="bi bi-exclamation-circle"></i> Cuenta Inactiva
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="dropdown-divider"></div>
+
+            <!-- Action Links -->
+            <a class="dropdown-item d-flex align-items-center" (click)="goToProfile()">
+              <i class="bi bi-person-circle me-2 text-primary"></i>
+              Mi Perfil
+            </a>
+            <a class="dropdown-item d-flex align-items-center" (click)="goToSettings()">
+              <i class="bi bi-gear me-2 text-secondary"></i>
+              Configuración
+            </a>
+
+            <div class="dropdown-divider"></div>
+
+            <!-- Logout Button -->
+            <button class="dropdown-item d-flex align-items-center text-danger" (click)="logout()">
+              <i class="bi bi-box-arrow-right me-2"></i>
+              Cerrar Sesión
+            </button>
+          </div>
+        </div>
+
+        <!-- Quick Logout Button (always visible) -->
+        <button class="btn btn-outline-danger btn-sm d-flex align-items-center"
+                (click)="logout()"
+                title="Cerrar sesión">
+          <i class="bi bi-box-arrow-right"></i>
+          <span class="d-none d-lg-inline ms-1">Salir</span>
+        </button>
+
+      </ng-container>
+
+      <!-- No User Template -->
+      <ng-template #noUser>
+        <div class="d-flex align-items-center">
+          <span class="text-muted me-2">No autenticado</span>
+          <a class="btn btn-primary btn-sm" routerLink="/auth/login">
+            <i class="bi bi-box-arrow-in-right"></i> Login
+          </a>
+        </div>
+      </ng-template>
+
+    </div>
+  </div>
+</nav>
