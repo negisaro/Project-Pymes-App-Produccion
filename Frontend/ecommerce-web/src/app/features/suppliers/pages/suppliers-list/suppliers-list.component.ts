@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
+import { Subject, takeUntil, filter } from 'rxjs';
 import { Supplier } from '../../interfaces/supplier.interface';
 import { SupplierService } from '../../services/supplier.service';
 import Swal from 'sweetalert2';
@@ -9,7 +10,8 @@ import Swal from 'sweetalert2';
   templateUrl: './suppliers-list.component.html',
   styleUrls: ['./suppliers-list.component.css']
 })
-export class SuppliersListComponent implements OnInit {
+export class SuppliersListComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
   suppliers: Supplier[] = [];
   message: string | null = null;
   errors: any[] = [];
@@ -26,6 +28,21 @@ export class SuppliersListComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadSuppliers();
+
+    // ✅ AUTO-REFRESH: Detectar cuando se regresa a esta página
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd),
+      filter((event: NavigationEnd) => event.url.includes('/admin/dashboard-admin/suppliers')),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      console.log('[AUTO-REFRESH] Detectada navegación a proveedores, recargando...');
+      this.loadSuppliers();
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadSuppliers(): void {
@@ -38,7 +55,7 @@ export class SuppliersListComponent implements OnInit {
         this.totalElements = data.totalElements;
       },
       error: () => {
-        Swal.fire({ icon: 'error', title: 'Error', text: 'Error loading suppliers' });
+        Swal.fire({ icon: 'error', title: 'Error', text: 'Error al cargar los proveedores' });
       }
     });
   }
@@ -64,22 +81,22 @@ export class SuppliersListComponent implements OnInit {
   deleteSupplier(id?: number): void {
     if (!id) return;
     Swal.fire({
-      title: 'Are you sure you want to delete this supplier?',
+      title: '¿Estás seguro de que quieres eliminar este proveedor?',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, delete',
-      cancelButtonText: 'Cancel'
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
     }).then(result => {
       if (result.isConfirmed) {
         this.supplierService.deleteSupplier(id).subscribe({
           next: () => {
-            this.showSwalToast('Supplier deleted successfully', 'success');
+            this.showSwalToast('Proveedor eliminado exitosamente', 'success');
             this.loadSuppliers();
           },
           error: () => {
-            this.showSwalToast('Error deleting supplier', 'error');
+            this.showSwalToast('Error al eliminar el proveedor', 'error');
           }
         });
       }

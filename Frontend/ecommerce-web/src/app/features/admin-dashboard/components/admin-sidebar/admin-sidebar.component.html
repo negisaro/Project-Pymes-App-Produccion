@@ -1,27 +1,39 @@
-<aside class="admin-sb" [class.is-collapsed]="!sidebarOpen" aria-label="Menú administrador">
-  <div class="admin-sb__header">
-    <span class="admin-sb__brand">Admin</span>
-    <button type="button" (click)="toggleSidebar()" aria-label="Alternar sidebar">⟨⟩</button>
+<aside class="admin-sidebar" [class.collapsed]="!(sidebarOpen$ | async)">
+  <!-- Header con brand y toggle -->
+  <div class="sidebar-header">
+    <div class="sidebar-brand">
+      <img src="assets/images/icons/favicon.ico" alt="Logo" class="brand-icon">
+      <span class="brand-text">Admin Panel</span>
+    </div>
+    <button class="sidebar-toggle" (click)="toggleSidebar()" aria-label="Toggle sidebar">
+      <i class="bi bi-chevron-left"></i>
+    </button>
   </div>
-  <nav class="admin-sb__nav" aria-label="Secciones">
-    <ul>
-      <li *ngFor="let i of items">
-        <a [routerLink]="i.path" routerLinkActive="is-active">{{ i.label }}</a>
+
+  <!-- Navegación principal -->
+  <nav class="sidebar-nav">
+    <ul class="nav-list">
+      <li class="nav-item" *ngFor="let item of items">
+        <a [routerLink]="item.path"
+           routerLinkActive="active"
+           class="nav-link"
+           [title]="item.label">
+          <i class="nav-icon {{ getIconClass(item.label) }}"></i>
+          <span class="nav-text">{{ item.label }}</span>
+        </a>
       </li>
     </ul>
   </nav>
-  <footer class="admin-sb__footer">
-    <a routerLink="/" class="home-link">
-      <i class="bi bi-house me-1"></i>
+
+  <!-- Footer con acciones -->
+  <div class="sidebar-footer">
+    <a routerLink="/" class="footer-link" title="Volver al sitio">
+      <i class="bi bi-house"></i>
       <span>Volver al sitio</span>
     </a>
-    <button
-      type="button"
-      class="logout-btn"
-      (click)="logout()"
-      title="Cerrar sesión de administrador">
-      <i class="bi bi-box-arrow-right me-1"></i>
+    <button class="logout-btn" (click)="logout()" title="Cerrar sesión">
+      <i class="bi bi-box-arrow-right"></i>
       <span>Cerrar sesión</span>
     </button>
-  </footer>
+  </div>
 </aside>

@@ -47,7 +47,7 @@ import org.springframework.web.bind.annotation.*;
  * @since 2024
  */
 @RestController
-@RequestMapping("/carrito")
+@RequestMapping("/public/carrito")
 @Tag(
   name = "Carrito de Compras",
   description = "API para gestión empresarial del carrito de compras"

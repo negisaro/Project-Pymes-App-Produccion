@@ -74,7 +74,7 @@ export class CategoryFormComponent implements OnInit, OnDestroy {
     ],
     breadcrumbs: [
       { label: 'Inicio', route: '/admin', icon: 'bi bi-house' },
-      { label: 'Categorías', route: '/admin/categories', icon: 'bi bi-diagram-3' },
+      { label: 'Categorías', route: '/admin/categoria', icon: 'bi bi-diagram-3' },
       { label: 'Nueva', active: true, icon: 'bi bi-plus-circle' }
     ]
   };
@@ -196,7 +196,7 @@ export class CategoryFormComponent implements OnInit, OnDestroy {
       icon: 'bi bi-pencil-square',
       breadcrumbs: [
         { label: 'Inicio', route: '/admin', icon: 'bi bi-house' },
-        { label: 'Categorías', route: '/admin/categories', icon: 'bi bi-diagram-3' },
+        { label: 'Categorías', route: '/admin/categoria', icon: 'bi bi-diagram-3' },
         { label: 'Editar', active: true, icon: 'bi bi-pencil-square' }
       ]
     };
@@ -400,7 +400,7 @@ export class CategoryFormComponent implements OnInit, OnDestroy {
   // ===== NAVIGATION =====
 
   private navigateToList(): void {
-    this.router.navigate(['/admin/categories']);
+    this.router.navigate(['/admin/dashboard-admin/categoria']);
   }
 
   onCancel(): void {

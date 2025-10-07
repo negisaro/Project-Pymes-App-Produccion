@@ -35,6 +35,15 @@
               </div>
               <div class="col-md-6">
                 <label for="roles" class="form-label">Rol(es)</label>
+
+                <!-- DEBUG INFO -->
+                <div class="alert alert-info" *ngIf="rolesList.length === 0">
+                  ⚠️ No hay roles disponibles. Verificando carga...
+                </div>
+                <div class="alert alert-success" *ngIf="rolesList.length > 0">
+                  ✅ {{ rolesList.length }} roles disponibles
+                </div>
+
                 <select id="roles" formControlName="roles" multiple required class="form-select" [ngClass]="{'is-invalid': userForm.get('roles')?.invalid && userForm.get('roles')?.touched}">
                   <option *ngFor="let rol of rolesList" [ngValue]="rol">{{ rol.name }}</option>
                 </select>

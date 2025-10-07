@@ -45,11 +45,11 @@ export class SupplierFormComponent implements OnInit {
               activo: data.activo
             });
             this.loading = false;
-            this.showSwalToast('Supplier loaded for editing', 'info');
+            this.showSwalToast('Proveedor cargado para edición', 'info');
           },
           error: () => {
             this.loading = false;
-            this.showSwalError('Could not load supplier.');
+            this.showSwalError('No se pudo cargar el proveedor.');
             this.goBack();
           }
         });
@@ -59,7 +59,7 @@ export class SupplierFormComponent implements OnInit {
 
   onSubmit(): void {
     if (this.supplierForm.invalid) {
-      this.showSwalError('Please complete all required fields and verify the data.');
+      this.showSwalError('Por favor complete todos los campos requeridos y verifique los datos.');
       this.supplierForm.markAllAsTouched();
       return;
     }
@@ -69,24 +69,24 @@ export class SupplierFormComponent implements OnInit {
       this.supplierService.updateSupplier(this.supplierId, supplier).subscribe({
         next: () => {
           this.loading = false;
-          this.showSwalToast('Supplier updated successfully', 'success');
+          this.showSwalToast('Proveedor actualizado exitosamente', 'success');
           this.goBack();
         },
         error: () => {
           this.loading = false;
-          this.showSwalError('Could not update supplier.');
+          this.showSwalError('No se pudo actualizar el proveedor.');
         }
       });
     } else {
       this.supplierService.createSupplier(supplier).subscribe({
         next: () => {
           this.loading = false;
-          this.showSwalToast('Supplier saved successfully', 'success');
+          this.showSwalToast('Proveedor guardado exitosamente', 'success');
           this.goBack();
         },
         error: () => {
           this.loading = false;
-          this.showSwalError('Could not save supplier.');
+          this.showSwalError('No se pudo guardar el proveedor.');
         }
       });
     }
@@ -94,7 +94,7 @@ export class SupplierFormComponent implements OnInit {
 
   onClear(): void {
     this.supplierForm.reset({ activo: true });
-    this.showSwalToast('The form has been cleared.', 'info');
+    this.showSwalToast('El formulario ha sido limpiado.', 'info');
   }
 
   private showSwalToast(message: string, icon: 'success' | 'error' | 'info' | 'warning') {
@@ -120,6 +120,6 @@ export class SupplierFormComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['../'], { relativeTo: this.route });
+    this.router.navigate(['/admin/dashboard-admin/suppliers']);
   }
 }

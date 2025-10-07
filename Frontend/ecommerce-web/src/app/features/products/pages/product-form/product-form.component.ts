@@ -9,8 +9,8 @@ import {
 import { Router, ActivatedRoute } from '@angular/router';
 import { environment } from '../../../../../environments/environments';
 import Swal from 'sweetalert2';
-import { CategoryDto } from '../../../categories/core/models';
-import { CategoryService } from '../../../categories/core/services';
+import { CategoryDto, CategorySummaryDto } from '../../../categories/core/models';
+import { CategoryPublicService } from '../../../../shared/services';
 import { Supplier } from '../../../suppliers/interfaces/supplier.interface';
 import { SupplierService } from '../../../suppliers/services/supplier.service';
 import { Product } from '../../interfaces/product.interface';
@@ -48,7 +48,7 @@ export class ProductFormComponent implements OnInit {
   productForm: FormGroup;
   mensaje: string | null = null;
   errores: any[] = [];
-  categorias: CategoryDto[] = [];
+  categorias: CategorySummaryDto[] = [];
   suppliers: Supplier[] = [];
 
   imagenSeleccionada: File | null = null;
@@ -63,7 +63,7 @@ export class ProductFormComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private productService: ProductService,
-    private categoriaService: CategoryService,
+    private categoryPublicService: CategoryPublicService,
     private supplierService: SupplierService,
     private router: Router,
     private route: ActivatedRoute
@@ -96,29 +96,39 @@ export class ProductFormComponent implements OnInit {
   }
 
   loadCategorias(): void {
-    this.categoriaService.getPagedCategories().subscribe({
-      next: (response: any) => {
-        this.categorias = response.content || [];
+    console.log('🔄 Cargando categorías...');
+    this.categoryPublicService.getActiveCategories().subscribe({
+      next: (categorias: CategorySummaryDto[]) => {
+        console.log('✅ Categorías cargadas:', categorias);
+        this.categorias = categorias || [];
+        if (this.categorias.length === 0) {
+          console.warn('⚠️ No se encontraron categorías activas');
+        }
       },
       error: (err: any) => {
-        console.error('Error al cargar categorías', err);
+        console.error('❌ Error al cargar categorías:', err);
+        console.error('Response status:', err.status);
+        console.error('Response message:', err.message);
+        this.showSwalError('Error al cargar las categorías disponibles. Verifique su conexión.');
       },
     });
   }
 
   loadSuppliers(): void {
-    this.supplierService.getSuppliers().subscribe({
-      next: (data: any) => {
-        if (Array.isArray(data)) {
-          this.suppliers = data;
-        } else if (data && Array.isArray(data.content)) {
-          this.suppliers = data.content;
-        } else {
-          this.suppliers = [];
+    console.log('🔄 Cargando proveedores...');
+    this.supplierService.getActiveSuppliers().subscribe({
+      next: (suppliers: Supplier[]) => {
+        console.log('✅ Proveedores cargados:', suppliers);
+        this.suppliers = suppliers || [];
+        if (this.suppliers.length === 0) {
+          console.warn('⚠️ No se encontraron proveedores activos');
         }
       },
       error: (err: any) => {
-        console.error('Error al cargar proveedores', err);
+        console.error('❌ Error al cargar proveedores:', err);
+        console.error('Response status:', err.status);
+        console.error('Response message:', err.message);
+        this.showSwalError('Error al cargar los proveedores disponibles. Verifique su conexión y permisos.');
       }
     });
   }
@@ -134,7 +144,7 @@ export class ProductFormComponent implements OnInit {
       },
       error: () => {
         this.showSwalError('No se pudo cargar el producto.');
-        this.router.navigate(['../'], { relativeTo: this.route });
+        this.router.navigate(['/admin/dashboard-admin/product']);
       }
     });
   }
@@ -281,7 +291,8 @@ export class ProductFormComponent implements OnInit {
   }
 
   private navigateToList() {
-    this.router.navigate(['../'], { relativeTo: this.route });
+    // Navegar correctamente a la lista de productos
+    this.router.navigate(['/admin/dashboard-admin/product']);
   }
 
   cancel() {

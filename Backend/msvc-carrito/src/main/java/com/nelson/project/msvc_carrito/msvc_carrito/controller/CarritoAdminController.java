@@ -40,14 +40,14 @@ import org.springframework.web.bind.annotation.*;
  * @since 2024
  */
 @RestController
-@RequestMapping("/api/v1/admin/carrito")
+@RequestMapping("/carrito")
 @Tag(
   name = "Administración de Carritos",
   description = "API administrativa para gestión avanzada de carritos"
 )
 @RequiredArgsConstructor
 @Validated
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasRole('ROLE_ADMIN')")
 public class CarritoAdminController {
 
   private static final Logger log = LoggerFactory.getLogger(

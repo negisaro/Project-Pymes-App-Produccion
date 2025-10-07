@@ -5,14 +5,14 @@
         <div class="card-header d-flex justify-content-between align-items-center bg-primary text-white">
           <h3 class="mb-0">
             <i class="fas fa-truck me-2"></i>
-            Suppliers Management
+            Gestión de Proveedores
           </h3>
           <div>
             <button class="btn btn-success btn-sm me-2" (click)="addSupplier()">
-              <i class="fas fa-plus me-1"></i> Add Supplier
+              <i class="fas fa-plus me-1"></i> Agregar Proveedor
             </button>
-            <button class="btn btn-outline-light btn-sm" (click)="reload()" title="Reload list">
-              <i class="fas fa-sync-alt"></i> Reload
+            <button class="btn btn-outline-light btn-sm" (click)="reload()" title="Recargar lista">
+              <i class="fas fa-sync-alt"></i> Recargar
             </button>
           </div>
         </div>
@@ -25,13 +25,13 @@
             <table class="table table-hover align-middle">
               <thead class="table-light">
                 <tr>
-                  <th>Name</th>
-                  <th>Description</th>
-                  <th>Contact</th>
-                  <th>Status</th>
-                  <th>Created At</th>
-                  <th>Updated At</th>
-                  <th class="text-center">Actions</th>
+                  <th>Nombre</th>
+                  <th>Descripción</th>
+                  <th>Contacto</th>
+                  <th>Estado</th>
+                  <th>Creado</th>
+                  <th>Actualizado</th>
+                  <th class="text-center">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -41,17 +41,17 @@
                   <td>{{ supplier.contacto }}</td>
                   <td>
                     <span [ngClass]="supplier.activo ? 'badge bg-success' : 'badge bg-secondary'">
-                      {{ supplier.activo ? 'Active' : 'Inactive' }}
+                      {{ supplier.activo ? 'Activo' : 'Inactivo' }}
                     </span>
                   </td>
                   <td>{{ supplier.creadoEn | date:'short' }}</td>
                   <td>{{ supplier.actualizadoEn | date:'short' }}</td>
                   <td class="text-center">
                     <div class="btn-group btn-group-sm" role="group">
-                      <button type="button" class="btn btn-outline-primary" (click)="editSupplier(supplier)" title="Edit supplier">
+                      <button type="button" class="btn btn-outline-primary" (click)="editSupplier(supplier)" title="Editar proveedor">
                         <i class="fas fa-edit"></i>
                       </button>
-                      <button type="button" class="btn btn-outline-danger" (click)="deleteSupplier(supplier.id)" title="Delete supplier">
+                      <button type="button" class="btn btn-outline-danger" (click)="deleteSupplier(supplier.id)" title="Eliminar proveedor">
                         <i class="fas fa-trash-alt"></i>
                       </button>
                     </div>
@@ -62,18 +62,18 @@
           </div>
           <div *ngIf="suppliers.length === 0" class="alert alert-info text-center">
             <i class="fas fa-info-circle me-2"></i>
-            No suppliers registered yet.
+            No hay proveedores registrados aún.
           </div>
           <div class="d-flex justify-content-between align-items-center mt-3">
             <button class="btn btn-outline-secondary btn-sm" (click)="previousPage()" [disabled]="page === 0 || totalPages === 0">
-              <i class="fas fa-chevron-left me-1"></i> Previous
+              <i class="fas fa-chevron-left me-1"></i> Anterior
             </button>
             <span class="pagination-info">
-              Page <strong>{{ page + 1 }}</strong> of <strong>{{ totalPages }}</strong>
-              &nbsp;|&nbsp; Total: <strong>{{ totalElements }}</strong> records
+              Página <strong>{{ page + 1 }}</strong> de <strong>{{ totalPages }}</strong>
+              &nbsp;|&nbsp; Total: <strong>{{ totalElements }}</strong> registros
             </span>
             <button class="btn btn-outline-secondary btn-sm" (click)="nextPage()" [disabled]="page >= totalPages - 1 || totalPages === 0">
-              Next <i class="fas fa-chevron-right ms-1"></i>
+              Siguiente <i class="fas fa-chevron-right ms-1"></i>
             </button>
           </div>
         </div>

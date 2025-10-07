@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, HostBinding, Signal, signal } from '@angular/core';
-import { CartStore } from '../../../core/state/cart.store';
+import { CartFacade } from '../../../features/cart/presentation/facades/cart.facade';
 
 @Component({
   selector: 'app-navbar-shell',
@@ -12,7 +12,7 @@ export class NavbarShellComponent {
   cartOpen = false;
   @HostBinding('class.is-open') get opened() { return this.mobileOpen(); }
 
-  constructor(public cart: CartStore) {}
+  constructor(public cartFacade: CartFacade) {}
 
   toggleMobile() { this.mobileOpen.update(v => !v); }
   closeMobile() { this.mobileOpen.set(false); }

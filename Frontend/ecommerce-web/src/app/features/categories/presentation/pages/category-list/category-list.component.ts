@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router';
-import { Subject, takeUntil, finalize, debounceTime, distinctUntilChanged } from 'rxjs';
+import { Router, NavigationEnd } from '@angular/router';
+import { Subject, takeUntil, finalize, debounceTime, distinctUntilChanged, filter } from 'rxjs';
 import { CategoryService, CategoryDto, CategorySummaryDto, CategoryFilterDto } from '../../../core';
 import {
   DataTableConfig,
@@ -77,7 +77,7 @@ export class CategoryListComponent implements OnInit, OnDestroy {
       }
     ],
     breadcrumbs: [
-      { label: 'Inicio', route: '/admin', icon: 'bi bi-house' },
+      { label: 'Inicio', route: '/admin/dashboard-admin', icon: 'bi bi-house' },
       { label: 'Categorías', active: true, icon: 'bi bi-diagram-3' }
     ],
     stats: [
@@ -167,9 +167,24 @@ export class CategoryListComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    // Asegurar que los arrays del dataState estén inicializados
+    this.dataState.items = this.dataState.items || [];
+    this.dataState.selectedItems = this.dataState.selectedItems || [];
+    this.dataState.sorting = this.dataState.sorting || [];
+
     this.loadCategories();
     this.loadParentCategories();
     this.updateStats();
+
+    // ✅ AUTO-REFRESH: Detectar cuando se regresa a esta página
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd),
+      filter((event: NavigationEnd) => event.url.includes('/admin/dashboard-admin/categoria')),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      console.log('[AUTO-REFRESH] Detectada navegación a categorías, recargando...');
+      this.loadCategories();
+    });
   }
 
   ngOnDestroy(): void {
@@ -197,16 +212,20 @@ export class CategoryListComponent implements OnInit, OnDestroy {
     this.categoryService.getPagedCategories(params, filters)
       .pipe(
         takeUntil(this.destroy$),
-        finalize(() => this.dataState.loading = false)
+        finalize(() => {
+          this.dataState.loading = false;
+        })
       )
       .subscribe({
         next: (response) => {
-          this.dataState.items = response.content;
-          this.dataState.pagination = response.page;
+          // Asegurar que siempre asignemos arrays válidos
+          this.dataState.items = Array.isArray(response.content) ? response.content : [];
+          this.dataState.pagination = response.page || this.dataState.pagination;
           this.updateStats();
         },
         error: (error) => {
           this.dataState.error = error.message;
+          this.dataState.items = []; // Asegurar array vacío en caso de error
           this.notificationService.error('Error al cargar categorías: ' + error.message);
         }
       });
@@ -254,6 +273,14 @@ export class CategoryListComponent implements OnInit, OnDestroy {
 
   private buildColumns(): ColumnDefinition<CategoryDto>[] {
     return [
+      {
+        key: 'id',
+        label: 'ID',
+        type: ColumnType.NUMBER,
+        sortable: true,
+        width: '80px',
+        visible: false // Oculta la columna pero permite tracking
+      },
       {
         key: 'codigo',
         label: 'Código',
@@ -403,7 +430,7 @@ export class CategoryListComponent implements OnInit, OnDestroy {
   }
 
   onSort(sorting: SortCriteria[]): void {
-    this.dataState.sorting = sorting;
+    this.dataState.sorting = Array.isArray(sorting) ? sorting : [];
     this.loadCategories();
   }
 
@@ -432,11 +459,11 @@ export class CategoryListComponent implements OnInit, OnDestroy {
   // ===== CATEGORY OPERATIONS =====
 
   private viewCategory(category: CategoryDto): void {
-    this.router.navigate(['/admin/categories/view', category.id]);
+    this.router.navigate(['/admin/dashboard-admin/categoria/view', category.id]);
   }
 
   private editCategory(category: CategoryDto): void {
-    this.router.navigate(['/admin/categories/edit', category.id]);
+    this.router.navigate(['/admin/dashboard-admin/categoria/edit', category.id]);
   }
 
   private deleteCategory(category: CategoryDto): void {
@@ -515,11 +542,11 @@ export class CategoryListComponent implements OnInit, OnDestroy {
   // ===== NAVIGATION =====
 
   private navigateToCreate(): void {
-    this.router.navigate(['/admin/categories/create']);
+    this.router.navigate(['/admin/dashboard-admin/categoria/create']);
   }
 
   private importCategories(): void {
-    this.router.navigate(['/admin/categories/import']);
+    this.router.navigate(['/admin/dashboard-admin/categoria/import']);
   }
 
   private exportCategories(): void {
@@ -529,6 +556,10 @@ export class CategoryListComponent implements OnInit, OnDestroy {
   // ===== UTILITY METHODS =====
 
   private buildSortParams(): string[] {
+    if (!Array.isArray(this.dataState.sorting)) {
+      return [];
+    }
+
     return this.dataState.sorting.map(sort => `${sort.field},${sort.direction}`);
   }
 

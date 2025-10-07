@@ -1,86 +1,98 @@
 
-<div class="home-bg-animated">
-  <canvas id="bg-particles"></canvas>
-</div>
 
-<!-- HERO GLASSMORPHISM -->
-<section class="home-hero-glass d-flex flex-column flex-md-row align-items-center justify-content-between mb-5 animate-fade-in">
-  <div class="p-4 flex-grow-1">
-    <h1 class="display-3 fw-bold mb-3 gradient-text">Glow Dreams</h1>
-    <p class="lead mb-4 text-light">Descubre productos únicos, paga seguro y recibe en casa. Vive la experiencia premium de comprar fácil y rápido.</p>
-    <a class="btn btn-gradient btn-lg shadow-lg px-5 py-2" href="#productos">Explorar productos</a>
+<!-- Loader/fallback mientras se verifica autenticación -->
+<ng-container *ngIf="authStatus === AuthStatus.checking; else homeContent">
+  <div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 60vh;">
+    <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+    <p class="text-light">Verificando autenticación...</p>
   </div>
-  <div class="d-none d-md-block flex-shrink-0 pe-4">
-    <img src="assets/images/food-products.jpg" alt="Banner Glow Dreams" class="hero-img-glass">
+</ng-container>
+<ng-template #homeContent>
+  <div class="home-bg-animated">
+    <canvas id="bg-particles"></canvas>
   </div>
-</section>
 
-<!-- BENEFICIOS GLASS PREMIUM -->
-<section class="container mb-5 animate-fade-in-delay">
-  <div class="row g-4 justify-content-center">
-    <div class="col-12 col-md-4">
-      <div class="card glass-card shadow-lg border-0 text-center py-4 animate-pop">
-        <div class="mb-3"><i class="bi bi-truck fs-1 gradient-icon"></i></div>
-        <h5 class="fw-bold mb-2 text-light">Envío rápido y seguro</h5>
-        <p class="mb-0 text-light-50">Recibe tus productos en casa en tiempo récord y con seguimiento premium.</p>
+  <!-- HERO GLASSMORPHISM -->
+  <section class="home-hero-glass d-flex flex-column flex-md-row align-items-center justify-content-between mb-5 animate-fade-in">
+    <div class="p-4 flex-grow-1">
+      <h1 class="display-3 fw-bold mb-3 gradient-text">Glow Dreams</h1>
+      <p class="lead mb-4 text-light">Descubre productos únicos, paga seguro y recibe en casa. Vive la experiencia premium de comprar fácil y rápido.</p>
+      <a class="btn btn-gradient btn-lg shadow-lg px-5 py-2" href="#productos">Explorar productos</a>
+    </div>
+    <div class="d-none d-md-block flex-shrink-0 pe-4">
+      <img src="assets/images/food-products.jpg" alt="Banner Glow Dreams" class="hero-img-glass">
+    </div>
+  </section>
+
+  <!-- BENEFICIOS GLASS PREMIUM -->
+  <section class="container mb-5 animate-fade-in-delay">
+    <div class="row g-4 justify-content-center">
+      <div class="col-12 col-md-4">
+        <div class="card glass-card shadow-lg border-0 text-center py-4 animate-pop">
+          <div class="mb-3"><i class="bi bi-truck fs-1 gradient-icon"></i></div>
+          <h5 class="fw-bold mb-2 text-light">Envío rápido y seguro</h5>
+          <p class="mb-0 text-light-50">Recibe tus productos en casa en tiempo récord y con seguimiento premium.</p>
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="card glass-card shadow-lg border-0 text-center py-4 animate-pop">
+          <div class="mb-3"><i class="bi bi-shield-check fs-1 gradient-icon"></i></div>
+          <h5 class="fw-bold mb-2 text-light">Pago 100% protegido</h5>
+          <p class="mb-0 text-light-50">Compra con tranquilidad usando nuestra pasarela Wompi y métodos seguros.</p>
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="card glass-card shadow-lg border-0 text-center py-4 animate-pop">
+          <div class="mb-3"><i class="bi bi-headset fs-1 gradient-icon"></i></div>
+          <h5 class="fw-bold mb-2 text-light">Soporte personalizado</h5>
+          <p class="mb-0 text-light-50">Te acompañamos en todo el proceso de compra y postventa.</p>
+        </div>
       </div>
     </div>
-    <div class="col-12 col-md-4">
-      <div class="card glass-card shadow-lg border-0 text-center py-4 animate-pop">
-        <div class="mb-3"><i class="bi bi-shield-check fs-1 gradient-icon"></i></div>
-        <h5 class="fw-bold mb-2 text-light">Pago 100% protegido</h5>
-        <p class="mb-0 text-light-50">Compra con tranquilidad usando nuestra pasarela Wompi y métodos seguros.</p>
-      </div>
-    </div>
-    <div class="col-12 col-md-4">
-      <div class="card glass-card shadow-lg border-0 text-center py-4 animate-pop">
-        <div class="mb-3"><i class="bi bi-headset fs-1 gradient-icon"></i></div>
-        <h5 class="fw-bold mb-2 text-light">Soporte personalizado</h5>
-        <p class="mb-0 text-light-50">Te acompañamos en todo el proceso de compra y postventa.</p>
-      </div>
-    </div>
-  </div>
-</section>
+  </section>
 
-<!-- PRODUCTOS POR CATEGORÍA CON CARDS GLASS -->
-<section class="my-5" id="productos">
-  <div *ngFor="let categoria of categoriasConProductos" class="mb-5">
-    <div class="d-flex align-items-center mb-3">
-      <h2 class="fw-bold gradient-text mb-0">{{ categoria.nombre }}</h2>
-      <span class="ms-3 text-light-50" *ngIf="categoria.descripcion">{{ categoria.descripcion }}</span>
-    </div>
-    <div class="categoria-carousel-wrapper position-relative mb-4">
-      <button type="button" class="carousel-btn prev glass-btn" (click)="scrollCategoria(categoria.nombre, -1)">
-        <i class="bi bi-chevron-left"></i>
-      </button>
-      <div class="categoria-carousel" [attr.data-categoria]="categoria.nombre" #carouselContainer>
-        <div class="card product-card glass-card shadow-lg border-0 animate__animated animate__fadeInUp" *ngFor="let product of categoria.productos">
-          <img [src]="getImageUrl(product.imagenes && product.imagenes.length > 0 ? product.imagenes[0] : '')" class="card-img-top product-img-glass" [alt]="product.nombre" (error)="onImgError($event)">
-          <div class="card-body d-flex flex-column justify-content-between">
-            <div>
-              <h5 class="card-title gradient-text fw-bold">{{ product.nombre }}</h5>
-              <p class="mb-1 text-light-50 small">{{ product.descripcion }}</p>
-              <span class="badge bg-gradient bg-primary mb-2">{{ categoria.nombre }}</span>
-              <!-- <product-sparkline [data]="product.stockHistory || [product.stock]" [color]="'#0d6efd'" [type]="'line'"></product-sparkline> -->
-            </div>
-            <div class="d-flex justify-content-between align-items-center mt-3">
-              <span class="fw-bold gradient-text fs-5">${{ product.precio.toLocaleString('es-CO') }}</span>
-              <button class="btn btn-gradient btn-sm d-flex align-items-center gap-2 animate__animated animate__pulse" (click)="addToCart(product)" [disabled]="product.stock === 0 || !product.estado">
-                <i class="bi bi-cart-plus-fill fs-5"></i>
-                <span>Agregar</span>
-              </button>
-            </div>
-            <div class="mt-2">
-              <span *ngIf="product.stock === 0" class="badge bg-danger">Agotado</span>
-              <span *ngIf="product.stock > 0 && product.stock < 5" class="badge bg-warning text-dark">¡Pocos!</span>
-              <span *ngIf="product.estado === 'INACTIVO'" class="badge bg-secondary">Inactivo</span>
+  <!-- PRODUCTOS POR CATEGORÍA CON CARDS GLASS -->
+  <section class="my-5" id="productos">
+    <div *ngFor="let categoria of categoriasConProductos" class="mb-5">
+      <div class="d-flex align-items-center mb-3">
+        <h2 class="fw-bold gradient-text mb-0">{{ categoria.nombre }}</h2>
+        <span class="ms-3 text-light-50" *ngIf="categoria.descripcion">{{ categoria.descripcion }}</span>
+      </div>
+      <div class="categoria-carousel-wrapper position-relative mb-4">
+        <button type="button" class="carousel-btn prev glass-btn" (click)="scrollCategoria(categoria.nombre, -1)">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        <div class="categoria-carousel" [attr.data-categoria]="categoria.nombre" #carouselContainer>
+          <div class="card product-card glass-card shadow-lg border-0 animate__animated animate__fadeInUp" *ngFor="let product of categoria.productos">
+            <img [src]="getImageUrl(product.imagenes && product.imagenes.length > 0 ? product.imagenes[0] : '')" class="card-img-top product-img-glass" [alt]="product.nombre" (error)="onImgError($event)">
+            <div class="card-body d-flex flex-column justify-content-between">
+              <div>
+                <h5 class="card-title gradient-text fw-bold">{{ product.nombre }}</h5>
+                <p class="mb-1 text-light-50 small">{{ product.descripcion }}</p>
+                <span class="badge bg-gradient bg-primary mb-2">{{ categoria.nombre }}</span>
+                <!-- <product-sparkline [data]="product.stockHistory || [product.stock]" [color]="'#0d6efd'" [type]="'line'"></product-sparkline> -->
+              </div>
+              <div class="d-flex justify-content-between align-items-center mt-3">
+                <span class="fw-bold gradient-text fs-5">${{ product.precio.toLocaleString('es-CO') }}</span>
+                <button class="btn btn-gradient btn-sm d-flex align-items-center gap-2 animate__animated animate__pulse" (click)="addToCart(product)" [disabled]="product.stock === 0 || !product.estado">
+                  <i class="bi bi-cart-plus-fill fs-5"></i>
+                  <span>Agregar</span>
+                </button>
+              </div>
+              <div class="mt-2">
+                <span *ngIf="product.stock === 0" class="badge bg-danger">Agotado</span>
+                <span *ngIf="product.stock > 0 && product.stock < 5" class="badge bg-warning text-dark">¡Pocos!</span>
+                <span *ngIf="product.estado === 'INACTIVO'" class="badge bg-secondary">Inactivo</span>
+              </div>
             </div>
           </div>
         </div>
+        <button type="button" class="carousel-btn next glass-btn" (click)="scrollCategoria(categoria.nombre, 1)">
+          <i class="bi bi-chevron-right"></i>
+        </button>
       </div>
-      <button type="button" class="carousel-btn next glass-btn" (click)="scrollCategoria(categoria.nombre, 1)">
-        <i class="bi bi-chevron-right"></i>
-      </button>
     </div>
-  </div>
-</section>
+  </section>
+</ng-template>

@@ -12,10 +12,10 @@ import { AppRoutingModule } from './app-routing.module';
 import { CoreModule } from './core/core.module';
 import { LayoutsModule } from './layouts/layouts.module';
 import { SharedModule } from './shared/shared.module';
-import { CartModule } from './features/cart/cart.module';
 
 import { AppComponent } from './app.component';
 import { TokenInterceptor } from './core/interceptors/token.interceptor';
+import { AuthInterceptor } from './core/interceptors/auth.interceptor';
 
 @NgModule({
   declarations: [
@@ -35,13 +35,17 @@ import { TokenInterceptor } from './core/interceptors/token.interceptor';
     SharedModule,
     HttpClientModule,
     CoreModule,
-    LayoutsModule,
-    CartModule
+    LayoutsModule
   ],
   providers: [
     {
       provide: HTTP_INTERCEPTORS,
       useClass: TokenInterceptor,
+      multi: true,
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthInterceptor,
       multi: true,
     },
     { provide: LOCALE_ID, useValue: 'es-CO' },

@@ -6,3 +6,4 @@ export * from './notification.service';
 export * from './export.service';
 export * from './product-public.service';
 export * from './category-public.service';
+export * from './role.service';

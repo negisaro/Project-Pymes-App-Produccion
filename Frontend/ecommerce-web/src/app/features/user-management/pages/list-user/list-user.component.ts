@@ -1,10 +1,11 @@
 
-import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-
-import { Observable, BehaviorSubject } from 'rxjs';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
+import { Observable, BehaviorSubject, Subject, takeUntil, filter } from 'rxjs';
 import { User, RoleName, hasRole } from '../../../../core/models/user.model';
 import { UserService, Paginator } from '../../services/user.service';
+import { AuthService } from '../../../auth/services/auth.service';
+import { AuthStatus } from '../../../auth/interfaces';
 import Swal from 'sweetalert2';
 
 
@@ -14,7 +15,10 @@ import Swal from 'sweetalert2';
   styleUrls: ['./list-user.component.css'],
 })
 
-export class ListUserComponent implements OnInit {
+export class ListUserComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
+  private authService = inject(AuthService);
+
   users$: BehaviorSubject<User[]> = new BehaviorSubject<User[]>([]);
   paginator$: BehaviorSubject<Paginator | null> = new BehaviorSubject<Paginator | null>(null);
   loading = false;
@@ -28,10 +32,33 @@ export class ListUserComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.route.paramMap.subscribe((params) => {
-      const page = +(params.get('page') || '0');
-      this.loadUsers(page);
+    // Esperar a que la autenticación esté lista antes de cargar datos
+    this.authService.authStatus$.pipe(
+      filter(status => status !== AuthStatus.checking),
+      takeUntil(this.destroy$),
+      filter(() => this.authService.isAuthenticated()) // Solo continuar si está autenticado
+    ).subscribe(() => {
+      this.route.paramMap.subscribe((params) => {
+        const page = +(params.get('page') || '0');
+        this.loadUsers(page);
+      });
     });
+
+    // ✅ AUTO-REFRESH: Detectar cuando se regresa a esta página
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd),
+      filter((event: NavigationEnd) => event.url.includes('/admin/dashboard-admin/user')),
+      filter(() => this.authService.isAuthenticated()), // Solo si está autenticado
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      console.log('[AUTO-REFRESH] Detectada navegación a usuarios, recargando...');
+      this.loadUsers(0);
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadUsers(page: number): void {
@@ -51,14 +78,8 @@ export class ListUserComponent implements OnInit {
   }
 
   puedeAgregarUsuario(): boolean {
-    const userStr = localStorage.getItem('user');
-    if (!userStr) return false;
-    try {
-      const user = JSON.parse(userStr);
-      return hasRole(user, RoleName.ADMIN);
-    } catch {
-      return false;
-    }
+    const user = this.authService.getCurrentUser();
+    return !!user && hasRole(user, RoleName.ADMIN);
   }
 
 

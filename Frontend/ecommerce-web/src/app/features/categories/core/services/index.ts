@@ -3,3 +3,4 @@
  */
 
 export * from './category.service';
+export { CATEGORY_REPOSITORY_TOKEN } from './category.service';

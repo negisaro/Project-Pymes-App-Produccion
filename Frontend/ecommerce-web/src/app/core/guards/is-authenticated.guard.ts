@@ -1,28 +1,50 @@
-import { Injectable } from '@angular/core';
-import { CanActivate, Router, UrlTree } from '@angular/router';
+import { inject } from '@angular/core';
+import { Router, type CanActivateFn } from '@angular/router';
 import { AuthService } from '../../features/auth/services/auth.service';
-import { Observable, of } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { AuthStatus } from '../../features/auth/interfaces';
+import { Observable, of, map, catchError, filter, take, timeout } from 'rxjs';
 
-@Injectable({ providedIn: 'root' })
-export class IsAuthenticatedGuard implements CanActivate {
-  constructor(private authService: AuthService, private router: Router) {}
+export const isAuthenticatedGuard: CanActivateFn = (): Observable<boolean> => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
 
-  canActivate(): Observable<boolean | UrlTree> {
-    // Si ya está autenticado en memoria, permite acceso inmediato
-    if (this.authService.isAuthenticated()) {
+  // Obtener el estado actual usando el computed signal
+  const currentStatus = authService.authStatus();
+
+  switch(currentStatus) {
+    case AuthStatus.authenticated:
+      // Ya autenticado, permitir acceso
       return of(true);
-    }
-    // Verifica el token en localStorage y con el backend
-    return this.authService.checkAuthStatus().pipe(
-      map(isAuth => {
-        if (isAuth) {
-          return true;
-        } else {
-          return this.router.createUrlTree(['/auth/login']);
-        }
-      }),
-      catchError(() => of(this.router.createUrlTree(['/auth/login'])))
-    );
+
+    case AuthStatus.notAuthenticated:
+      // No autenticado, redirigir a login
+      router.navigateByUrl('/auth/login');
+      return of(false);
+
+    case AuthStatus.checking:
+      // Esperando verificación, usar el observable para suscribirse a cambios
+      return authService.authStatus$.pipe(
+        filter(status => status !== AuthStatus.checking),
+        take(1),
+        timeout(10000), // Timeout de 10 segundos
+        map(status => {
+          const isAuth = status === AuthStatus.authenticated;
+          if (!isAuth) {
+            router.navigateByUrl('/auth/login');
+          }
+          return isAuth;
+        }),
+        catchError((error) => {
+          // En caso de timeout o error, asumir no autenticado
+          console.warn('[IsAuthenticatedGuard] Error esperando verificación de auth:', error);
+          router.navigateByUrl('/auth/login');
+          return of(false);
+        })
+      );
+
+    default:
+      // Estado desconocido, redirigir a login por seguridad
+      router.navigateByUrl('/auth/login');
+      return of(false);
   }
-}
+};

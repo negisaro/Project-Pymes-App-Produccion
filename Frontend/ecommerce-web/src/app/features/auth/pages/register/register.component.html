@@ -1,81 +1,87 @@
 
 <div class="auth-shell">
-  <aside class="auth-side">
-    <div class="brand">
-      <div class="logo-mark">
-        <i class="bi bi-bag-heart"></i>
-      </div>
-      <h1>Pymes<span>Shop</span></h1>
-      <p class="tagline">Crea tu cuenta y comienza a gestionar tu catálogo y operaciones.</p>
-    </div>
-    <ul class="selling-points">
-      <li><i class="bi bi-stack"></i> Gestión centralizada</li>
-      <li><i class="bi bi-credit-card"></i> Integraciones de pago</li>
-      <li><i class="bi bi-bar-chart"></i> Métricas en tiempo real</li>
-    </ul>
-  <div class="side-footer">© {{ currentYear }} PymesShop</div>
-  </aside>
-
   <main class="auth-panel">
     <div class="panel-header">
       <h2>Crear cuenta</h2>
-      <p class="subtitle">Regístrate para acceder a todas las funcionalidades.</p>
+      <p class="subtitle">Regístrate rápido y empieza a gestionar tu negocio</p>
     </div>
+
     <form class="auth-form" [formGroup]="form" (ngSubmit)="submit()" novalidate aria-live="polite">
       <div class="field" [class.field--error]="form.get('name')?.invalid && form.get('name')?.touched">
         <label for="name">Nombre</label>
         <div class="input-wrapper">
           <i class="bi bi-person"></i>
-          <input id="name" type="text" formControlName="name" placeholder="Nombre" />
+          <input id="name" type="text" formControlName="name" placeholder="Tu nombre" autocomplete="given-name" />
         </div>
-        <p class="field-msg" *ngIf="form.get('name')?.invalid && form.get('name')?.touched">El nombre es obligatorio.</p>
+        <p class="field-msg" *ngIf="form.get('name')?.invalid && form.get('name')?.touched">El nombre es obligatorio</p>
       </div>
+
       <div class="field" [class.field--error]="form.get('lastname')?.invalid && form.get('lastname')?.touched">
         <label for="lastname">Apellido</label>
         <div class="input-wrapper">
           <i class="bi bi-person"></i>
-          <input id="lastname" type="text" formControlName="lastname" placeholder="Apellido" />
+          <input id="lastname" type="text" formControlName="lastname" placeholder="Tu apellido" autocomplete="family-name" />
         </div>
-        <p class="field-msg" *ngIf="form.get('lastname')?.invalid && form.get('lastname')?.touched">El apellido es obligatorio.</p>
+        <p class="field-msg" *ngIf="form.get('lastname')?.invalid && form.get('lastname')?.touched">El apellido es obligatorio</p>
       </div>
+
       <div class="field" [class.field--error]="form.get('email')?.invalid && form.get('email')?.touched">
         <label for="email">Email</label>
         <div class="input-wrapper">
           <i class="bi bi-envelope"></i>
-          <input id="email" type="email" formControlName="email" placeholder="usuario@dominio.com" autocomplete="email" />
+          <input id="email" type="email" formControlName="email" placeholder="tu@email.com" autocomplete="email" />
         </div>
-        <p class="field-msg" *ngIf="form.get('email')?.invalid && form.get('email')?.touched">Email inválido.</p>
+        <p class="field-msg" *ngIf="form.get('email')?.invalid && form.get('email')?.touched">Email válido requerido</p>
       </div>
+
       <div class="field" [class.field--error]="form.get('username')?.invalid && form.get('username')?.touched">
         <label for="username">Usuario</label>
         <div class="input-wrapper">
           <i class="bi bi-person-badge"></i>
-          <input id="username" type="text" formControlName="username" placeholder="usuario" autocomplete="username" />
+          <input id="username" type="text" formControlName="username" placeholder="nombre_usuario" autocomplete="username" />
         </div>
-        <p class="field-msg" *ngIf="form.get('username')?.invalid && form.get('username')?.touched">Usuario requerido.</p>
+        <p class="field-msg" *ngIf="form.get('username')?.invalid && form.get('username')?.touched">Usuario requerido</p>
       </div>
+
       <div class="field" [class.field--error]="form.get('password')?.invalid && form.get('password')?.touched">
         <label for="password">Contraseña</label>
         <div class="input-wrapper">
           <i class="bi bi-lock"></i>
           <input id="password" type="password" formControlName="password" placeholder="••••••••" autocomplete="new-password" />
         </div>
-        <p class="field-msg" *ngIf="form.get('password')?.errors?.['required'] && form.get('password')?.touched">Campo requerido.</p>
-        <p class="field-msg" *ngIf="form.get('password')?.errors?.['minlength'] && form.get('password')?.touched">Mínimo 8 caracteres.</p>
-        <p class="field-msg" *ngIf="form.get('password')?.errors?.['passwordStrength'] && form.get('password')?.touched">Debe incluir al menos una mayúscula y un número.</p>
+        <p class="field-msg" *ngIf="form.get('password')?.errors?.['required'] && form.get('password')?.touched">Contraseña requerida</p>
+        <p class="field-msg" *ngIf="form.get('password')?.errors?.['minlength'] && form.get('password')?.touched">Mínimo 8 caracteres</p>
+        <p class="field-msg" *ngIf="form.get('password')?.errors?.['passwordStrength'] && form.get('password')?.touched">Incluye mayúscula y número</p>
       </div>
-      <div class="field">
-        <label class="remember" for="isActive">
-          <input id="isActive" type="checkbox" formControlName="isActive" /> <span>Activo</span>
+
+      <div class="form-meta">
+        <label class="remember">
+          <input type="checkbox" formControlName="isActive" checked /> 
+          <span>Cuenta activa</span>
         </label>
       </div>
+
       <button type="submit" class="btn-primary-modern" [disabled]="form.invalid || loading">
-        <span *ngIf="!loading">Registrar</span>
+        <span *ngIf="!loading">Crear cuenta</span>
         <span *ngIf="loading" class="loading-inline"><span class="spinner"></span> Registrando...</span>
       </button>
-      <div class="form-message error" *ngIf="error"><i class="bi bi-exclamation-triangle"></i> {{ error }}</div>
-      <div class="form-message success" *ngIf="successMsg"><i class="bi bi-check-circle"></i> {{ successMsg }}</div>
+
+      <div class="form-message error" *ngIf="error">
+        <i class="bi bi-exclamation-triangle"></i> {{ error }}
+      </div>
+      <div class="form-message success" *ngIf="successMsg">
+        <i class="bi bi-check-circle"></i> {{ successMsg }}
+      </div>
     </form>
-    <div class="panel-footer">¿Ya tienes cuenta? <a routerLink="/auth/login" class="link-bold">Inicia sesión</a></div>
+
+    <div class="panel-footer">
+      ¿Ya tienes cuenta? 
+      <a routerLink="/auth/login" class="link-bold">Iniciar sesión</a>
+    </div>
+
+    <div class="security-badge">
+      <i class="bi bi-shield-check"></i>
+      Registro seguro y protegido
+    </div>
   </main>
 </div>

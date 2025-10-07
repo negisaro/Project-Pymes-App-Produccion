@@ -1,61 +1,35 @@
-.auth-layout {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-  padding: 1rem;
+/* ===============================================
+   🛍️ AUTH LAYOUT - ECOMMERCE PROFESSIONAL
+   ===============================================
+   Layout wrapper que usa el sistema de autenticación
+   moderno implementado en _auth-theme.scss
+   ============================================== */
+
+// Estilos específicos del logo en el layout
+.auth-logo {
+  // Los estilos base vienen del sistema de autenticación
+  // Aquí agregamos el ícono específico del ecommerce
+  
+  &::before {
+    content: '🛍️';
+    position: absolute;
+    font-size: var(--auth-font-size-sm, 0.875rem);
+    top: -2px;
+    right: -2px;
+    opacity: 0.7;
+  }
 }
 
-.auth-container {
-  width: 100%;
-  max-width: 400px;
-}
-
-.auth-card {
-  background: var(--color-surface);
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  border: 1px solid var(--color-border);
-}
-
-.auth-header {
-  text-align: center;
-  padding: 2rem 2rem 1rem;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.brand {
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--color-text-strong);
-  margin: 0;
-}
-
-.brand span {
-  color: var(--color-primary);
-}
-
-.auth-subtitle {
-  color: var(--color-text-muted);
-  margin: 0.5rem 0 0;
-  font-size: 0.875rem;
-}
-
-.auth-content {
-  padding: 2rem;
-}
-
-.auth-footer {
-  text-align: center;
-  padding: 1rem 2rem;
-  border-top: 1px solid var(--color-border);
-  background: var(--color-background-muted);
-}
-
-.auth-footer p {
-  margin: 0;
-  font-size: 0.75rem;
-  color: var(--color-text-muted);
-}
+/* ===============================================
+   📝 NOTAS DE IMPLEMENTACIÓN
+   ===============================================
+   - Los estilos principales están en _auth-theme.scss
+   - Este archivo solo contiene overrides específicos
+   - Mantiene consistencia con el sistema de diseño
+   - El layout hereda automáticamente:
+     * .auth-shell (contenedor principal)
+     * .auth-panel (panel del formulario)  
+     * .panel-header (cabecera con logo y títulos)
+     * .security-badge (indicador de seguridad)
+     * Sistema responsive completo
+   ============================================== */

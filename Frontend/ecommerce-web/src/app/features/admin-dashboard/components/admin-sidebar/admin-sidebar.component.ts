@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../../features/auth/services/auth.service';
+import { SidebarService } from '../../../../shared/services/sidebar.service';
+import { Observable } from 'rxjs';
 import Swal from 'sweetalert2';
 
 interface AdminNavItem { icon?: string; label: string; path: string; }
@@ -14,8 +16,10 @@ interface AdminNavItem { icon?: string; label: string; path: string; }
 export class AdminSidebarComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
+  private sidebarService = inject(SidebarService);
 
-  sidebarOpen = true;
+  // Observable para el estado del sidebar
+  sidebarOpen$: Observable<boolean> = this.sidebarService.sidebarOpen$;
   items: AdminNavItem[] = [
     // Ajustado: las rutas reales están bajo /admin/dashboard-admin/*
     { label: 'Panel', path: '/admin/dashboard-admin' },
@@ -27,7 +31,22 @@ export class AdminSidebarComponent {
   ];
 
   toggleSidebar() {
-    this.sidebarOpen = !this.sidebarOpen;
+    this.sidebarService.toggle();
+  }
+
+  /**
+   * Retorna la clase de icono apropiada para cada sección
+   */
+  getIconClass(label: string): string {
+    const iconMap: { [key: string]: string } = {
+      'Panel': 'bi bi-speedometer2',
+      'Usuarios': 'bi bi-people',
+      'Productos': 'bi bi-box-seam',
+      'Categorías': 'bi bi-tags',
+      'Suppliers': 'bi bi-truck',
+      'Pedidos': 'bi bi-bag-check'
+    };
+    return iconMap[label] || 'bi bi-circle';
   }
 
   async logout() {

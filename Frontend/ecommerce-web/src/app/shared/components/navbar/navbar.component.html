@@ -26,7 +26,7 @@
             <button class="btn btn-glass btn-sm" type="submit"><i class="bi bi-arrow-right"></i></button>
           </form>
         </li>
-        <li class="nav-item ms-lg-3" *ngIf="isCliente">
+        <li class="nav-item ms-lg-3" *ngIf="isCliente()">
           <a class="nav-link position-relative d-flex align-items-center cart-link-glass" routerLink="/home" aria-label="Carrito">
             <i class="bi bi-cart3 cart-icon-glass"></i>
             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart-badge-glass">{{ cartCount }}</span>
@@ -39,16 +39,16 @@
         <li class="nav-item">
           <a class="nav-link" routerLink="/contact">Contáctenos</a>
         </li>
-        <li class="nav-item" *ngIf="isAdmin">
+        <li class="nav-item" *ngIf="isAdmin()">
           <a class="nav-link text-warning fw-bold d-flex align-items-center gap-2 admin-link-glass" routerLink="/dashboard-admin">
             <i class="bi bi-speedometer2"></i> Ir al Panel Admin
           </a>
         </li>
 
       <div class="d-flex align-items-center ms-auto">
-        <ng-container *ngIf="user$ | async as user; else loginButton">
+        <ng-container *ngIf="isAuthenticated(); else loginButton">
           <!-- Botón de cierre de sesión solo para admin -->
-          <button *ngIf="isAdmin" class="btn btn-gradient-navbar fw-semibold me-2 d-flex align-items-center gap-2" (click)="logout()">
+          <button *ngIf="isAdmin()" class="btn btn-gradient-navbar fw-semibold me-2 d-flex align-items-center gap-2" (click)="logout()">
             <i class="bi bi-box-arrow-right"></i> Cerrar sesión
           </button>
           <div class="nav-item position-relative">
@@ -56,18 +56,10 @@
               <div class="navbar-avatar me-2">
                 <img src="assets/images/user.png" alt="Avatar" width="32" height="32" class="rounded-circle">
               </div>
-              <span class="navbar-user-name text-white fw-semibold d-none d-md-inline">{{ user?.username }}</span>
+              <span class="navbar-user-name text-white fw-semibold d-none d-md-inline">{{ currentUser()?.username }}</span>
             </a>
             <ul class="dropdown-menu dropdown-menu-end animate__animated animate__fadeIn" [class.show]="showProfileMenu" aria-labelledby="navbarUserDropdown" style="display: block; min-width: 240px;" *ngIf="showProfileMenu">
-              <li>
-                <div class="dropdown-item d-flex flex-column align-items-center bg-light rounded-4 shadow-lg mb-2 p-4" style="min-width:240px;">
-                  <div class="d-flex flex-column align-items-center w-100 mb-2">
-                    <img src="assets/images/user.png" alt="Avatar" width="56" height="56" class="rounded-circle border border-primary shadow mb-2">
-                    <span class="fw-bold text-dark" style="font-size:1.2rem;">{{ user?.username }}</span>
-                    <span class="badge bg-gradient bg-primary mt-2 px-3 py-2 shadow-sm" style="font-size:0.95rem;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(0,0,0,0.10);border-radius:1rem;">{{ user?.roles[0]?.name | titlecase }}</span>
-                  </div>
-                </div>
-              </li>
+
               <li><hr class="dropdown-divider"></li>
               <li>
                 <button class="dropdown-item text-danger fw-semibold d-flex align-items-center justify-content-center gap-2 py-2" (click)="logout(); closeProfileMenu()">

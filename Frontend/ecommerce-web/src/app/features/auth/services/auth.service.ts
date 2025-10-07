@@ -1,5 +1,5 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal, computed } from '@angular/core';
 import { Observable, catchError, map, of, throwError, Subscription, BehaviorSubject } from 'rxjs';
 import { environment } from '../../../../environments/environments';
 import { Role, RoleName, User } from '../../../core/models/user.model';
@@ -17,6 +17,15 @@ export class AuthService {
   private storage = inject(StorageService);
   private authorization = inject(AuthorizationService);
 
+  // Signals para reactive state management
+  private _currentUser = signal<User | null>(null);
+  private _authStatus = signal<AuthStatus>(AuthStatus.checking);
+
+  // Computed properties públicas
+  public currentUser = computed(() => this._currentUser());
+  public authStatus = computed(() => this._authStatus());
+
+  // BehaviorSubjects mantenidos para retrocompatibilidad
   private _currentUser$ = new BehaviorSubject<User | null>(null);
   private _authStatus$ = new BehaviorSubject<AuthStatus>(AuthStatus.checking);
 
@@ -29,19 +38,36 @@ export class AuthService {
   private refreshSubscription: Subscription | null = null;
 
   constructor() {
+    this.initializeAuth();
+  }
+
+  private initializeAuth(): void {
     // Restaurar usuario desde StorageService
     const user = this.storage.get<User>('user');
     const token = this.storage.get<string>('token');
-    if (user && token) {
+
+    if (user && token && !this.isTokenExpired(token)) {
+      this._currentUser.set(user);
+      this._authStatus.set(AuthStatus.authenticated);
       this._currentUser$.next(user);
       this._authStatus$.next(AuthStatus.authenticated);
       this.scheduleTokenRefresh(token);
+
+      // Validar con backend en segundo plano (mantiene seguridad)
+      this.checkAuthStatus().subscribe();
     } else {
+      // Token no válido o expirado
+      this._currentUser.set(null);
+      this._authStatus.set(AuthStatus.notAuthenticated);
       this._currentUser$.next(null);
       this._authStatus$.next(AuthStatus.notAuthenticated);
+
+      // Limpiar storage si hay datos corruptos
+      if (user || token) {
+        this.storage.remove('token');
+        this.storage.remove('user');
+      }
     }
-    // Validar con backend (mantiene seguridad)
-    this.checkAuthStatus().subscribe();
   }
 
   /** Decodifica un JWT y retorna el payload como objeto */
@@ -96,6 +122,8 @@ export class AuthService {
    * @param token JWT
    */
   private setAuthentication(user: User, token: string): boolean {
+    this._currentUser.set(user);
+    this._authStatus.set(AuthStatus.authenticated);
     this._currentUser$.next(user);
     this._authStatus$.next(AuthStatus.authenticated);
     this.storage.set('token', token);
@@ -219,7 +247,6 @@ export class AuthService {
         }
         if (!usuario || !newToken) {
           this.logout();
-          this._authStatus$.next(AuthStatus.notAuthenticated);
           return false;
         }
         const rawRoles = usuario.roles || usuario.authorities || [];
@@ -290,6 +317,8 @@ export class AuthService {
   logout(): void {
     this.storage.remove('token');
     this.storage.remove('user');
+    this._currentUser.set(null);
+    this._authStatus.set(AuthStatus.notAuthenticated);
     this._currentUser$.next(null);
     this._authStatus$.next(AuthStatus.notAuthenticated);
     if (this.refreshTimeout) {
@@ -307,7 +336,7 @@ export class AuthService {
    * Devuelve el usuario actual (sin signals)
    */
   getCurrentUser(): User | null {
-    return this._currentUser$.getValue();
+    return this._currentUser();
   }
 
   /** Devuelve true si el usuario tiene al menos uno de los roles indicados */
@@ -323,7 +352,7 @@ export class AuthService {
    * Devuelve si el usuario está autenticado
    */
   isAuthenticated(): boolean {
-    return this._authStatus$.getValue() === AuthStatus.authenticated && !!this._currentUser$.getValue();
+    return this._authStatus() === AuthStatus.authenticated && !!this._currentUser();
   }
 
   /** Devuelve el token actual */
@@ -342,15 +371,6 @@ export class AuthService {
   }
 
   /** Obtiene los roles disponibles desde el backend */
-  /**
-   * Obtiene los roles disponibles desde el backend
-   */
-  getRoles(): Observable<string[]> {
-    return this.http.get<string[]>(`${this.baseUrl}/api/segura/roles`).pipe(
-      catchError(() => of(['USER', 'ADMIN', 'CLIENTE']))
-    );
-  }
-
    /** Refresca el token JWT */
   /**
    * Refresca el token JWT

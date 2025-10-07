@@ -1,0 +1,32 @@
+src/app/
+├── shared/
+│   ├── components/
+│   │   ├── data-management/           # 🆕 Sistema completo de gestión
+│   │   │   ├── data-table/            # Tabla genérica + CRUD
+│   │   │   ├── pagination/            # Paginación reutilizable
+│   │   │   ├── filters-panel/         # Filtros dinámicos
+│   │   │   ├── multi-select/          # Selección múltiple
+│   │   │   ├── hero-section/          # Headers consistentes
+│   │   │   └── data-management.module.ts
+│   │   └── ui-kit/                    # Existente
+│   ├── services/
+│   │   ├── api-response-handler.service.ts  # 🆕 Manejo APIs
+│   │   ├── loading-manager.service.ts       # 🆕 Estados loading
+│   │   ├── notification.service.ts          # 🆕 SweetAlert2 wrapper
+│   │   └── export.service.ts               # 🆕 Excel/PDF
+│   └── interfaces/
+│       ├── data-management.interface.ts     # 🆕 Interfaces genéricas
+│       └── api-response.interface.ts        # 🆕 Respuestas API
+├── features/
+│   ├── categories/                    # 🆕 Estructura profesional
+│   │   ├── core/
+│   │   │   ├── models/               # DTOs + Repository pattern
+│   │   │   ├── services/             # Domain services
+│   │   │   └── repositories/         # Data access
+│   │   ├── presentation/
+│   │   │   ├── pages/               # Smart components
+│   │   │   └── components/          # Dumb components específicos
+│   │   └── categories.module.ts
+│   ├── products/                     # 🔄 Refactorizar con shared
+│   ├── suppliers/                    # 🔄 Refactorizar con shared
+│   └── orders/                       # 🔄 Refactorizar con shared

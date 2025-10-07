@@ -38,7 +38,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @since 2024
  */
 @RestController
-@RequestMapping("/api/v1/metrics")
+@RequestMapping("/metrics")
 @Tag(
   name = "Métricas y Monitoreo",
   description = "API para observabilidad y monitoreo del sistema"

@@ -1,4 +1,6 @@
 import { Component, OnInit, AfterViewInit, ElementRef, ViewChildren, QueryList } from '@angular/core';
+import { AuthService } from '../../../features/auth/services/auth.service';
+import { AuthStatus } from '../../../features/auth/interfaces';
 import { environment } from '../../../../environments/environments';
 import { Product as ProductoBase } from '../../interfaces/product-public.interface';
 import { ProductPublicService } from '../../services/product-public.service';
@@ -17,15 +19,22 @@ export interface ProductoWithHistory extends ProductoBase {
 })
 export class HomePageComponent implements OnInit, AfterViewInit {
   categoriasConProductos: Array<CategorySummaryDto & { productos: ProductoWithHistory[] }> = [];
+  authStatus: AuthStatus = AuthStatus.checking;
+  AuthStatus = AuthStatus; // Para usar en template
 
   @ViewChildren('carouselContainer') carouselContainers!: QueryList<ElementRef>;
 
   constructor(
     private productoService: ProductPublicService,
-    private categoriaService: CategoryPublicService
+    private categoriaService: CategoryPublicService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
+    // Suscribirse al estado de autenticación para mostrar loader si está en checking
+    this.authService.authStatus$.subscribe(status => {
+      this.authStatus = status;
+    });
     // Consultar categorías y productos en paralelo
     Promise.all([
       this.categoriaService.getPublicCategories().toPromise(),

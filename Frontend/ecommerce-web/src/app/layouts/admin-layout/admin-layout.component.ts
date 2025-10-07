@@ -6,4 +6,6 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   styleUrls: ['./admin-layout.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AdminLayoutComponent {}
+export class AdminLayoutComponent {
+  // El sidebar ahora se controla completamente desde su propio componente
+}

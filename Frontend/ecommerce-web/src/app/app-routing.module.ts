@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import {
   IsNotAuthenticatedGuard,
-  IsAuthenticatedGuard,
+  isAuthenticatedGuard,
   RoleGuard,
 } from './core/guards';
 
@@ -28,6 +28,11 @@ const routes: Routes = [
         loadChildren: () => import('./features/search/search.module').then(m => m.SearchModule),
         data: { preload: true }
       },
+      {
+        path: 'carrito',
+        loadChildren: () => import('./features/cart/cart.module').then(m => m.CartModule),
+        data: { preload: true }
+      },
       // Más rutas públicas aquí (ej: categorías, landing)
     ]
   },
@@ -50,7 +55,7 @@ const routes: Routes = [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard-admin' },
       {
         path: 'dashboard-admin',
-        canActivate: [IsAuthenticatedGuard, RoleGuard],
+        canActivate: [isAuthenticatedGuard, RoleGuard],
         data: { roles: ['ROLE_ADMIN'] },
         loadChildren: () => import('./features/admin-dashboard/admin-dashboard.module').then(m => m.AdminDashboardModule)
       }
@@ -60,9 +65,9 @@ const routes: Routes = [
   {
     path: 'cliente',
     component: ClientLayoutComponent,
-    canActivate: [IsAuthenticatedGuard, RoleGuard],
+    canActivate: [isAuthenticatedGuard, RoleGuard],
     // Ampliamos espectro de roles equivalentes: ROLE_CLIENT / CLIENT / CLIENTE / ROLE_CLIENTE / USER
-    data: { roles: ['ROLE_CLIENT','CLIENT','CLIENTE','ROLE_CLIENTE','ROLE_USER','USER'] },
+    data: { roles: ['ROLE_CLIENT'] },
     children: [
       {
         path: '',
@@ -70,8 +75,6 @@ const routes: Routes = [
       }
     ]
   },
-  // Redirección legacy para mantener compatibilidad con enlaces antiguos
-  { path: 'admin/dashboard-cliente', redirectTo: '/cliente', pathMatch: 'full' },
   { path: '**', redirectTo: '' }
 ];
 

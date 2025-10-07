@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Observable, forkJoin } from 'rxjs';
+import { Observable, forkJoin, map } from 'rxjs';
 import { ProductService } from '../../../products/services/product.service';
 import { CategoryService } from '../../../categories/core/services';
 import { UserService } from '../../../user-management/services/user.service';
@@ -55,22 +55,25 @@ export class AdminDashboardHomeComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // ✅ OPTIMIZACIÓN: Solo obtener conteos, no datos completos
     forkJoin({
-      productos: this.productoService.getProducts(),
-      categorias: this.categoriaService.getPagedCategories(),
-      usuarios: this.userService.getPageable(0, 1000),
+      productosCount: this.productoService.getProducts().pipe(map(products => products.length)),
+      categoriasCount: this.categoriaService.getPagedCategories({ page: 0, size: 1 }).pipe(map(response => response.page.totalElements || 0)),
+      usuariosCount: this.userService.getPageable(0, 1).pipe(map(response => response.totalElements || 0)),
     }).subscribe({
-      next: ({ productos, categorias, usuarios }) => {
-        this.totalProductos = productos.length;
-        this.totalCategorias = categorias.page.totalElements || 0;
-        this.totalUsuarios = usuarios.totalElements || 0;
-        // Actualizar KPIs con datos reales
+      next: ({ productosCount, categoriasCount, usuariosCount }: {productosCount: number, categoriasCount: number, usuariosCount: number}) => {
+        this.totalProductos = productosCount;
+        this.totalCategorias = categoriasCount;
+        this.totalUsuarios = usuariosCount;
+
+        // Actualizar KPIs con datos reales optimizados
         this.kpiData = [
           { label: 'Productos', value: this.totalProductos, icon: 'fas fa-box', bgClass: 'bg-primary text-white' },
           { label: 'Categorías', value: this.totalCategorias, icon: 'fas fa-tags', bgClass: 'bg-success text-white' },
           { label: 'Usuarios', value: this.totalUsuarios, icon: 'fas fa-users', bgClass: 'bg-info text-white' },
           { label: 'Pedidos', value: this.totalPedidos, icon: 'fas fa-shopping-cart', bgClass: 'bg-warning text-white' },
         ];
+
         // Datos mock para pedidos recientes y totalPedidos
         this.pedidosRecientes = this.mockPedidos(5);
         this.totalPedidos = this.pedidosRecientes.length;

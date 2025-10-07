@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
+import { Subject, takeUntil, filter } from 'rxjs';
 import Swal from 'sweetalert2';
 import { AuthService } from '../../../auth/services/auth.service';
 import { CategoryDto } from '../../../categories/core/models';
@@ -16,7 +17,8 @@ import { Supplier } from '../../../suppliers/interfaces/supplier.interface';
   templateUrl: './products-list.component.html',
   styleUrls: ['./products-list.component.css'],
 })
-export class ProductsListComponent implements OnInit {
+export class ProductsListComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
   // Helpers SweetAlert2 para feedback uniforme
   private showSwalToast(message: string, icon: 'success' | 'error' | 'info' | 'warning') {
     Swal.fire({
@@ -68,6 +70,21 @@ export class ProductsListComponent implements OnInit {
     this.loadProducts();
     this.loadCategorias();
     this.loadSuppliers();
+
+    // ✅ AUTO-REFRESH: Detectar cuando se regresa a esta página
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd),
+      filter((event: NavigationEnd) => event.url.includes('/admin/dashboard-admin/product')),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      console.log('[AUTO-REFRESH] Detectada navegación a productos, recargando...');
+      this.loadProducts();
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadProducts(): void {
@@ -101,7 +118,13 @@ export class ProductsListComponent implements OnInit {
   loadSuppliers(): void {
     this.supplierService.getSuppliers().subscribe({
       next: (resp: Supplier[]) => {
-        this.suppliers = resp;
+        // Asegurar que siempre sea un array válido
+        this.suppliers = Array.isArray(resp) ? resp : [];
+      },
+      error: (error) => {
+        console.error('Error loading suppliers:', error);
+        // En caso de error, asegurar que sea un array vacío
+        this.suppliers = [];
       }
     });
   }
@@ -150,11 +173,21 @@ export class ProductsListComponent implements OnInit {
   }
 
   getCategoryName(categoriaId: number): string {
+    // Validar que categorias sea un array antes de usar find()
+    if (!Array.isArray(this.categorias)) {
+      return 'N/A';
+    }
+
     const categoria = this.categorias.find(c => c.id === categoriaId);
     return categoria ? categoria.nombre : 'N/A';
   }
 
   getSupplierName(proveedorId: number): string {
+    // Validar que suppliers sea un array antes de usar find()
+    if (!Array.isArray(this.suppliers)) {
+      return 'N/A';
+    }
+
     const supplier = this.suppliers.find(s => s.id === proveedorId);
     return supplier ? supplier.nombre : 'N/A';
   }

@@ -3,11 +3,9 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import Swal from 'sweetalert2';
 
-
 import { Role, RoleName, User } from '../../../../core/models/user.model';
 import { UserService } from '../../services/user.service';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../../../environments/environments';
+import { RoleService } from '../../../../shared/services/role.service';
 
 // DTO para crear/actualizar usuario
 interface UserCreateDto {
@@ -39,7 +37,7 @@ export class AddUserComponent implements OnInit {
     private userService: UserService,
     private route: ActivatedRoute,
     private router: Router,
-    private http: HttpClient
+    private roleService: RoleService
   ) {}
 
   ngOnInit(): void {
@@ -63,29 +61,31 @@ export class AddUserComponent implements OnInit {
       active: [true],
     });
 
-    // Cargar roles dinámicamente desde el backend
-    this.http.get<Role[]>(`${environment.baseUrl}/api/segura/roles/list`).subscribe({
+    // Cargar roles dinámicamente usando el RoleService
+    this.roleService.getRoles().subscribe({
       next: (roles) => {
-        console.log('[DEBUG] Roles recibidos del backend:', roles);
+        console.log('[DEBUG] Roles recibidos del RoleService:', roles);
         this.rolesList = roles;
+        console.log('[DEBUG] rolesList después de asignar:', this.rolesList);
+
+        // Después de cargar los roles, verificar si necesitamos cargar un usuario para editar
+        this.route.paramMap.subscribe((params) => {
+          const id = params.get('id');
+          if (id) {
+            this.isEditMode = true;
+            this.userId = +id;
+            this.loadUserById(+id);
+            // En edición, el password no es obligatorio ni visible
+            this.userForm.get('password')?.clearValidators();
+            this.userForm.get('password')?.setValue('');
+            this.userForm.get('password')?.updateValueAndValidity();
+          }
+        });
       },
       error: (err) => {
-        console.error('[ERROR] No se pudieron obtener los roles:', err);
+        console.error('[ERROR] No se pudieron obtener los roles desde RoleService:', err);
         this.rolesList = [];
       },
-    });
-
-    this.route.paramMap.subscribe((params) => {
-      const id = params.get('id');
-      if (id) {
-        this.isEditMode = true;
-        this.userId = +id;
-        this.loadUserById(+id);
-        // En edición, el password no es obligatorio ni visible
-        this.userForm.get('password')?.clearValidators();
-        this.userForm.get('password')?.setValue('');
-        this.userForm.get('password')?.updateValueAndValidity();
-      }
     });
   }
 
@@ -93,9 +93,16 @@ export class AddUserComponent implements OnInit {
     this.loading = true;
     this.userService.getUserById(id).subscribe({
       next: (user) => {
+        console.log('[DEBUG] Usuario recibido para editar:', user);
+        console.log('[DEBUG] Roles disponibles:', this.rolesList);
+
         // Mapear los roles del usuario a los objetos Role de rolesList
         const userRoleIds = user.roles.map((r) => r.id);
+        console.log('[DEBUG] IDs de roles del usuario:', userRoleIds);
+
         const selectedRoles = this.rolesList.filter((role) => userRoleIds.includes(role.id));
+        console.log('[DEBUG] Roles seleccionados para el formulario:', selectedRoles);
+
         this.userForm.patchValue({
           name: user.name,
           lastname: user.lastname,
@@ -110,7 +117,7 @@ export class AddUserComponent implements OnInit {
       error: () => {
         this.loading = false;
         this.showSwalError('No se pudo cargar el usuario.');
-        this.router.navigate(['../list-user'], { relativeTo: this.route });
+        this.router.navigate(['/admin/dashboard-admin/user']);
       },
     });
   }
@@ -141,7 +148,7 @@ export class AddUserComponent implements OnInit {
         next: () => {
           this.loading = false;
           this.showSwalToast('Usuario actualizado exitosamente', 'success');
-    this.router.navigate(['../list-user'], { relativeTo: this.route });
+          this.router.navigate(['/admin/dashboard-admin/user']);
         },
         error: (err) => {
           this.loading = false;
@@ -156,7 +163,7 @@ export class AddUserComponent implements OnInit {
           this.loading = false;
           this.showSwalToast('Usuario registrado exitosamente', 'success');
           this.userForm.reset({ active: true, roles: [] });
-    this.router.navigate(['../list-user'], { relativeTo: this.route });
+          this.router.navigate(['/admin/dashboard-admin/user']);
         },
         error: (err) => {
           this.loading = false;

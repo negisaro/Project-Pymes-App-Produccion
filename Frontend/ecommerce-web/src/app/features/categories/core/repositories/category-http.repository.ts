@@ -32,10 +32,8 @@ export class CategoryHttpRepository extends CategoryRepository {
     let httpParams = this.buildPaginationParams(params);
     httpParams = this.addFilters(httpParams, filters);
 
-    return this.http.get<ApiResponse<PagedResponse<CategoryDto>>>(
-      `${this.baseUrl}/list`,
-      { params: httpParams }
-    );
+    const url = `${this.baseUrl}/list`;
+    return this.http.get<ApiResponse<PagedResponse<CategoryDto>>>(url, { params: httpParams });
   }
 
   getPublicCategories(

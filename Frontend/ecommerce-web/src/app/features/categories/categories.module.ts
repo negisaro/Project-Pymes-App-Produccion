@@ -52,17 +52,8 @@ import { finalize } from 'rxjs';
     DataManagementModule.forFeature()
   ],
   providers: [
-    // Services
-    CategoryService,
-
-    // Repository pattern implementation
-    {
-      provide: CATEGORY_REPOSITORY_TOKEN,
-      useClass: CategoryHttpRepository
-    },
-
-    // Concrete repository
-    CategoryHttpRepository
+    // Los servicios ya están proporcionados con providedIn: 'root'
+    // Solo mantenemos proveedores específicos si los necesitamos
   ]
 })
 export class CategoriesModule { }

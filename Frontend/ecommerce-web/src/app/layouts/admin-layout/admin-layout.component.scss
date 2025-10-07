@@ -1,11 +1,78 @@
-.layout--admin { display: flex; min-height: 100vh; background: var(--color-bg-subtle); }
-.layout__sidebar { width: 260px; background: var(--color-bg-elevated); border-right: 1px solid var(--color-border); }
-.layout__main { flex: 1; display: flex; flex-direction: column; }
-.layout__topbar { height: 56px; border-bottom: 1px solid var(--color-border); background: var(--color-bg-elevated); display: flex; align-items: center; padding: 0 var(--space-4); }
-.layout__content { flex: 1; padding: var(--space-6); }
+/* ===== ADMIN LAYOUT - LIMPIO Y FUNCIONAL ===== */
 
-@media (max-width: 992px) {
-  .layout__sidebar { position: fixed; left: 0; top: 0; bottom: 0; transform: translateX(-100%); transition: transform .25s ease; z-index: 30; }
-  .layout__sidebar.is-open { transform: translateX(0); }
-  .layout__topbar { position: sticky; top: 0; z-index: 20; }
+.layout--admin {
+  display: flex;
+  min-height: 100vh;
+  background: var(--layout-bg-app, #f8f9fa); /* Usando variable del sistema */
+  overflow: hidden;
+}
+
+app-admin-sidebar {
+  flex-shrink: 0;
+  z-index: var(--layout-z-sidebar, 100); /* Usando variable del sistema */
+  display: block;
+  /* El ancho ahora lo controla el componente sidebar interno */
+}
+
+.layout__main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  background: var(--layout-bg-surface, #ffffff); /* Usando variable del sistema */
+}
+
+.layout__topbar {
+  height: var(--layout-topbar-height, 56px); /* Usando variable del sistema */
+  border-bottom: 1px solid #e2e8f0;
+  background: var(--layout-bg-surface, #ffffff); /* Usando variable del sistema */
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  z-index: var(--layout-z-topbar, 110); /* Usando variable del sistema */
+  width: 100%; /* Asegurar que ocupe todo el ancho */
+}
+
+.layout__content {
+  flex: 1;
+  padding: var(--layout-content-padding, 2rem); /* Usando variable del sistema */
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: var(--layout-bg-app, #f8f9fa); /* Usando variable del sistema */
+  min-height: 0;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+  app-admin-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 1000;
+  }
+
+  .layout__main {
+    width: 100%;
+  }
+
+  .layout__topbar {
+    position: sticky;
+    top: 0;
+  }
+
+  .layout__content {
+    padding: var(--layout-content-padding-sm, 1.25rem); /* Usando variable del sistema */
+  }
+}
+
+/* ===== SMOOTH ANIMATIONS ===== */
+* {
+  box-sizing: border-box;
+}
+
+.layout--admin,
+app-admin-sidebar,
+.layout__main {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }

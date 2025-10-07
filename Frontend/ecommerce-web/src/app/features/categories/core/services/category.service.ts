@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Observable, map, catchError, throwError, switchMap } from 'rxjs';
 import {
   CategoryDto,
@@ -9,7 +9,7 @@ import {
   Category,
   CategoryHierarchy
 } from '../models';
-import { CategoryRepository } from '../repositories';
+import { CategoryHttpRepository } from '../repositories';
 import { ApiResponse, PagedResponse, PaginationParams } from '../../../../shared/interfaces';
 
 /**
@@ -22,12 +22,13 @@ export const CATEGORY_REPOSITORY_TOKEN = 'CategoryRepository';
  * Implements business logic and orchestrates repository operations
  * Follows Clean Architecture principles
  */
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root'
+})
 export class CategoryService {
 
   constructor(
-    @Inject(CATEGORY_REPOSITORY_TOKEN)
-    private repository: CategoryRepository
+    private repository: CategoryHttpRepository
   ) {}
 
   // ===== CORE CRUD OPERATIONS =====
@@ -42,7 +43,7 @@ export class CategoryService {
     return this.repository.getPagedCategories(params, filters)
       .pipe(
         map(response => this.extractDataFromApiResponse(response)),
-        catchError(this.handleError)
+        catchError(error => this.handleError(error))
       );
   }
 

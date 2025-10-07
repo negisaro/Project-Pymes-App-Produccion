@@ -6,7 +6,7 @@
     <app-navbar-links class="nav__links d-none-md"></app-navbar-links>
     <div class="nav__actions">
       <app-navbar-theme-toggle></app-navbar-theme-toggle>
-      <app-navbar-cart-indicator [count]="cart.count()" (openRequested)="cartOpen = true"></app-navbar-cart-indicator>
+      <app-navbar-cart-indicator [count]="(cartFacade.itemCount$ | async) || 0" (openRequested)="cartOpen = true"></app-navbar-cart-indicator>
       <app-navbar-user-menu></app-navbar-user-menu>
     </div>
   </div>

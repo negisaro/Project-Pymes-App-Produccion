@@ -70,9 +70,18 @@ export class DataTableComponent<T = any> implements OnInit, OnChanges {
 
   // ===== INICIALIZACIÓN =====
   private initializeComponent(): void {
+    // Asegurar que los datos básicos estén inicializados
+    this.data = this.data || [];
+    this.selectedItems = this.selectedItems || [];
+    this.sortCriteria = this.sortCriteria || [];
+
     if (!this.config) {
       this.config = this.getDefaultConfig();
     }
+
+    // Asegurar que la configuración tenga arrays válidos
+    this.config.columns = this.config.columns || [];
+    this.config.actions = this.config.actions || [];
 
     this.setupVisibleColumns();
     this.updateSelectionState();
@@ -96,11 +105,20 @@ export class DataTableComponent<T = any> implements OnInit, OnChanges {
   }
 
   private setupVisibleColumns(): void {
-    this.visibleColumns = this.config.columns.filter(col => col.visible !== false);
+    if (!this.config || !Array.isArray(this.config.columns)) {
+      this.visibleColumns = [];
+      return;
+    }
+
+    this.visibleColumns = this.config.columns.filter(col => col && col.visible !== false);
   }
 
   // ===== SELECCIÓN =====
   onSelectAll(): void {
+    // Asegurar que los arrays estén inicializados
+    this.data = this.data || [];
+    this.selectedItems = this.selectedItems || [];
+
     if (this.allSelected) {
       // Deseleccionar todos
       this.selectedItems = [];
@@ -118,53 +136,75 @@ export class DataTableComponent<T = any> implements OnInit, OnChanges {
   onSelectItem(item: T, event: Event): void {
     const checkbox = event.target as HTMLInputElement;
 
-    if (checkbox.checked) {
-      // Agregar item si no está seleccionado
-      if (!this.isItemSelected(item)) {
-        this.selectedItems = [...this.selectedItems, item];
-      }
-    } else {
-      // Remover item
-      this.selectedItems = this.selectedItems.filter(selected =>
-        this.getItemId(selected) !== this.getItemId(item)
-      );
-    }
+    try {
+      // Asegurar que selectedItems es un array
+      this.selectedItems = this.selectedItems || [];
 
-    this.updateSelectionState();
-    this.itemsSelect.emit(this.selectedItems);
+      if (checkbox.checked) {
+        // Agregar item si no está seleccionado
+        if (!this.isItemSelected(item)) {
+          this.selectedItems = [...this.selectedItems, item];
+        }
+      } else {
+        // Remover item
+        this.selectedItems = this.selectedItems.filter(selected =>
+          this.getItemId(selected) !== this.getItemId(item)
+        );
+      }
+
+      this.updateSelectionState();
+      this.itemsSelect.emit(this.selectedItems);
+    } catch (error) {
+      console.error('Error selecting item:', error);
+    }
   }
 
   isItemSelected(item: T): boolean {
-    return this.selectedItems.some(selected =>
-      this.getItemId(selected) === this.getItemId(item)
-    );
+    try {
+      if (!Array.isArray(this.selectedItems) || !item) {
+        return false;
+      }
+
+      return this.selectedItems.some(selected =>
+        this.getItemId(selected) === this.getItemId(item)
+      );
+    } catch (error) {
+      console.error('Error checking item selection:', error);
+      return false;
+    }
   }
 
   private updateSelectionState(): void {
-    const selectedCount = this.selectedItems.length;
-    const totalCount = this.data.length;
+    const selectedCount = Array.isArray(this.selectedItems) ? this.selectedItems.length : 0;
+    const totalCount = Array.isArray(this.data) ? this.data.length : 0;
 
     this.allSelected = selectedCount > 0 && selectedCount === totalCount;
     this.indeterminate = selectedCount > 0 && selectedCount < totalCount;
   }
 
   private getItemId(item: T): any {
-    // Buscar column que podría ser ID
-    const idColumn = this.config.columns.find(col =>
-      col.key === 'id' || col.key === 'ID' ||
-      col.key.toString().toLowerCase().includes('id')
-    );
+    try {
+      // Verificar que existe config y columns
+      if (!this.config || !this.config.columns || this.config.columns.length === 0) {
+        return item;
+      }
 
-    if (idColumn) {
-      return (item as any)[idColumn.key];
-    }
+      // Buscar column que podría ser ID
+      const idColumn = this.config.columns.find(col =>
+        col.key === 'id' || col.key === 'ID' ||
+        col.key.toString().toLowerCase().includes('id')
+      );
 
-    // Fallback: usar el primer campo
-    if (this.config.columns.length > 0) {
+      if (idColumn) {
+        return (item as any)[idColumn.key];
+      }
+
+      // Fallback: usar el primer campo
       return (item as any)[this.config.columns[0].key];
+    } catch (error) {
+      console.error('Error getting item ID:', error, item);
+      return item;
     }
-
-    return item;
   }
 
   // ===== ORDENAMIENTO =====
@@ -402,12 +442,44 @@ export class DataTableComponent<T = any> implements OnInit, OnChanges {
   }
 
   // ===== TRACKING =====
-  trackByFn(index: number, item: ColumnDefinition<T>): any {
+  trackByFn = (index: number, item: ColumnDefinition<T>): any => {
     return item.key || index;
   }
 
-  trackByItemFn(index: number, item: T): any {
-    return this.getItemId(item) || index;
+  trackByItemFn = (index: number, item: T): any => {
+    try {
+      // Intentar obtener ID directamente
+      if ((item as any).id !== undefined) {
+        return (item as any).id;
+      }
+
+      // Buscar column que podría ser ID en la configuración si existe
+      if (this.config?.columns?.length > 0) {
+        const idColumn = this.config.columns.find(col =>
+          col.key === 'id' || col.key === 'ID' ||
+          col.key.toString().toLowerCase().includes('id')
+        );
+
+        if (idColumn) {
+          const idValue = (item as any)[idColumn.key];
+          if (idValue !== undefined) {
+            return idValue;
+          }
+        }
+
+        // Fallback: usar el primer campo
+        const firstFieldValue = (item as any)[this.config.columns[0].key];
+        if (firstFieldValue !== undefined) {
+          return firstFieldValue;
+        }
+      }
+
+      // Último fallback: usar el index
+      return index;
+    } catch (error) {
+      console.error('Error in trackByItemFn:', error);
+      return index;
+    }
   }
 
   // ===== UTILITIES =====

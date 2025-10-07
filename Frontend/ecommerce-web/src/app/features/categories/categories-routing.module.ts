@@ -44,6 +44,14 @@ const routes: Routes = [
       breadcrumb: 'Ver Categoría',
       readonly: true
     }
+  },
+  {
+    path: 'import',
+    component: CategoryListComponent, // Temporal - puede ser un componente específico
+    data: {
+      title: 'Importar Categorías',
+      breadcrumb: 'Importar Categorías'
+    }
   }
 ];
 

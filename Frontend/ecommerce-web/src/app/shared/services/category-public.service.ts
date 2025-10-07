@@ -49,14 +49,18 @@ export class CategoryPublicService {
    * Returns only basic category information for public use
    */
   getActiveCategories(): Observable<CategorySummaryDto[]> {
-    return this.http.get<ApiResponse<PagedResponse<CategorySummaryDto>>>(
-      `${this.baseUrl}/list?activo=true&size=100`
-    ).pipe(
+    const url = `${this.baseUrl}/list?activo=true&size=100`;
+    console.log('🔄 Cargando categorías activas desde:', url);
+
+    return this.http.get<ApiResponse<PagedResponse<CategorySummaryDto>>>(url).pipe(
       map(response => {
+        console.log('📦 Respuesta del backend (categorías):', response);
         if (!response.success) {
           throw new Error(response.message || 'Error obteniendo categorías activas');
         }
-        return response.data.content || [];
+        const categories = response.data.content || [];
+        console.log('✅ Categorías procesadas:', categories);
+        return categories;
       })
     );
   }
@@ -66,14 +70,18 @@ export class CategoryPublicService {
    * Returns hierarchical structure suitable for public navigation
    */
   getCategoriesForNavigation(): Observable<CategorySummaryDto[]> {
-    return this.http.get<ApiResponse<PagedResponse<CategorySummaryDto>>>(
-      `${this.baseUrl}/list?activo=true&nivel=0&size=50`
-    ).pipe(
+    const url = `${this.baseUrl}/list?activo=true&nivel=0&size=50`;
+    console.log('🔄 Cargando categorías de navegación desde:', url);
+
+    return this.http.get<ApiResponse<PagedResponse<CategorySummaryDto>>>(url).pipe(
       map(response => {
+        console.log('📦 Respuesta del backend (navegación):', response);
         if (!response.success) {
           throw new Error(response.message || 'Error obteniendo categorías de navegación');
         }
-        return response.data.content || [];
+        const categories = response.data.content || [];
+        console.log('✅ Categorías de navegación procesadas:', categories);
+        return categories;
       })
     );
   }

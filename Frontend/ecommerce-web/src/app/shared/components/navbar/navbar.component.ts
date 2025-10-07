@@ -1,5 +1,5 @@
-import { Component, OnInit, inject, HostListener, ElementRef } from '@angular/core';
-import { CartService } from '../../services/cart.service';
+import { Component, OnInit, inject, HostListener, ElementRef, computed } from '@angular/core';
+import { CartFacade } from '../../../features/cart/presentation/facades/cart.facade';
 import { BehaviorSubject } from 'rxjs';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
@@ -14,35 +14,47 @@ import { AuthService } from '../../../features/auth/services/auth.service';
 export class NavbarComponent implements OnInit {
   showProfileMenu = false;
   cartCount = 0;
-  private cartService = inject(CartService);
+  private cartFacade = inject(CartFacade);
   favoritesCount = 0;
   private authService = inject(AuthService);
   private router = inject(Router);
-  user$ = new BehaviorSubject<any>(null);
-  userObservable = this.authService.currentUser$;
   notificationsCount = 0;
   showSearch = false;
 
-  get isAdmin(): boolean {
-    const u = this.user$.value;
-    return !!u && Array.isArray(u.roles) && u.roles.some((r: any) => r.name === 'ROLE_ADMIN');
-  }
+  // Usar computed signals para obtener el usuario reactivamente
+  public currentUser = computed(() => this.authService.currentUser());
+  public isAuthenticated = computed(() => this.authService.isAuthenticated());
 
-  get isCliente(): boolean {
-    const u = this.user$.value;
-    return !!u && Array.isArray(u.roles) && u.roles.some((r: any) => r.name === 'ROLE_CLIENT');
-  }
+  // Computed properties para roles
+  public isAdmin = computed(() => {
+    const user = this.currentUser();
+    return !!user && Array.isArray(user.roles) &&
+           user.roles.some((r: any) => r.name === 'ROLE_ADMIN');
+  });
+
+  public isCliente = computed(() => {
+    const user = this.currentUser();
+    return !!user && Array.isArray(user.roles) &&
+           user.roles.some((r: any) => r.name === 'ROLE_CLIENT');
+  });
+
+  public isSupervisor = computed(() => {
+    const user = this.currentUser();
+    return !!user && Array.isArray(user.roles) &&
+           user.roles.some((r: any) => r.name === 'ROLE_SUPERVISOR');
+  });
+
+  public isEmpleado = computed(() => {
+    const user = this.currentUser();
+    return !!user && Array.isArray(user.roles) &&
+           user.roles.some((r: any) => r.name === 'ROLE_EMPLEADO');
+  });
 
   constructor(private eRef: ElementRef) {}
 
   ngOnInit() {
-    // Forzar estado inicial a null por seguridad
-    this.user$.next(null);
-    this.userObservable.subscribe((user: any) => {
-      this.user$.next(user ?? null);
-    });
     // Suscribirse al contador del carrito
-    this.cartService.cartCount$.subscribe(count => {
+    this.cartFacade.itemCount$.subscribe((count: number) => {
       this.cartCount = count;
     });
   }
@@ -72,22 +84,12 @@ export class NavbarComponent implements OnInit {
     }
   }
 
-  isSupervisor(user?: any): boolean {
-    const u = user ?? this.user$.value;
-    return !!u?.roles?.some((r: any) => r.name === 'ROLE_SUPERVISOR');
-  }
-
   onSearch(term: string) {
     if (term && term.trim().length > 0) {
       // Redirige a la página de búsqueda con el término
       this.router.navigate(['/buscar'], { queryParams: { q: term } });
       this.showSearch = false;
     }
-  }
-
-  isEmpleado(user?: any): boolean {
-    const u = user ?? this.user$.value;
-    return !!u?.roles?.some((r: any) => r.name === 'ROLE_EMPLEADO');
   }
 
   isMobile(): boolean {
@@ -107,7 +109,6 @@ export class NavbarComponent implements OnInit {
     });
     if (result.isConfirmed) {
       this.authService.logout();
-      this.user$.next(null);
       this.router.navigate(['/']);
     }
   }
